@@ -1,7 +1,7 @@
-const httpPTEC = 'http://vpnptec.dyndns.org:32001/api' //main
-const httpLandOffice = 'http://10.20.100.29:32001/api' //TEST
-const httpHome = 'http://172.16.3.143:32001/api' //Home
-const wifioffice = 'http://10.20.105.75:32001/api'
+const httpPTEC_TEST = 'http://vpnptec.dyndns.org:33052/api' //main
+const httpLandOffice = 'http://10.20.100.29:33052/api' //TEST
+const httpHome = 'http://172.16.3.143:33052/api' //Home
+const wifioffice = 'http://10.20.105.104:33052/api'
 
 interface DataConfig {
   http: string;
@@ -22,5 +22,5 @@ export const dataConfig: DataConfig = {
     'Content-Type': `multipart/form-data`,
     'Accept': 'application/json'
   },
-  http: httpHome
+  http: httpLandOffice
 }

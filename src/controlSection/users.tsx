@@ -4,8 +4,8 @@ import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import Grid from '@mui/material/Grid2';
 import Typography from '@mui/material/Typography';
-import { Avatar, Button, CardHeader, Chip, Dialog, DialogActions, DialogContent, DialogTitle, Divider, IconButton, InputAdornment, ListItem, ListItemAvatar, ListItemText, Stack, styled, TextField } from '@mui/material';
-import { DataUser, UserSaved } from '../type/nacType';
+import { Autocomplete, Avatar, Button, CardHeader, Chip, Dialog, DialogActions, DialogContent, DialogTitle, Divider, IconButton, InputAdornment, ListItem, ListItemAvatar, ListItemText, Stack, styled, TextField } from '@mui/material';
+import { Branch, DataUser, Department, UserSaved } from '../type/nacType';
 import Axios from 'axios';
 import Swal from 'sweetalert2';
 import { dataConfig } from '../config';
@@ -45,11 +45,13 @@ export default function Profile() {
   const [filteredRows, setFilteredRows] = React.useState<DataUser[]>([]);
   const [openAdd, setOpenAdd] = React.useState<boolean>(false);
   const [showPassword, setShowPassword] = React.useState(false);
+  const [branch, setBrnach] = React.useState<Branch[]>([]);
+  const [department, setDepartment] = React.useState<Department[]>([]);
   const [userSaved, setUserSaved] = React.useState<UserSaved>({
     firstName: '',
     lastName: '',
     loginName: '',
-    branchId: '',
+    branchId: null,
     department: '',
     secId: '',
     positionId: '',
@@ -81,6 +83,28 @@ export default function Profile() {
         setUsers(res.data)
         setFilteredRows(res.data)
         setLoading(false)
+      })
+
+    // Fetch department list
+    await Axios.post<{ data: Department[] }>(`${dataConfig.http}/Department_List`, { branchid: parsedData.branchid }, dataConfig.headers)
+      .then((response) => {
+        const newArray = response.data.data.filter((dep) => dep.depid > 14);
+        setDepartment(newArray);
+      })
+      .catch((error) => {
+        console.error('Error fetching departments:', error);
+      });
+
+    // Fetch branch list
+    await Axios.get<{ data: Branch[] }>(`${dataConfig.http}/Branch_ListAll`, dataConfig.headers)
+      .then((response) => {
+        setBrnach(
+          response.data.data.filter(
+            (branch) =>
+              branch.branchid <= 300 ||
+              [1000001, 1000002, 1000003, 1000004].includes(branch.branchid)
+          )
+        );
       })
   }
 
@@ -254,6 +278,19 @@ export default function Profile() {
                     sx={{ textTransform: 'none' }}
                     onClick={() => {
                       setOpenAdd(true)
+                      setUserSaved({
+                        firstName: '',
+                        lastName: '',
+                        loginName: '',
+                        branchId: null,
+                        department: '',
+                        secId: '',
+                        positionId: '',
+                        empUpper: '',
+                        email: '',
+                        actived: true,
+                        password: ''
+                      })
                     }}
                   >
                     Add
@@ -424,35 +461,47 @@ export default function Profile() {
               />
             </Grid>
             <Grid size={4}>
-              <ValidationTextField
-                name="branchId"
-                size="small"
-                label="Branch"
-                required
+              <Autocomplete
+                id="free-solo-2-demo"
+                options={Array.from(new Set(users.map((option) => option.BranchID)))}
                 value={userSaved.branchId}
-                onChange={(e) => {
-                  const { name, value } = e.target;
+                onChange={(event, value) => {
                   setUserSaved((prev) => ({
                     ...prev,
-                    [name]: value,
+                    branchId: value || null, // ใช้ค่า `value` จาก Autocomplete
                   }));
                 }}
+                renderInput={(params) => (
+                  <ValidationTextField
+                    {...params}
+                    required
+                    name="branchId"
+                    label="Branch"
+                    size="small"
+                  />
+                )}
               />
             </Grid>
             <Grid size={4}>
-              <ValidationTextField
-                name="department"
-                size="small"
-                label="Department"
-                required
+              <Autocomplete
+                id="free-solo-2-demo"
+                options={department.map((option) => option.depcode)}
                 value={userSaved.department}
-                onChange={(e) => {
-                  const { name, value } = e.target;
+                onChange={(event, value) => {
                   setUserSaved((prev) => ({
                     ...prev,
-                    [name]: value,
+                    department: value || '', // ใช้ค่า `value` จาก Autocomplete
                   }));
                 }}
+                renderInput={(params) => (
+                  <ValidationTextField
+                    {...params}
+                    required
+                    name="department"
+                    label="Department"
+                    size="small"
+                  />
+                )}
               />
             </Grid>
             <Grid size={4}>
@@ -472,19 +521,25 @@ export default function Profile() {
               />
             </Grid>
             <Grid size={4}>
-              <ValidationTextField
-                name="empUpper"
-                size="small"
-                label="Em Upper"
-                required
+              <Autocomplete
+                id="free-solo-2-demo"
+                options={users.map((option) => option.UserCode)}
                 value={userSaved.empUpper}
-                onChange={(e) => {
-                  const { name, value } = e.target;
+                onChange={(event, value) => {
                   setUserSaved((prev) => ({
                     ...prev,
-                    [name]: value,
+                    empUpper: value || '', // ใช้ค่า `value` จาก Autocomplete
                   }));
                 }}
+                renderInput={(params) => (
+                  <ValidationTextField
+                    {...params}
+                    required
+                    name="empUpper"
+                    label="Em Upper"
+                    size="small"
+                  />
+                )}
               />
             </Grid>
           </Grid>

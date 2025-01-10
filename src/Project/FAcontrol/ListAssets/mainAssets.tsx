@@ -57,6 +57,19 @@ export default function ListNacPage() {
 
   const handleCloseSaved = async () => {
     setOpenDialogEdit(false);
+    const index = rows.findIndex((row) => row.Code === rowEdit.Code);
+    const list = [...rows]
+    list[index] = {
+      ...list[index],
+      Name: rowEdit.Name,
+      SerialNo: rowEdit.SerialNo,
+      Asset_group: rowEdit.Asset_group,
+      Group_name: rowEdit.Group_name,
+      OwnerID: rowEdit.OwnerCode,
+      Position: rowEdit.Position,
+      Details: rowEdit.Details,
+    };
+    setRows(list);
     try {
       const response = await Axios.post(
         `${dataConfig.http}/UpdateDtlAsset`,
@@ -69,8 +82,8 @@ export default function ListNacPage() {
           icon: "success",
           title: "อัปเดตรายการสำเร็จ",
           showConfirmButton: false,
-          timer: 1500
-        })
+          timer: 1500,
+        });
       } else {
         throw new Error('Update failed');
       }

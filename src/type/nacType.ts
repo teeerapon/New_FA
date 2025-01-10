@@ -279,6 +279,9 @@ export interface NACDetailHistory {
   name: string | null | undefined;
   nacdtl_assetsName: string | null | undefined;
   nacdtl_assetsPrice: number | null | undefined;
+  nacdtl_bookV: number | null | undefined;
+  nacdtl_PriceSeals: number | null | undefined;
+  nacdtl_profit: number | null | undefined;
   nacdtl_date_asset: Dayjs | null | undefined;
   update_date: Dayjs | null | undefined;
   create_by: string | null | undefined;
@@ -351,7 +354,7 @@ export interface UserSaved {
   firstName: string;
   lastName: string;
   loginName: string;
-  branchId: string;
+  branchId: number | null | undefined;
   department: string;
   secId: string;
   positionId: string;
@@ -359,4 +362,27 @@ export interface UserSaved {
   email: string;
   actived: boolean;
   password: string;
+}
+
+export interface Permission {
+  Permission_id: string; // รหัสการอนุญาต
+  menutypename: string; // ชื่อประเภทเมนู
+  menutypeid: number; // ID ของประเภทเมนู
+  UserID: string; // ID ของผู้ใช้
+  DepID: number; // ID ของแผนก
+  Permission_MenuID: number; // รหัสเมนูที่เกี่ยวข้อง
+  menu_name: string; // ชื่อเมนู
+  Permission_approve: boolean | null; // สิทธิ์การอนุมัติ (true/false/null)
+  Permission_delete: boolean | null; // สิทธิ์การลบ (true/false/null)
+  Active: boolean; // สถานะใช้งานของเมนู
+  menuid: number; // รหัสเมนู
+}
+
+export interface MenuPermissionItem {
+  menuid: number;
+  menu_name: string;
+  menutypeid: number;
+  hide: boolean;
+  active_mobile: boolean;
+  active_pc: boolean;
 }

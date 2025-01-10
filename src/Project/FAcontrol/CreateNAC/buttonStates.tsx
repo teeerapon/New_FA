@@ -37,13 +37,15 @@ export default function ButtonStates({ createDoc, setOpenBackdrop, detailNAC, id
   const checkAt = workflowApproval.find(res => (res.approverid ?? 0) === parseInt(parsedData.userid ?? 0))
   const [hideBT, setHideBT] = React.useState<boolean>(false)
 
-  const validateFieldsAsset = (dtl: FAControlCreateDetail, nac_type: number) => {
+  const validateFieldsAsset = (dtl: FAControlCreateDetail, nac_type: number, status: number) => {
     // Check if any of the required fields are missing
     const missingFields = [];
 
     if (!dtl.nacdtl_assetsCode) missingFields.push('รหัสทรัพย์สิน');
-    if (!dtl.nacdtl_image_1) missingFields.push('รูปภาพ');
-    if (!dtl.nacdtl_image_2 && nac_type === 1) missingFields.push('รูปภาพที่ 2');
+    // if (!dtl.nacdtl_image_1 && [1, 2].includes(nac_type) && status === 4) missingFields.push('รูปภาพที่ 1');
+    // if (!dtl.nacdtl_image_2 && [1, 2].includes(nac_type) && status === 4) missingFields.push('รูปภาพที่ 2');
+    if (!dtl.nacdtl_image_1 && [4, 5].includes(nac_type)) missingFields.push('รูปภาพที่ 1');
+    if (!dtl.nacdtl_image_2 && [4, 5].includes(nac_type)) missingFields.push('รูปภาพที่ 2');
     if ((dtl.nacdtl_PriceSeals === undefined || dtl.nacdtl_PriceSeals === null) && [4, 5].includes(idSection ?? 0)) missingFields.push('ราคาขาย');
 
     return missingFields;
@@ -82,7 +84,7 @@ export default function ButtonStates({ createDoc, setOpenBackdrop, detailNAC, id
 
       // Validate each item
       for (const item of detailNAC) {
-        const missingFields = validateFieldsAsset(item, createDoc[0].nac_type ?? 0);
+        const missingFields = validateFieldsAsset(item, createDoc[0].nac_type ?? 0, createDoc[0].nac_status ?? 0);
         if (missingFields.length > 0) {
           setOpenBackdrop(false)
           setHideBT(false);
@@ -224,6 +226,40 @@ export default function ButtonStates({ createDoc, setOpenBackdrop, detailNAC, id
     }
   };
 
+  const redo = async () => {
+    Swal.fire({
+      title: "Do you want to Redo the changes?",
+      showCancelButton: true,
+      confirmButtonText: "Yes",
+      denyButtonText: `Cancel`
+    }).then((result) => {
+      /* Read more about isConfirmed, isDenied below */
+      if (result.isConfirmed) {
+        const header = [...createDoc]
+        header[0].nac_status = 1
+        setCreateDoc(header)
+        submitDoc()
+      }
+    });
+  }
+
+  const cancelDoc = async () => {
+    Swal.fire({
+      title: "Do you want to reject the changes?",
+      showCancelButton: true,
+      confirmButtonText: "Yes",
+      denyButtonText: `Cancel`
+    }).then((result) => {
+      /* Read more about isConfirmed, isDenied below */
+      if (result.isConfirmed) {
+        const header = [...createDoc]
+        header[0].nac_status = 17
+        setCreateDoc(header)
+        submitDoc()
+      }
+    });
+  }
+
   const sendDataToAPI = async (nac_code: string | null | undefined) => {
     setHideBT(true)
     try {
@@ -265,10 +301,6 @@ export default function ButtonStates({ createDoc, setOpenBackdrop, detailNAC, id
     }
   };
 
-  if (![6].includes(createDoc[0].nac_status ?? 0)) {
-
-  }
-
   if (!hideBT) {
     return (
       <Stack direction="row" spacing={2} sx={{ py: 2 }}>
@@ -289,7 +321,7 @@ export default function ButtonStates({ createDoc, setOpenBackdrop, detailNAC, id
               <>
                 {
                   (checkAt || parsedPermission.includes(16)) &&
-                  <Button variant="contained" color="secondary" endIcon={<BackspaceIcon />}>REDO</Button>
+                  <Button variant="contained" color="secondary" onClick={redo} endIcon={<BackspaceIcon />}>REDO</Button>
                 }
                 {
                   (checkAt || parsedPermission.includes(10)) &&
@@ -297,7 +329,7 @@ export default function ButtonStates({ createDoc, setOpenBackdrop, detailNAC, id
                 }
                 {
                   (checkAt || parsedPermission.includes(10)) &&
-                  <Button variant="contained" color="error" endIcon={<DeleteIcon />}>REJECTED</Button>
+                  <Button variant="contained" color="error" onClick={cancelDoc} endIcon={<DeleteIcon />}>REJECTED</Button>
                 }
               </>
             }

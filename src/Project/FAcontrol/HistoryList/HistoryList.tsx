@@ -45,17 +45,29 @@ export default function ListNacPage() {
 
   const columns: GridColDef[] = [
     { field: 'nacdtl_assetsCode', headerName: 'รหัสทรัพย์สิน', width: 140, headerAlign: 'center', align: 'center', },
-    { field: 'nacdtl_assetsName', headerName: 'ชื่อทรัพย์สิน', width: 250, headerAlign: 'center', flex: 1, },
+    { field: 'nacdtl_assetsName', headerName: 'ชื่อทรัพย์สิน', width: 160, headerAlign: 'center', },
+    { field: 'name', headerName: 'หัวข้อรายการ', width: 160, },
     {
-      field: 'nacdtl_assetsPrice', headerName: 'ราคาทุน', headerAlign: 'center', align: 'right', width: 160,
+      field: 'nacdtl_assetsPrice', headerName: 'ราคาทุน', headerAlign: 'center', align: 'right', flex: 1,
       renderCell: (params) => params.row.nacdtl_assetsPrice ? params.row.nacdtl_assetsPrice.toLocaleString('en-US') : 0,
     },
+    {
+      field: 'nacdtl_bookV', headerName: 'BV', headerAlign: 'center', align: 'right', flex: 1,
+      renderCell: (params) => params.row.nacdtl_bookV ? params.row.nacdtl_bookV.toLocaleString('en-US') : "-",
+    },
+    {
+      field: 'nacdtl_PriceSeals', headerName: 'ราคาขาย', headerAlign: 'center', align: 'right', flex: 1,
+      renderCell: (params) => params.row.nacdtl_PriceSeals ? params.row.nacdtl_PriceSeals.toLocaleString('en-US') : "-",
+    },
+    {
+      field: 'nacdtl_profit', headerName: 'Profit', headerAlign: 'center', align: 'right', flex: 1,
+      renderCell: (params) => params.row.nacdtl_profit ? params.row.nacdtl_profit.toLocaleString('en-US') : "-",
+    },
     { field: 'nac_code', headerName: 'เลขที่ NAC', width: 100, headerAlign: 'center', align: 'center', },
-    { field: 'name', headerName: 'หัวข้อรายการ', width: 140, headerAlign: 'center', align: 'center', },
-    { field: 'create_by', headerName: 'ผู้ทำรายการ', headerAlign: 'center', align: 'center', width: 140, },
-    { field: 'source_approve_userid', headerName: 'ผู้อนุมัติ', headerAlign: 'center', align: 'center', width: 100, },
-    { field: 'account_aprrove_id', headerName: 'ผู้ปิดรายการ', headerAlign: 'center', width: 100, },
-    { field: 'update_date', headerName: 'วันที่ปิดรายการ', headerAlign: 'center', align: 'center', flex: 1, },
+    { field: 'create_by', headerName: 'ผู้ทำรายการ', width: 100, },
+    { field: 'source_approve_userid', headerName: 'ผู้อนุมัติ', width: 100, },
+    { field: 'account_aprrove_id', headerName: 'ผู้ปิดรายการ', width: 100, },
+    { field: 'update_date', headerName: 'วันที่ปิดรายการ', flex: 1, },
     {
       field: 'Actions', type: 'actions', headerAlign: 'center', align: 'center', width: 100,
       getActions: (params) => {

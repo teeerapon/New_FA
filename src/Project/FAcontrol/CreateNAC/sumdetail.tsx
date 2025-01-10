@@ -139,7 +139,7 @@ export default function SumDetail({ detailNAC, dataAssets, idSection, createDoc,
               <TextField
                 name="numberformat"
                 id="formatted-numberformat-input"
-                value={detailNAC.find(res => (typeof res.nacdtl_PriceSeals === 'number' || typeof res.nacdtl_bookV === 'number')) ? totalProfit : ""}
+                value={((typeof totalPriceSeals === 'number') ? totalPriceSeals : 0)-((typeof totalBookValue === 'number') ? totalBookValue : 0)}
                 slotProps={{
                   input: {
                     inputComponent: NumericFormatCustom as any,

@@ -102,7 +102,7 @@ export default function CustomStyling() {
     },
     {
       id: 'STATUS',
-      name: 'NAC STATUS',
+      name: 'LIST NAC',
       permission: true,
     },
     {
@@ -159,16 +159,9 @@ export default function CustomStyling() {
       permission_branch: parsedData.branchid === 901,
     },
     {
-      id: "STATUS-1",
-      menuName: OAIcon("สถานะรายการ NAC", permission_menuID.includes(2)),
-      menu_url: "/NAC_OPERATOR",
-      permission: permission_menuID.includes(2),
-      permission_branch: parsedData.branchid === 901,
-    },
-    {
       id: "STATUS-2",
-      menuName: OAIcon("สถานะรายการ NAC", false),
-      menu_url: "/NAC_ROW",
+      menuName: OAIcon("รายการ NAC", false),
+      menu_url: permission_menuID.includes(2) ? "/NAC_OPERATOR" : "/NAC_ROW",
       permission: true,
       permission_branch: true,
     },
@@ -188,9 +181,9 @@ export default function CustomStyling() {
     },
     {
       id: "REPORT-1",
-      menuName: OAIcon("รายงานตรวจนับทรัพย์สิน", permission_menuID.includes(7)),
-      menu_url: "/Reported_Assets_Counted",
-      permission: permission_menuID.includes(7),
+      menuName: OAIcon("รายงานตรวจนับทรัพย์สิน", false),
+      menu_url: permission_menuID.includes(7) ? "/Reported_Assets_Counted" : "/Report",
+      permission: true,
       permission_branch: parsedData.branchid === 901,
     },
     {
@@ -211,13 +204,6 @@ export default function CustomStyling() {
       id: "REPORT-4",
       menuName: OAIcon("ทะเบียนทรัพย์สิน", false),
       menu_url: parsedData.branchid === 901 ? '/FETCH_ASSETS' : '/Account_BrnachAssets',
-      permission: true,
-      permission_branch: parsedData.branchid === 901,
-    },
-    {
-      id: "REPORT-5",
-      menuName: OAIcon("รายงานตรวจนับทรัพย์สิน", false),
-      menu_url: "/Report",
       permission: true,
       permission_branch: parsedData.branchid === 901,
     },
