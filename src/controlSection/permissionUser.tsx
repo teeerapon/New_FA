@@ -111,7 +111,7 @@ export default function Profile() {
                   <ListItem disablePadding>
                     <FormControlLabel
                       control={<Switch />}
-                      label={`${res.menu_name} ${res.menuid}`}
+                      label={`${res.menu_name}`}
                       checked={(menuActive.findIndex((resActive) => resActive === res.menuid) < 0) ? false : true}
                     />
                   </ListItem>

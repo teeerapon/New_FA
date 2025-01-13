@@ -86,8 +86,8 @@ const size = {
 };
 
 const chartSetting = {
-  width: 1200,
-  height: 300,
+  width: 1500,
+  height: 350,
   sx: {
     [`.${axisClasses.left} .${axisClasses.label}`]: {
       transform: 'translate(-20px, 0)',
@@ -371,260 +371,258 @@ const MenuAppBar: React.FC = () => {
           }}
           maxWidth="xl"
         >
-          <Stack >
-            <Grid container spacing={{ xs: 2, md: 3 }} columns={{ xs: 4, sm: 8, md: 12 }}>
-              <Grid size={{ xs: 9 }}>
-                <Grid container spacing={{ xs: 1, md: 2 }} columns={{ xs: 4, sm: 8, md: 12 }}>
-                  <Grid size={{ xs: 12 }}>
-                    <Card variant="outlined" sx={{ height: 400, }}>
-                      <CardHeader
-                        title={
-                          <ListItem
-                            secondaryAction={
-                              <Stack
-                                direction="row"
-                                sx={{
-                                  justifyContent: "center",
-                                  alignItems: "center",
-                                }}
-                              >
-                                <Tooltip title="Refesh Data">
-                                  <IconButton aria-label="comment" sx={{ color: '#3590F3' }} onClick={fetchDataAnnualGraph}>
-                                    <RefreshIcon />
-                                  </IconButton>
-                                </Tooltip>
-                                <Typography variant="body2" color="success"> Sync</Typography>
-                              </Stack>
-                            }
-                          >
-                            <ListItemText
-                              primary={
-                                <Stack
-                                  direction="row"
-                                  spacing={2}
-                                  sx={{
-                                    justifyContent: "flex-start",
-                                    alignItems: "center",
-                                  }}
-                                >
-                                  <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
-                                    NAC Completed ({targetYear < 1000 || targetYear > 9999 ? 'xxxx' : targetYear})
-                                  </Typography>
-                                  <TextField
-                                    id="outlined-start-adornment"
-                                    size="small"
-                                    sx={{ m: 1, width: '25ch' }}
-                                    value={targetYear === 0 ? '' : targetYear}
-                                    onChange={(e) => {
-                                      const string_data = Number(e.target.value)
-                                      setTargetYear(string_data)
-                                    }}
-                                    onKeyDown={(e) => {
-                                      if (e.key === "Enter") {
-                                        const numericYear = Number(targetYear);
-                                        if (!isNaN(numericYear)) {
-                                          console.log(`Updated year to: ${numericYear}`);
-                                          setTargetYear(numericYear);
-                                        } else {
-                                          console.error("Invalid year format");
-                                        }
-                                      }
-                                    }}
-                                    slotProps={{
-                                      input: {
-                                        endAdornment: <InputAdornment position="end">A.D.</InputAdornment>,
-                                      },
-                                    }}
-                                  />
-                                </Stack>
-                              }
-                            />
-                          </ListItem>
-                        }
-                      />
-                      <CardContent
-                        sx={{
-                          display: 'flex',
-                          justifyContent: 'center',
-                          alignItems: 'flex-end', // Centers vertically
-                        }}
-                      >
-                        <LineChart
-                          grid={{ vertical: true, horizontal: true }}
-                          dataset={transformedData}
-                          xAxis={[{ scaleType: 'band', dataKey: 'month', }]}
-                          series={[
-                            { dataKey: 'Add', label: 'เพิ่มทรัพย์สิน', valueFormatter, color: 'var(--my-custom-gradient, #358600)', showMark: false },
-                            { dataKey: 'Sell', label: 'ขายทรัพย์สิน', valueFormatter, color: 'var(--my-custom-gradient, #D7263D)', showMark: false },
-                            { dataKey: 'Delete', label: 'ตัดบัญชีทรัพย์สิน', valueFormatter, color: 'var(--my-custom-gradient, #140D4F)', showMark: false },
-                            { dataKey: 'Transfer', label: 'โยกย้าย', valueFormatter, color: 'var(--my-custom-gradient, #3CDBD3)', showMark: false },
-                          ]}
-                          slotProps={{
-                            legend: {
-                              direction: 'row',
-                              position: { vertical: 'top', horizontal: 'middle' },
-                              itemMarkWidth: 10,
-                              itemMarkHeight: 10,
-                              markGap: 5,
-                              itemGap: 20,
-                              padding: 0,
-                            },
-                          }}
-                          {...chartSetting}
-                        />
-                      </CardContent>
-                    </Card>
-                  </Grid>
-                  <Grid size={{ xs: 12 }}>
-                    <Card variant="outlined">
-                      <Typography variant="h6" sx={{ p: 1, fontWeight: 'bold' }}>
-                        จำนวนงาน NAC ที่ค้างอยู่ในระบบ (แยกตาม Department)
+          <Grid container spacing={{ xs: 2, md: 3 }} columns={{ xs: 4, sm: 8, md: 12 }} >
+            <Grid size={{ xs: 12 }}>
+              <Grid container spacing={{ xs: 1, md: 2 }} columns={{ xs: 4, sm: 8, md: 12 }}>
+                <Grid size={{ xs: 3 }}>
+                  <Card
+                    variant="outlined"
+                    sx={{ backgroundImage: `linear-gradient(to bottom, #99E1D9, #F0F7F4)` }}
+                  >
+                    <CardContent>
+                      <Typography variant="body1" gutterBottom sx={{ color: 'text.secondary', fontWeight: 600 }}>
+                        เพิ่มทรัพย์สิน
                       </Typography>
-                      <DataTable
-                        rows={dataBacklog}
-                        columns={columns}
-                        loading={loading}
-                        isCellEditable={function (params: GridCellParams): boolean {
-                          throw new Error("Function not implemented.");
-                        }}
-                      />
-                    </Card>
-                  </Grid>
+                      <Typography variant="body1" sx={{ fontWeight: 600 }}>+{sumData(transformedData).Add} Items</Typography>
+                      <Typography variant="subtitle2" color="success">{((sumData(transformedData).Add / (countAllAsset - sumData(transformedData).Add)) * 100).toFixed(2)}% Since last year</Typography>
+                    </CardContent>
+                  </Card>
                 </Grid>
-              </Grid>
-              <Grid size={{ xs: 3 }}>
-                <Grid container spacing={{ xs: 1, md: 2 }} columns={{ xs: 4, sm: 8, md: 12 }}>
-                  <Grid size={{ xs: 12 }}>
-                    <Card
-                      variant="outlined"
-                      sx={{ backgroundImage: `linear-gradient(to bottom, #99E1D9, #F0F7F4)` }}
-                    >
-                      <CardContent>
-                        <Typography variant="body1" gutterBottom sx={{ color: 'text.secondary', fontWeight: 600 }}>
-                          เพิ่มทรัพย์สิน
-                        </Typography>
-                        <Typography variant="body1" sx={{ fontWeight: 600 }}>+{sumData(transformedData).Add} Items</Typography>
-                        <Typography variant="subtitle2" color="success">{((sumData(transformedData).Add / (countAllAsset - sumData(transformedData).Add)) * 100).toFixed(2)}% Since last year</Typography>
-                      </CardContent>
-                    </Card>
-                  </Grid>
-                  <Grid size={{ xs: 12 }}>
-                    <Card
-                      variant="outlined"
-                      sx={{ backgroundImage: `linear-gradient(to bottom, #FFA5AB, #F0F7F4)` }}
-                    >
-                      <CardContent>
-                        <Typography variant="body1" gutterBottom sx={{ color: 'text.secondary', fontWeight: 600 }}>
-                          ขายทรัพย์สิน
-                        </Typography>
-                        <Typography variant="body1" sx={{ fontWeight: 600 }}>-{sumData(transformedData).Sell} Items</Typography>
-                        <Typography variant="subtitle2" color="error">{((sumData(transformedData).Sell / (sumData(transformedData).Sell + countAllAsset)) * 100).toFixed(2)}% Since last year</Typography>
-                      </CardContent>
-                    </Card>
-                  </Grid>
-                  <Grid size={{ xs: 12 }}>
-                    <Card
-                      variant="outlined"
-                      sx={{ backgroundImage: `linear-gradient(to bottom, #D7B8F3, #F0F7F4)` }}
-                    >
-                      <CardContent>
-                        <Typography variant="body1" gutterBottom sx={{ color: 'text.secondary', fontWeight: 600 }}>
-                          ตัดบัญชีทรัพย์สิน
-                        </Typography>
-                        <Typography variant="body1" sx={{ fontWeight: 600 }}>-{sumData(transformedData).Delete} Items</Typography>
-                        <Typography variant="subtitle2" color="error">{((sumData(transformedData).Delete / (sumData(transformedData).Delete + countAllAsset)) * 100).toFixed(2)}% Since last year</Typography>
-                      </CardContent>
-                    </Card>
-                  </Grid>
-                  <Grid size={{ xs: 12 }}>
-                    <Card
-                      variant="outlined"
-                      sx={{ backgroundImage: `linear-gradient(to bottom, #8DE4FF, #F0F7F4)` }}
-                    >
-                      <CardContent>
-                        <Typography variant="body1" gutterBottom sx={{ color: 'text.secondary', fontWeight: 600 }}>
-                          โยกย้ายทรัพย์สิน
-                        </Typography>
-                        <Typography variant="body1" sx={{ fontWeight: 600 }}>{sumData(transformedData).Transfer} Items</Typography>
-                        <Typography variant="subtitle2" color="success">{((sumData(transformedData).Transfer / countAllAsset) * 100).toFixed(2)}% Since last year</Typography>
-                      </CardContent>
-                    </Card>
-                  </Grid>
-                  <Grid size={{ xs: 12 }}>
-                    <Card variant="outlined">
-                      <CardHeader
-                        title={
-                          <Box>
-                            <Typography variant="body1" gutterBottom sx={{ fontWeight: 600, pb: 1 }}>
-                              ผลสรุปการตรวจนับ
-                            </Typography>
-                            <Autocomplete
-                              autoHighlight
-                              disablePortal
-                              id="autocomplete-status-name"
-                              size="small"
-                              sx={{ flexGrow: 1 }}
-                              value={optionDctString}
-                              onChange={(e, newValue) => handleChange(newValue)}
-                              options={optionDct.map((option) => option.Description)}
-                              renderInput={(params) => <TextField {...params} />}
-                            />
-                          </Box>
-                        }
-                      />
-                      <CardContent
-                        sx={{
-                          display: 'flex',
-                          justifyContent: 'center',
-                          alignItems: 'center',
-                          flexDirection: 'column'
-                        }}
-                      >
-                        <PieChart
-                          series={[
-                            {
-                              data: chartData,
-                              innerRadius: 75,
-                              outerRadius: 100,
-                              paddingAngle: 0,
-                              highlightScope: { faded: 'global', highlighted: 'item' },
-                            },
-                          ]}
-                          {...size}
-                          margin={{ left: 100 }}
-                          slotProps={{
-                            legend: { hidden: true },
-                          }}
-                        >
-                          <PieCenterLabel primaryText={rows.length.toString()} secondaryText="Total" />
-                        </PieChart>
-                        <Box sx={{ marginTop: 2 }}>
-                          <Stack direction="column" spacing={1}>
-                            {chartData.map((item, index) => (
-                              <Stack
-                                direction="row"
-                                key={index}
-                                spacing={1}
-                                sx={{
-                                  justifyContent: "felx-start",
-                                  alignItems: "center",
-                                }}
-                              >
-                                <SquareIcon sx={{ color: item.color }} />
-                                <Typography variant="caption">
-                                  {item.label}: {item.value}
-                                </Typography>
-                              </Stack>
-                            ))}
-                          </Stack>
-                        </Box>
-                      </CardContent>
-                    </Card>
-                  </Grid>
+                <Grid size={{ xs: 3 }}>
+                  <Card
+                    variant="outlined"
+                    sx={{ backgroundImage: `linear-gradient(to bottom, #FFA5AB, #F0F7F4)` }}
+                  >
+                    <CardContent>
+                      <Typography variant="body1" gutterBottom sx={{ color: 'text.secondary', fontWeight: 600 }}>
+                        ขายทรัพย์สิน
+                      </Typography>
+                      <Typography variant="body1" sx={{ fontWeight: 600 }}>-{sumData(transformedData).Sell} Items</Typography>
+                      <Typography variant="subtitle2" color="error">{((sumData(transformedData).Sell / (sumData(transformedData).Sell + countAllAsset)) * 100).toFixed(2)}% Since last year</Typography>
+                    </CardContent>
+                  </Card>
+                </Grid>
+                <Grid size={{ xs: 3 }}>
+                  <Card
+                    variant="outlined"
+                    sx={{ backgroundImage: `linear-gradient(to bottom, #D7B8F3, #F0F7F4)` }}
+                  >
+                    <CardContent>
+                      <Typography variant="body1" gutterBottom sx={{ color: 'text.secondary', fontWeight: 600 }}>
+                        ตัดบัญชีทรัพย์สิน
+                      </Typography>
+                      <Typography variant="body1" sx={{ fontWeight: 600 }}>-{sumData(transformedData).Delete} Items</Typography>
+                      <Typography variant="subtitle2" color="error">{((sumData(transformedData).Delete / (sumData(transformedData).Delete + countAllAsset)) * 100).toFixed(2)}% Since last year</Typography>
+                    </CardContent>
+                  </Card>
+                </Grid>
+                <Grid size={{ xs: 3 }}>
+                  <Card
+                    variant="outlined"
+                    sx={{ backgroundImage: `linear-gradient(to bottom, #8DE4FF, #F0F7F4)` }}
+                  >
+                    <CardContent>
+                      <Typography variant="body1" gutterBottom sx={{ color: 'text.secondary', fontWeight: 600 }}>
+                        โยกย้ายทรัพย์สิน
+                      </Typography>
+                      <Typography variant="body1" sx={{ fontWeight: 600 }}>{sumData(transformedData).Transfer} Items</Typography>
+                      <Typography variant="subtitle2" color="success">{((sumData(transformedData).Transfer / countAllAsset) * 100).toFixed(2)}% Since last year</Typography>
+                    </CardContent>
+                  </Card>
                 </Grid>
               </Grid>
             </Grid>
-          </Stack>
+            <Grid size={{ xs: 12 }}>
+              <Grid container spacing={{ xs: 1, md: 2 }} columns={{ xs: 4, sm: 8, md: 12 }} alignItems="stretch">
+                <Grid size={{ xs: 12 }}>
+                  <Card variant="outlined" sx={{ height: 500}}>
+                    <CardHeader
+                      title={
+                        <ListItem
+                          secondaryAction={
+                            <Stack
+                              direction="row"
+                              sx={{
+                                justifyContent: "center",
+                                alignItems: "center",
+                              }}
+                            >
+                              <Tooltip title="Refesh Data">
+                                <IconButton aria-label="comment" sx={{ color: '#3590F3' }} onClick={fetchDataAnnualGraph}>
+                                  <RefreshIcon />
+                                </IconButton>
+                              </Tooltip>
+                              <Typography variant="body2" color="success"> Sync</Typography>
+                            </Stack>
+                          }
+                        >
+                          <ListItemText
+                            primary={
+                              <Stack
+                                direction="row"
+                                spacing={2}
+                                sx={{
+                                  justifyContent: "flex-start",
+                                  alignItems: "center",
+                                }}
+                              >
+                                <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+                                  NAC Completed ({targetYear < 1000 || targetYear > 9999 ? 'xxxx' : targetYear})
+                                </Typography>
+                                <TextField
+                                  id="outlined-start-adornment"
+                                  size="small"
+                                  sx={{ m: 1, width: '25ch' }}
+                                  value={targetYear === 0 ? '' : targetYear}
+                                  onChange={(e) => {
+                                    const string_data = Number(e.target.value)
+                                    setTargetYear(string_data)
+                                  }}
+                                  onKeyDown={(e) => {
+                                    if (e.key === "Enter") {
+                                      const numericYear = Number(targetYear);
+                                      if (!isNaN(numericYear)) {
+                                        console.log(`Updated year to: ${numericYear}`);
+                                        setTargetYear(numericYear);
+                                      } else {
+                                        console.error("Invalid year format");
+                                      }
+                                    }
+                                  }}
+                                  slotProps={{
+                                    input: {
+                                      endAdornment: <InputAdornment position="end">A.D.</InputAdornment>,
+                                    },
+                                  }}
+                                />
+                              </Stack>
+                            }
+                          />
+                        </ListItem>
+                      }
+                    />
+                    <CardContent
+                      sx={{
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'flex-end', // Centers vertically
+                      }}
+                    >
+                      <LineChart
+                        grid={{ vertical: true, horizontal: true }}
+                        dataset={transformedData}
+                        xAxis={[{ scaleType: 'band', dataKey: 'month', }]}
+                        series={[
+                          { dataKey: 'Add', label: 'เพิ่มทรัพย์สิน', valueFormatter, color: 'var(--my-custom-gradient, #358600)', showMark: false },
+                          { dataKey: 'Sell', label: 'ขายทรัพย์สิน', valueFormatter, color: 'var(--my-custom-gradient, #D7263D)', showMark: false },
+                          { dataKey: 'Delete', label: 'ตัดบัญชีทรัพย์สิน', valueFormatter, color: 'var(--my-custom-gradient, #140D4F)', showMark: false },
+                          { dataKey: 'Transfer', label: 'โยกย้าย', valueFormatter, color: 'var(--my-custom-gradient, #3CDBD3)', showMark: false },
+                        ]}
+                        slotProps={{
+                          legend: {
+                            direction: 'row',
+                            position: { vertical: 'top', horizontal: 'middle' },
+                            itemMarkWidth: 10,
+                            itemMarkHeight: 10,
+                            markGap: 5,
+                            itemGap: 20,
+                            padding: 0,
+                          },
+                        }}
+                        {...chartSetting}
+                      />
+                    </CardContent>
+                  </Card>
+                </Grid>
+                <Grid size={{ xs: 7 }}>
+                  <Card variant="outlined" sx={{ height: '100%'}}>
+                    <Typography variant="h6" sx={{ p: 1, fontWeight: 'bold' }}>
+                      รายงานสรุป NAC คงค้าง
+                    </Typography>
+                    <DataTable
+                      rows={dataBacklog}
+                      columns={columns}
+                      loading={loading}
+                      isCellEditable={function (params: GridCellParams): boolean {
+                        throw new Error("Function not implemented.");
+                      }}
+                    />
+                  </Card>
+                </Grid>
+                <Grid size={{ xs: 5 }}>
+                  <Card variant="outlined" sx={{ height: '100%'}}>
+                    <CardHeader
+                      title={
+                        <Box>
+                          <Typography variant="body1" gutterBottom sx={{ fontWeight: 600, pb: 1 }}>
+                            ผลสรุปการตรวจนับ
+                          </Typography>
+                          <Autocomplete
+                            autoHighlight
+                            disablePortal
+                            id="autocomplete-status-name"
+                            size="small"
+                            sx={{ flexGrow: 1 }}
+                            value={optionDctString}
+                            onChange={(e, newValue) => handleChange(newValue)}
+                            options={optionDct.map((option) => option.Description)}
+                            renderInput={(params) => <TextField {...params} />}
+                          />
+                        </Box>
+                      }
+                    />
+                    <CardContent
+                      sx={{
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        flexDirection: 'column'
+                      }}
+                    >
+                      <PieChart
+                        series={[
+                          {
+                            data: chartData,
+                            innerRadius: 75,
+                            outerRadius: 100,
+                            paddingAngle: 0,
+                            highlightScope: { faded: 'global', highlighted: 'item' },
+                          },
+                        ]}
+                        {...size}
+                        margin={{ left: 100 }}
+                        slotProps={{
+                          legend: { hidden: true },
+                        }}
+                      >
+                        <PieCenterLabel primaryText={rows.length.toString()} secondaryText="Total" />
+                      </PieChart>
+                      <Box sx={{ marginTop: 4 }}>
+                        <Stack direction="column" spacing={1}>
+                          {chartData.map((item, index) => (
+                            <Stack
+                              direction="row"
+                              key={index}
+                              spacing={1}
+                              sx={{
+                                justifyContent: "felx-start",
+                                alignItems: "center",
+                              }}
+                            >
+                              <SquareIcon sx={{ color: item.color }} />
+                              <Typography variant="caption">
+                                {item.label}: {item.value}
+                              </Typography>
+                            </Stack>
+                          ))}
+                        </Stack>
+                      </Box>
+                    </CardContent>
+                  </Card>
+                </Grid>
+              </Grid>
+            </Grid>
+          </Grid>
         </Container>
       </Box>
     </React.Fragment>
