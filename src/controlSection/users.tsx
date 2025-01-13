@@ -45,7 +45,6 @@ export default function Profile() {
   const [filteredRows, setFilteredRows] = React.useState<DataUser[]>([]);
   const [openAdd, setOpenAdd] = React.useState<boolean>(false);
   const [showPassword, setShowPassword] = React.useState(false);
-  const [branch, setBrnach] = React.useState<Branch[]>([]);
   const [department, setDepartment] = React.useState<Department[]>([]);
   const [userSaved, setUserSaved] = React.useState<UserSaved>({
     firstName: '',
@@ -94,29 +93,20 @@ export default function Profile() {
       .catch((error) => {
         console.error('Error fetching departments:', error);
       });
-
-    // Fetch branch list
-    await Axios.get<{ data: Branch[] }>(`${dataConfig.http}/Branch_ListAll`, dataConfig.headers)
-      .then((response) => {
-        setBrnach(
-          response.data.data.filter(
-            (branch) =>
-              branch.branchid <= 300 ||
-              [1000001, 1000002, 1000003, 1000004].includes(branch.branchid)
-          )
-        );
-      })
   }
 
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const value = event.target.value.toLowerCase();
+    const value = event.target.value
     setSearch(value);
 
     // กรองข้อมูลตามชื่อหรือรหัสผู้ใช้
     const filtered = users.filter(
       (row) =>
         row.Name?.toLowerCase().includes(value) ||
-        row.UserCode.toLowerCase().includes(value)
+        row.UserCode.toLowerCase().includes(value) ||
+        row.DepCode.toLowerCase().includes(value) ||
+        row.Position?.toLowerCase().includes(value) ||
+        row.PositionCode?.toLowerCase().includes(value)
     );
 
     setFilteredRows(filtered.length === 0 ? users : filtered);
@@ -297,7 +287,7 @@ export default function Profile() {
                   </Button>
                 </Stack>
                 <Stack>
-                  <TextField
+                  <ValidationTextField
                     size="small" sx={{ backgroundColor: 'rgb(248, 250, 252)' }}
                     value={search}
                     onChange={handleSearchChange}

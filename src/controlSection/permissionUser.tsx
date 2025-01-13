@@ -21,6 +21,7 @@ export default function Profile() {
   const data = localStorage.getItem('data');
   const parsedData = data ? JSON.parse(data) : null;
   const [users, setUsers] = React.useState<DataUser[]>([]);
+  const [usersText, setUsersText] = React.useState<string>('');
   const [menuActive, setMenuActive] = React.useState([]);
   const [menu, setMenu] = React.useState<MenuPermissionItem[]>([]);
 
@@ -43,6 +44,7 @@ export default function Profile() {
       dataConfig.headers
     ).then((res) => {
       if (res.status === 200) {
+        setUsersText(value)
         setMenuActive((res.data.data).map((resData: { menuid: number; }) => resData.menuid))
       }
     })
@@ -52,13 +54,64 @@ export default function Profile() {
     fetuser()
   }, [])
 
+  const switchActive_User = async (res: MenuPermissionItem) => {
+    const body = {
+      admin: parsedData.UserCode,
+      UserCode: usersText,
+      menuid: res.menuid,
+      id: menuActive.findIndex((resActive) => resActive === res.menuid) < 0 ? 0 : 1,
+    };
+
+    const bodyII = {
+      Permission_TypeID: 1,
+      UserCode: usersText,
+    };
+
+    try {
+      const updateResponse = await Axios.post(
+        `${dataConfig.http}/Fix_Assets_Control_UPDATE_Permission`,
+        body,
+        dataConfig.headers
+      );
+
+      if (updateResponse.data.data) {
+        const Response = await Axios.post(
+          `${dataConfig.http}/Select_Permission_Menu_NAC`,
+          bodyII,
+          dataConfig.headers
+        );
+
+        if (Response.data.data) {
+          setMenuActive(Response.data.data.map((res: { menuid: number; }) => res.menuid));
+          setUsersText(usersText);
+        }
+      } else {
+        Swal.fire({
+          icon: "error",
+          title: `เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง`,
+          showConfirmButton: false,
+          timer: 1500
+        })
+      }
+    } catch (error) {
+      console.error("Error in setActive_User:", error);
+      Swal.fire({
+        icon: "error",
+        title: `เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง`,
+        showConfirmButton: false,
+        timer: 1500
+      })
+    }
+  };
+
 
   return (
     <Card
-      variant='outlined'
+      variant="outlined"
       sx={{
-        width: '100%',
-        maxWidth: '100vw',
+        width: "100%",
+        maxWidth: "100vw", // ขยายความกว้างให้เต็ม viewport
+        margin: "0 auto", // จัดกึ่งกลาง
       }}
     >
       <CardHeader
@@ -69,7 +122,7 @@ export default function Profile() {
               minHeight: 15,
               maxHeight: 15,
               fontWeight: 500,
-              fontFamily: 'Roboto, sans-serif'
+              fontFamily: "Roboto, sans-serif",
             }}
           >
             Permission Users
@@ -77,63 +130,111 @@ export default function Profile() {
         }
       />
       <Divider />
-      <CardContent>
-        <Grid
-          container
-          direction="column"
-          spacing={3}
-          sx={{
-            justifyContent: "center",
-            alignItems: "center",
-          }}
-        >
+      <CardContent
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+          alignItems: "center",
+          padding: 3, // เพิ่ม padding เพื่อจัดระยะห่าง
+        }}
+      >
+        <Grid container spacing={3} sx={{ width: "100%" }}>
           <Grid size={12}>
             <Autocomplete
               id="free-solo-2-demo"
               options={users.map((option) => option.UserCode)}
-              onChange={(event, value) => OnSelectUser(value || '')}
+              onChange={(event, value) => OnSelectUser(value || "")}
+              value={usersText}
               renderInput={(params) => (
                 <ValidationTextField
                   {...params}
                   required
-                  name="empUpper"
-                  label="Em Upper"
+                  name="usercode"
+                  label="UserCode"
                   size="small"
                 />
               )}
             />
           </Grid>
           <Grid size={12}>
-            <List sx={{ width: '100%', bgcolor: 'background.paper', pt: 3 }}>
-              <ListItemText primary="Menu" primaryTypographyProps={{ style: { fontWeight: 'bold' } }} />
-              {menu.filter((res) => res.menutypeid === 2).map((res) => (
-                <React.Fragment key={res.menuid}>
-                  <ListItem disablePadding>
-                    <FormControlLabel
-                      control={<Switch />}
-                      label={`${res.menu_name}`}
-                      checked={(menuActive.findIndex((resActive) => resActive === res.menuid) < 0) ? false : true}
-                    />
-                  </ListItem>
-                  {/* <Divider component="li" /> */}
-                </React.Fragment>
-              ))}
+            <List
+              sx={{
+                width: "100%",
+                bgcolor: "background.paper",
+              }}
+            >
+              <ListItemText
+                primary="Main"
+                primaryTypographyProps={{ style: { fontWeight: "bold" } }}
+              />
+              {menu
+                .filter((res) => res.menutypeid === 5)
+                .map((res) => (
+                  <React.Fragment key={res.menuid}>
+                    <ListItem disablePadding>
+                      <FormControlLabel
+                        control={<Switch />}
+                        label={`${res.menu_name}`}
+                        onChange={(e) => switchActive_User(res)}
+                        checked={
+                          menuActive.findIndex((resActive) => resActive === res.menuid) >= 0
+                        }
+                      />
+                    </ListItem>
+                  </React.Fragment>
+                ))}
+              <ListItemText
+                primary="Menu"
+                primaryTypographyProps={{ style: { fontWeight: "bold" } }}
+              />
+              {menu
+                .filter((res) => res.menutypeid === 2)
+                .map((res) => (
+                  <React.Fragment key={res.menuid}>
+                    <ListItem disablePadding>
+                      <FormControlLabel
+                        control={<Switch />}
+                        label={`${res.menu_name}`}
+                        onChange={(e) => switchActive_User(res)}
+                        checked={
+                          menuActive.findIndex((resActive) => resActive === res.menuid) >= 0
+                        }
+                      />
+                    </ListItem>
+                  </React.Fragment>
+                ))}
             </List>
-            <Divider />
-            <List sx={{ width: '100%', bgcolor: 'background.paper', pt: 3 }}>
-              <ListItemText primary="Document" primaryTypographyProps={{ style: { fontWeight: 'bold' } }} />
-              {menu.filter((res) => res.menutypeid === 1).map((res) => (
-                <React.Fragment key={res.menuid}>
-                  <ListItem disablePadding>
-                    <FormControlLabel
-                      control={<Switch />}
-                      label={res.menu_name}
-                      checked={(menuActive.findIndex((resActive) => resActive === res.menuid) < 0) ? false : true}
-                    />
-                  </ListItem>
-                  {/* <Divider component="li" /> */}
-                </React.Fragment>
-              ))}
+
+            <Divider sx={{ my: 2 }} />
+
+            {/* Document Section */}
+            <List
+              sx={{
+                width: "100%",
+                bgcolor: "background.paper",
+              }}
+            >
+              <ListItemText
+                primary="Document"
+                primaryTypographyProps={{ style: { fontWeight: "bold" } }}
+              />
+              {menu
+                .filter((res) => res.menutypeid === 1)
+                .map((res) => (
+                  <React.Fragment key={res.menuid}>
+                    <ListItem disablePadding>
+                      <FormControlLabel
+                        control={<Switch />}
+                        label={res.menu_name}
+                        onChange={(e) => switchActive_User(res)}
+                        checked={
+                          menuActive.findIndex((resActive) => resActive === res.menuid) >= 0
+                        }
+                      />
+                    </ListItem>
+                  </React.Fragment>
+                ))}
             </List>
           </Grid>
         </Grid>

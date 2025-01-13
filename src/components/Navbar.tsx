@@ -20,6 +20,8 @@ import Drawer from '@mui/material/Drawer';
 import Divider from '@mui/material/Divider';
 import AdminPanelSettingsOutlinedIcon from '@mui/icons-material/AdminPanelSettingsOutlined';
 import { UserInfo } from '../type/nacType';
+import Axios from 'axios';
+import { dataConfig } from '../config';
 
 const darkTheme = createTheme({
   palette: {
@@ -45,9 +47,29 @@ export default function MenuAppBar() {
   const [openTree, setOpenTree] = React.useState(false);
 
   const navigate = useNavigate();
+  const data = localStorage.getItem('data');
+  const parsedData = data ? JSON.parse(data) : null;
   const [userData, setUserData] = React.useState<UserInfo>();
   const [auth, setAuth] = React.useState(true);
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+  const [permission_menuID, setPermission_menuID] = React.useState<number[]>([]);
+
+  React.useEffect(() => {
+    const fetData = async () => {
+      // POST request using axios with set header
+
+      const body = { Permission_TypeID: 1, userID: parsedData.userid }
+      const headers = {
+        'Authorization': 'application/json; charset=utf-8',
+        'Accept': 'application/json'
+      };
+      await Axios.post(dataConfig.http + '/select_Permission_Menu_NAC', body, { headers })
+        .then(response => {
+          setPermission_menuID(response.data.data.map((res: { Permission_MenuID: number; }) => res.Permission_MenuID))
+        });
+    }
+    fetData();
+  }, [parsedData.userid]);
 
   const toggleDrawerTree = (newOpen: boolean) => () => {
     setOpenTree(newOpen);
@@ -192,12 +214,14 @@ export default function MenuAppBar() {
                       </ListItemIcon>
                       <ListItemText>&nbsp; &nbsp;User Profile</ListItemText>
                     </MenuItem>
-                    <MenuItem disabled={userData?.depcode !== '101ITO'} onClick={() => navigate(`/ControlSection`)}>
-                      <ListItemIcon sx={{ minWidth: '15% !important' }}>
-                        <AdminPanelSettingsOutlinedIcon />
-                      </ListItemIcon>
-                      <ListItemText>&nbsp; &nbsp;Control section</ListItemText>
-                    </MenuItem>
+                    {permission_menuID.includes(20) && (
+                      <MenuItem onClick={() => navigate(`/ControlSection`)}>
+                        <ListItemIcon sx={{ minWidth: '15% !important' }}>
+                          <AdminPanelSettingsOutlinedIcon />
+                        </ListItemIcon>
+                        <ListItemText>&nbsp; &nbsp;Control section</ListItemText>
+                      </MenuItem>
+                    )}
                     <MenuItem onClick={handleLogOut}>
                       <ListItemIcon sx={{ minWidth: '15% !important' }}>
                         <LogoutOutlinedIcon />
