@@ -1,7 +1,7 @@
 import { GridActionsCellItem, GridCellParams, GridColDef, GridRowParams } from "@mui/x-data-grid"
 import DataTable from "./DataTable"
 import React from "react";
-import { NACDetailHistory, ListNACHeaders } from '../../../type/nacType';
+import { NACDetailHistory, ListNACHeaders,Assets_TypeGroup } from '../../../type/nacType';
 import { Typography, AppBar, Container, Toolbar, Autocomplete, TextField, Card, CssBaseline } from "@mui/material";
 import { dataConfig } from "../../../config";
 import Axios from 'axios';

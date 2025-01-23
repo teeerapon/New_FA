@@ -213,7 +213,7 @@ export interface AssetRecord {
   Name: string | null | undefined;
   BranchID: number | null | undefined;
   Details: string | null | undefined;
-  type_group: string | null | undefined;
+  typeCode: string | null | undefined;
   SerialNo: string | null | undefined;
   Asset_group: string | null | undefined;
   Group_name: string | null | undefined;
@@ -246,6 +246,7 @@ export interface CountAssetRow {
   remarker: string | null | undefined;
   RoundID?: string | null | undefined; // Assuming this might be nullable or optional
   RowID: number | null | undefined;
+  typeCode: string;
   ImagePath: string | null | undefined;
   ImagePath_2: string | null | undefined;
 }
@@ -268,6 +269,8 @@ export interface UpdateDtlAssetParams {
   Details: string | null | undefined;
   SerialNo: string | null | undefined;
   Price: number | null | undefined;
+  ImagePath: string | null | undefined;
+  ImagePath_2: string | null | undefined;
   Position?: string | null | undefined;
   UserCode: string;
 }
@@ -385,4 +388,11 @@ export interface MenuPermissionItem {
   hide: boolean;
   active_mobile: boolean;
   active_pc: boolean;
+}
+
+export interface Assets_TypeGroup {
+  typeGroupID: number;
+  typeCode: string;
+  typeName: string;
+  typeMenu: number;
 }

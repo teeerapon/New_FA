@@ -1,8 +1,8 @@
 import { GridCellParams, GridColDef } from "@mui/x-data-grid"
 import DataTable from "./DataTable"
 import React from "react";
-import { AssetRecord } from '../../../type/nacType';
-import { Stack, Typography, AppBar, Container, Toolbar, Autocomplete, TextField, Box, ImageListItem, CardActionArea, CardContent, ImageList, Pagination, CardMedia } from "@mui/material";
+import { AssetRecord, Assets_TypeGroup, CountAssetRow } from '../../../type/nacType';
+import { Stack, Typography, AppBar, Container, Toolbar, Autocomplete, TextField, Box, ImageListItem, CardActionArea, CardContent, ImageList, Pagination, CardMedia, Tab, Tabs } from "@mui/material";
 import { dataConfig } from "../../../config";
 import Axios from 'axios';
 import { Outlet, useNavigate } from "react-router";
@@ -44,6 +44,9 @@ export default function ListNacPage() {
   const parsedData = data ? JSON.parse(data) : null;
   const [rows, setRows] = React.useState<AssetRecord[]>([]);
   const [loading, setLoading] = React.useState<boolean>(true);
+  const [assets_TypeGroup, setAssets_TypeGroup] = React.useState<Assets_TypeGroup[]>([]);
+  const [assets_TypeGroupSelect, setAssets_TypeGroupSelect] = React.useState<string | null>(null);
+  const [permission_menuID, setPermission_menuID] = React.useState<number[]>([]);
 
   // State สำหรับการกรองแต่ละฟิลด์
   const [currentPage, setCurrentPage] = React.useState(1);
@@ -80,74 +83,40 @@ export default function ListNacPage() {
     }
   };
 
-  const columns: GridColDef[] = [
-    { field: 'Code', headerName: 'รหัสทรัพย์สิน', width: 150, headerAlign: 'center', align: 'center' },
-    { field: 'Name', headerName: 'ชื่อทรัพย์สิน', width: 150, headerAlign: 'center' },
-    { field: 'SerialNo', headerName: 'SerialNo', headerAlign: 'center', flex: 1 },
-    { field: 'OwnerID', headerName: 'ผู้ถือครอง', width: 100, headerAlign: 'center', align: 'center' },
-    { field: 'Position', headerName: 'Location NAC', width: 100, headerAlign: 'center', align: 'center' },
-    { field: 'Asset_group', headerName: 'Asset Group', headerAlign: 'center', flex: 1 },
-    { field: 'Group_name', headerName: 'Group Name', headerAlign: 'center', flex: 1 },
-    {
-      field: 'Price',
-      headerName: 'ราคาทุน',
-      width: 100,
-      headerAlign: 'center',
-      align: 'right',
-      renderCell: (params) => params.row.Price ? params.row.Price.toLocaleString('en-US') : 0,
-    },
-    {
-      field: 'CreateDate',
-      headerName: 'วันที่ขึ้นทะเบียน',
-      width: 100,
-      headerAlign: 'center',
-      align: 'center',
-      renderCell: (params) => dayjs(new Date(params.row.CreateDate)).format('DD/MM/YYYY'),
-    },
-    {
-      field: 'ImagePath',
-      headerName: 'รูปภาพ 1',
-      headerAlign: 'center',
-      align: 'center',
-      width: 170,
-      renderCell: (params) => (
-        <ImageCell imagePath={params.row.ImagePath} name={params.row.Name} code={params.row.Code} />
-      ),
-    },
-    {
-      field: 'ImagePath_2',
-      headerName: 'รูปภาพ 2',
-      headerAlign: 'center',
-      align: 'center',
-      width: 170,
-      renderCell: (params) => (
-        <ImageCell imagePath={params.row.ImagePath_2} name={params.row.Name} code={params.row.Code} />
-      ),
-    },
-  ];
+  const fetchData = async () => {
+    try {
+      const response = await Axios.post(
+        `${dataConfig.http}/FA_Control_Fetch_Assets`,
+        { usercode: parsedData.UserCode },
+        dataConfig.headers
+      );
+
+      const resFetchAssets = await Axios.get(dataConfig.http + '/FA_Control_Assets_TypeGroup', dataConfig.headers)
+      const resData: Assets_TypeGroup[] = resFetchAssets.data
+      setAssets_TypeGroup(resData)
+      setAssets_TypeGroupSelect(resData[0].typeCode)
+
+      const permiss = await Axios.post(dataConfig.http + '/select_Permission_Menu_NAC', { Permission_TypeID: 1, userID: parsedData.userid }, dataConfig.headers)
+      setPermission_menuID(permiss.data.data.map((res: { Permission_MenuID: number; }) => res.Permission_MenuID))
+
+      if (response.status === 200) {
+        const dataLog = permiss.data.data.map((res: { Permission_MenuID: number; }) => res.Permission_MenuID).includes(5)
+          ? response.data.filter((res: AssetRecord) => res.typeCode === resData[0].typeCode)
+          : response.data.filter((res: AssetRecord) => res.typeCode === resData[0].typeCode && res.OwnerID === parsedData.UserCode)
+        setLoading(false)
+        setRows(dataLog);
+        setOriginalRows(response.data)
+      } else {
+        setLoading(false)
+        setRows([]);
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
 
   React.useEffect(() => {
     setLoading(true)
-    const fetchData = async () => {
-      try {
-        const response = await Axios.post(
-          `${dataConfig.http}/FA_Control_Fetch_Assets`,
-          { usercode: parsedData.UserCode },
-          dataConfig.headers
-        );
-        if (response.status === 200) {
-          setLoading(false)
-          setRows(response.data);
-          setOriginalRows(response.data); // Store original data
-        } else {
-          setLoading(false)
-          setRows([]);
-        }
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      }
-    };
-
     fetchData();
   }, [parsedData.UserCode, pathname]);
 
@@ -261,12 +230,34 @@ export default function ListNacPage() {
               }}
             />
           </Grid>
+          <Grid justifyContent="flex-start" size={12} sx={{ mt: 2 }}>
+            <Tabs
+              // originalRows
+              value={assets_TypeGroupSelect}
+              onChange={(event: React.SyntheticEvent, newValue: string) => {
+                const newData = permission_menuID.includes(5)
+                  ? originalRows.filter((res: AssetRecord) => res.typeCode === newValue)
+                  : originalRows.filter((res: AssetRecord) => res.typeCode === newValue && res.OwnerID === parsedData.UserCode)
+                setRows(newData)
+                setAssets_TypeGroupSelect(newValue);
+              }}
+            >
+              {assets_TypeGroup.filter((fil) => fil.typeMenu === 0).map((res) => (
+                <Tab
+                  label={`${res.typeCode} (${res.typeName})`}
+                  value={res.typeCode}
+                  key={res.typeGroupID}
+                  sx={{ textTransform: 'none' }}
+                />
+              ))}
+            </Tabs>
+          </Grid>
           {loading && (
             <Grid display="flex" justifyContent="center" alignItems="center" size={12}>
               <Loading />
             </Grid>
           )}
-          {!loading && currentRows.map((res) => (
+          {!loading && currentRows.map((res, index) => (
             <Grid display="flex" key={res.AssetID} justifyContent="center" alignItems="center" size={3}>
               <Card variant="outlined">
                 <ImageList sx={{ height: 140, objectFit: 'cover', cursor: 'pointer' }} cols={2}>
@@ -274,14 +265,24 @@ export default function ListNacPage() {
                     <ImageCell
                       imagePath={res.ImagePath ?? 'http://vpnptec.dyndns.org:10280/OPS_Fileupload/ATT_230400022.jpg'}
                       name={'Image 1'}
-                      code={res.Code ?? 'unknow'}
+                      originalRows={originalRows}
+                      rows={rows}
+                      index={index}
+                      fieldData={`ImagePath`}
+                      setRows={setRows}
+                      setOriginalRows={setOriginalRows}
                     />
                   </div>
                   <div>
                     <ImageCell
                       imagePath={res.ImagePath_2 ?? 'http://vpnptec.dyndns.org:10280/OPS_Fileupload/ATT_230400022.jpg'}
                       name={'Image '}
-                      code={res.Code ?? 'unknow'}
+                      originalRows={originalRows}
+                      rows={rows}
+                      index={index}
+                      fieldData={`ImagePath_2`}
+                      setRows={setRows}
+                      setOriginalRows={setOriginalRows}
                     />
                   </div>
                 </ImageList>
@@ -332,15 +333,6 @@ export default function ListNacPage() {
             </Grid>
           ))}
         </Grid>
-        {/* </MuiCard> */}
-        {/* <DataTable
-          rows={renderRows(rows)}
-          columns={columns}
-          loading={loading}
-          isCellEditable={function (params: GridCellParams): boolean {
-            throw new Error("Function not implemented.");
-          }}
-        /> */}
         <Outlet />
       </Container>
     </React.Fragment >

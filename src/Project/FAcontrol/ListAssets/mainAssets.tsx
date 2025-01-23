@@ -1,8 +1,8 @@
 import { GridActionsCellItem, GridCellParams, GridColDef } from "@mui/x-data-grid"
 import DataTable from "./DataTable"
 import React from "react";
-import { AssetRecord, UpdateDtlAssetParams, DataUser } from '../../../type/nacType';
-import { Typography, AppBar, Container, Toolbar, Autocomplete, TextField, Box, Dialog, styled, Button, DialogActions, DialogContent, DialogTitle, IconButton, InputAdornment, Card } from "@mui/material";
+import { AssetRecord, UpdateDtlAssetParams, DataUser, Assets_TypeGroup } from '../../../type/nacType';
+import { Typography, AppBar, Container, Toolbar, Autocomplete, TextField, Box, Dialog, styled, Button, DialogActions, DialogContent, DialogTitle, IconButton, InputAdornment, Card, Tab, Tabs, Backdrop, CircularProgress, CircularProgressProps, Stack } from "@mui/material";
 import Swal from "sweetalert2";
 import CloseIcon from '@mui/icons-material/Close';
 import SaveAsIcon from '@mui/icons-material/SaveAs';
@@ -11,6 +11,34 @@ import Axios from 'axios';
 import { Outlet, useNavigate } from "react-router";
 import dayjs from 'dayjs';
 import Grid from '@mui/material/Grid2';
+
+function CircularProgressWithLabel(
+  props: CircularProgressProps & { value: number },
+) {
+  return (
+    <Box sx={{ position: 'relative', display: 'inline-flex' }}>
+      <CircularProgress variant="determinate" {...props} color="inherit" />
+      <Box
+        sx={{
+          top: 0,
+          left: 0,
+          bottom: 0,
+          right: 0,
+          position: 'absolute',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        <Typography
+          variant="caption"
+          component="div"
+          sx={{ color: 'white' }}
+        >{`${Math.round(props.value)}%`}</Typography>
+      </Box>
+    </Box>
+  );
+}
 
 const BootstrapDialog = styled(Dialog)(({ theme }) => ({
   '& .MuiDialogContent-root': {
@@ -24,12 +52,16 @@ const BootstrapDialog = styled(Dialog)(({ theme }) => ({
 export default function ListNacPage() {
   const data = localStorage.getItem('data');
   const parsedData = data ? JSON.parse(data) : null;
+  const [originalRows, setOriginalRows] = React.useState<AssetRecord[]>([]);
   const [rows, setRows] = React.useState<AssetRecord[]>([]);
   const [loading, setLoading] = React.useState<boolean>(true);
   const [openDialogEdit, setOpenDialogEdit] = React.useState(false);
   const [rowEdit, setRowEdit] = React.useState<Partial<UpdateDtlAssetParams>>({});
   const [users, setUsers] = React.useState<DataUser[]>([]);
   const [permission_menuID, setPermission_menuID] = React.useState<number[]>([]);
+  const [assets_TypeGroup, setAssets_TypeGroup] = React.useState<Assets_TypeGroup[]>([]);
+  const [assets_TypeGroupSelect, setAssets_TypeGroupSelect] = React.useState<string | null>(null);
+  const [timer, setTimer] = React.useState<number>(0);
 
 
   const handleClickOpen = (params: AssetRecord) => {
@@ -43,6 +75,8 @@ export default function ListNacPage() {
       Details: params.Details ?? '',
       SerialNo: params.SerialNo ?? '',
       Price: typeof params.Price === 'string' || typeof params.Price === 'number' ? params.Price : '',
+      ImagePath: typeof params.ImagePath === 'string' || typeof params.ImagePath === 'number' ? params.ImagePath : '',
+      ImagePath_2: typeof params.ImagePath === 'string' || typeof params.ImagePath === 'number' ? params.ImagePath : '',
       Position: params.Position ?? '',
       UserCode: typeof parsedData.UserCode === 'string' ? parsedData.UserCode : '', // Ensure UserCode is a string
     };
@@ -68,6 +102,8 @@ export default function ListNacPage() {
       OwnerID: rowEdit.OwnerCode,
       Position: rowEdit.Position,
       Details: rowEdit.Details,
+      ImagePath: rowEdit.ImagePath,
+      ImagePath_2: rowEdit.ImagePath_2,
     };
     setRows(list);
     try {
@@ -169,42 +205,51 @@ export default function ListNacPage() {
     },
   ];
 
+  const fetchData = async () => {
+    setRows([]);
+    setLoading(true)
+    try {
+      // Permission
+      await Axios.post(dataConfig.http + '/select_Permission_Menu_NAC', { Permission_TypeID: 1, userID: parsedData.userid }, dataConfig.headers)
+        .then(async responsePermission => {
+          setPermission_menuID(responsePermission.data.data.map((res: { Permission_MenuID: number; }) => res.Permission_MenuID))
+          // แสดง users ทั้งหมด
+          await Axios.get(dataConfig.http + '/getsUserForAssetsControl', dataConfig.headers)
+            .then((res) => {
+              setUsers(res.data.data)
+            })
+
+          const resFetchAssets = await Axios.get(dataConfig.http + '/FA_Control_Assets_TypeGroup', dataConfig.headers)
+          const resData: Assets_TypeGroup[] = resFetchAssets.data
+          setAssets_TypeGroup(resData)
+          setAssets_TypeGroupSelect(resData[0].typeCode)
+
+          const response = await Axios.post(
+            `${dataConfig.http}/FA_Control_Fetch_Assets`,
+            { usercode: parsedData.UserCode },
+            dataConfig.headers
+          );
+          if (response.status === 200) {
+            const permis = responsePermission.data.data.map((res: { Permission_MenuID: number; }) => res.Permission_MenuID)
+            const dataLog = permis.includes(5)
+              ? response.data.filter((res: AssetRecord) => res.typeCode === resData[0].typeCode)
+              : response.data.filter((res: AssetRecord) => res.typeCode === resData[0].typeCode && res.OwnerID === parsedData.UserCode)
+            setLoading(false)
+            setRows(dataLog);
+            setOriginalRows(response.data)
+            setTimer(0)
+          } else {
+            setLoading(false)
+            setRows([]);
+          }
+        });
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
+
   React.useEffect(() => {
     setLoading(true)
-    const fetchData = async () => {
-      try {
-        // Permission
-        await Axios.post(dataConfig.http + '/select_Permission_Menu_NAC', { Permission_TypeID: 1, userID: parsedData.userid }, dataConfig.headers)
-          .then(async responsePermission => {
-            setPermission_menuID(responsePermission.data.data.map((res: { Permission_MenuID: number; }) => res.Permission_MenuID))
-            // แสดง users ทั้งหมด
-            await Axios.get(dataConfig.http + '/getsUserForAssetsControl', dataConfig.headers)
-              .then((res) => {
-                setUsers(res.data.data)
-              })
-
-            const response = await Axios.post(
-              `${dataConfig.http}/FA_Control_Fetch_Assets`,
-              { usercode: parsedData.UserCode },
-              dataConfig.headers
-            );
-            if (response.status === 200) {
-              const permis = responsePermission.data.data.map((res: { Permission_MenuID: number; }) => res.Permission_MenuID)
-              const dataLog = permis.includes(5)
-                ? response.data.filter((res: AssetRecord) => res.Code && !res.Code.startsWith("BP"))
-                : response.data.filter((res: AssetRecord) => res.Code && (res.OwnerID === parsedData.UserCode && !res.Code.startsWith("BP")))
-              setLoading(false)
-              setRows(dataLog);
-            } else {
-              setLoading(false)
-              setRows([]);
-            }
-          });
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      }
-    };
-
     fetchData();
   }, [parsedData.UserCode, parsedData.userid]);
 
@@ -306,6 +351,28 @@ export default function ListNacPage() {
             />
           </Grid>
         </Grid>
+        <Grid justifyContent="flex-start" size={12} sx={{ mt: 2 }}>
+          <Tabs
+            // originalRows
+            value={assets_TypeGroupSelect}
+            onChange={(event: React.SyntheticEvent, newValue: string) => {
+              const newData = permission_menuID.includes(5)
+                ? originalRows.filter((res: AssetRecord) => res.typeCode === newValue)
+                : originalRows.filter((res: AssetRecord) => res.typeCode === newValue && res.OwnerID === parsedData.UserCode)
+              setRows(newData)
+              setAssets_TypeGroupSelect(newValue);
+            }}
+          >
+            {assets_TypeGroup.filter((fil) => fil.typeMenu === 0).map((res) => (
+              <Tab
+                label={`${res.typeCode} (${res.typeName})`}
+                value={res.typeCode}
+                key={res.typeGroupID}
+                sx={{ textTransform: 'none' }}
+              />
+            ))}
+          </Tabs>
+        </Grid>
         <Grid justifyContent="center" alignItems="center" size={12}>
           <Card variant="outlined">
             <DataTable
@@ -313,6 +380,9 @@ export default function ListNacPage() {
               columns={columns}
               loading={loading}
               users={users}
+              assets_TypeGroup={assets_TypeGroup}
+              setTimer={setTimer}
+              fetchData={fetchData}
               isCellEditable={function (params: GridCellParams): boolean {
                 throw new Error("Function not implemented.");
               }}
@@ -568,6 +638,17 @@ export default function ListNacPage() {
           </Button>
         </DialogActions>
       </BootstrapDialog>
+      <Backdrop
+        sx={(theme) => ({ color: '#fff', zIndex: theme.zIndex.drawer + 1 })}
+        open={timer > 0}
+      >
+        <Stack direction="row" spacing={3}>
+          <Typography variant="h6" gutterBottom sx={{ fontWeight: 'bold' }}>
+            Loading is complete in...
+          </Typography>
+          <CircularProgressWithLabel value={timer} />
+        </Stack>
+      </Backdrop>
     </React.Fragment >
   );
 }

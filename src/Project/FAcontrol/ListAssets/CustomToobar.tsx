@@ -4,7 +4,7 @@ import { DataGrid, GridToolbarContainer, GridColDef, GridPaginationModel } from 
 import Box from '@mui/material/Box';
 import Divider from '@mui/material/Divider';
 import { Button, DialogActions, DialogContent, DialogTitle, Stack, Typography } from '@mui/material';
-import { AssetRecord, DataUser } from '../../../type/nacType';
+import { AssetRecord, DataUser, Assets_TypeGroup } from '../../../type/nacType';
 import { exportToExcel } from './ExportRow';
 import SystemUpdateAltIcon from '@mui/icons-material/SystemUpdateAlt';
 import * as XLSX from 'xlsx';
@@ -13,10 +13,44 @@ import Dialog from '@mui/material/Dialog';
 import Swal from "sweetalert2";
 import Axios from 'axios';
 import { dataConfig } from "../../../config";
+import CircularProgress, {
+  CircularProgressProps,
+} from '@mui/material/CircularProgress';
+
+function CircularProgressWithLabel(
+  props: CircularProgressProps & { value: number },
+) {
+  return (
+    <Box sx={{ position: 'relative', display: 'inline-flex' }}>
+      <CircularProgress variant="determinate" {...props} />
+      <Box
+        sx={{
+          top: 0,
+          left: 0,
+          bottom: 0,
+          right: 0,
+          position: 'absolute',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        <Typography
+          variant="caption"
+          component="div"
+          sx={{ color: 'text.secondary' }}
+        >{`${Math.round(props.value)}%`}</Typography>
+      </Box>
+    </Box>
+  );
+}
 
 interface DataTable {
   rows: AssetRecord[];
   users: DataUser[]
+  assets_TypeGroup: Assets_TypeGroup[]
+  setTimer: React.Dispatch<React.SetStateAction<number>>;
+  fetchData: () => Promise<void>;
 }
 
 const other = {
@@ -56,11 +90,11 @@ const BootstrapDialog = styled(Dialog)(({ theme }) => ({
   },
 }));
 
-export default function CustomToolbar({ rows, users }: Readonly<DataTable>) {
+export default function CustomToolbar({ rows, users, assets_TypeGroup, setTimer, fetchData }: Readonly<DataTable>) {
   const data = localStorage.getItem('data');
   const parsedData = data ? JSON.parse(data) : null;
   const [openXlsx, setOpenXlsx] = React.useState(false);
-  const [arraySubmit, setArraySubmit] = React.useState<number>()
+  const [arraySubmit, setArraySubmit] = React.useState<number>(0)
   const [nameExcel, setNameExcel] = React.useState<String>('')
   const [field, setField] = React.useState<ColumnField[]>([]);
   const [dataFile, setDataFile] = React.useState<AssetDataExcel[]>([]);
@@ -170,6 +204,10 @@ export default function CustomToolbar({ rows, users }: Readonly<DataTable>) {
       .filter(file => !users.some(user => Number(file.BranchID) === user.BranchID))
       .map(file => file.BranchID);
 
+    const typeFill = dataFile
+      .filter(file => !assets_TypeGroup.some(type => file.TypeGroup === type.typeCode))
+      .map(file => file.TypeGroup);
+
     Swal.fire({
       title: "Verifying Information",
       html: "It will success in <b></b> milliseconds",
@@ -193,11 +231,12 @@ export default function CustomToolbar({ rows, users }: Readonly<DataTable>) {
       },
     }).then(() => {
       // ตรวจสอบเงื่อนไขและกำหนดค่าการแสดงผล
-      if (duplicateCodes.length > 0 || duplicateUserCode.length > 0 || duplicateBrach.length > 0) {
+      if (duplicateCodes.length > 0 || duplicateUserCode.length > 0 || duplicateBrach.length > 0 || typeFill.length > 0) {
         const duplicateDetails = `
           ${duplicateCodes.length > 0 ? `<h3>Code เหล่านี้มีอยู่แล้วในทะเบียน</h3><ul>${duplicateCodes.map(code => `- ${code}<br/>`).join('')}</ul>` : ''}
           ${duplicateUserCode.length > 0 ? `<h3>ไม่พบ OwnerCode ในระบบ</h3><ul>${duplicateUserCode.map(userCode => `- ${userCode}<br/>`).join('')}</ul>` : ''}
           ${duplicateBrach.length > 0 ? `<h3>ไม่พบ BranchID ในระบบ</h3><ul>${duplicateBrach.map(branch => `- ${branch}<br/>`).join('')}</ul>` : ''}
+          ${typeFill.length > 0 ? `<h3>ไม่พบ TypeGroup ในระบบ</h3><ul>${typeFill.map(type => `- ${type}<br/>`).join('')}</ul>` : ''}
         `;
 
         Swal.fire({
@@ -226,72 +265,73 @@ export default function CustomToolbar({ rows, users }: Readonly<DataTable>) {
     try {
       setOpenXlsx(false);
       const resTAB = await Axios.post(
-        dataConfig.http + '/FA_Control_BPC_Running_NO'
-        , parsedData
-        , dataConfig.headers
-      )
-      const keyID = resTAB.data[0].TAB;
-      for (let i = 0; i < dataFile.length; i++) {
+        `${dataConfig.http}/FA_Control_BPC_Running_NO`,
+        parsedData,
+        dataConfig.headers
+      );
+      const keyID = resTAB.data[0]?.TAB;
+      if (!keyID) throw new Error("Failed to retrieve keyID");
+      const totalItems = dataFile.length;
+      for (let i = 0; i < totalItems; i++) {
+        setTimer(Math.floor(((i + 1) / totalItems) * 100))
         const body = {
           ...dataFile[i],
           UserCode: parsedData.UserCode,
           keyID,
         };
+
         const response = await Axios.post(
           `${dataConfig.http}/FA_Control_New_Assets_Xlsx`,
           body,
           dataConfig.headers
         );
+
         if (response.data[0]?.res) {
-          setOpenXlsx(false);
           Swal.fire({
             icon: "error",
             title: response.data[0].res,
             showConfirmButton: false,
-            timer: 500,
-          })
+            timer: 1500,
+          });
           return;
-        } else {
-          setArraySubmit((i / (dataFile.length - 1)) * 100);
-          if (i === dataFile.length - 1) {
-            const finalBody = { count: dataFile.length, keyID };
-            const finalResponse = await Axios.post(
-              `${dataConfig.http}/FA_Control_import_dataXLSX_toAssets`,
-              finalBody,
-              dataConfig.headers
-            );
-            if (finalResponse.data[0]?.response === "ทำรายการสำเร็จ") {
-              Swal.fire({
-                icon: "success",
-                title: response.data[0].res,
-                showConfirmButton: false,
-                timer: 500,
-              })
-            } else if (finalResponse.data[0]?.response) {
-              setOpenXlsx(false);
-              Swal.fire({
-                icon: "error",
-                title: finalResponse.data[0].response,
-                showConfirmButton: false,
-                timer: 500,
-              })
-            } else {
-              setOpenXlsx(false);
-              Swal.fire({
-                icon: "error",
-                title: finalResponse.data,
-                showConfirmButton: false,
-                timer: 500,
-              })
-            }
+        }
+        setArraySubmit(Math.floor(((i + 1) / totalItems) * 100));
+        if (i === totalItems - 1) {
+          setTimer(0)
+          const finalBody = { count: totalItems, keyID };
+          const finalResponse = await Axios.post(
+            `${dataConfig.http}/FA_Control_import_dataXLSX_toAssets`,
+            finalBody,
+            dataConfig.headers
+          );
+          const finalResponseMsg = finalResponse.data[0]?.response;
+          if (finalResponseMsg === "ทำรายการสำเร็จ") {
+            fetchData();
+            // Swal.fire({
+            //   icon: "success",
+            //   title: "ทำรายการสำเร็จ",
+            //   showConfirmButton: false,
+            //   timer: 1500,
+            // });
+          } else {
+            Swal.fire({
+              icon: "error",
+              title: finalResponseMsg || "Error occurred",
+              showConfirmButton: false,
+              timer: 1500,
+            });
           }
         }
       }
-
     } catch (error) {
-      console.error('Error fetching data:', error);
+      console.error("Error:", error);
+      Swal.fire({
+        icon: "error",
+        title: "เกิดข้อผิดพลาดในการประมวลผล",
+        showConfirmButton: true,
+      });
     }
-  }
+  };
 
 
 

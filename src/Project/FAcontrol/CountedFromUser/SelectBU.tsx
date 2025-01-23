@@ -1,8 +1,8 @@
 import { GridActionsCellItem, GridCellParams, GridColDef, GridRenderCellParams, useGridApiContext } from "@mui/x-data-grid"
 import DataTable from "./DataTable"
 import React from "react";
-import { CountAssetRow, PeriodDescription } from '../../../type/nacType';
-import { Stack, Typography, AppBar, Container, Toolbar, Autocomplete, TextField, Box, FormControl, Select, SelectChangeEvent, Dialog, DialogContent, Button, DialogActions, DialogTitle, IconButton, Card } from "@mui/material";
+import { CountAssetRow, PeriodDescription, Assets_TypeGroup } from '../../../type/nacType';
+import { Stack, Typography, AppBar, Container, Toolbar, Autocomplete, TextField, Box, FormControl, Select, SelectChangeEvent, Dialog, DialogContent, Button, DialogActions, DialogTitle, IconButton, Card, Tab, Tabs } from "@mui/material";
 import Swal from "sweetalert2";
 import FindInPageIcon from '@mui/icons-material/FindInPage'
 import Chip from '@mui/material/Chip';
@@ -29,6 +29,9 @@ export default function ListNacPage() {
 
   const [openImage, setOpenImage] = React.useState(false);
   const [imageSrc, setImageSrc] = React.useState<string | null | undefined>('');
+  const [assets_TypeGroup, setAssets_TypeGroup] = React.useState<Assets_TypeGroup[]>([]);
+  const [assets_TypeGroupSelect, setAssets_TypeGroupSelect] = React.useState<string | null>(null);
+  const [permission_menuID, setPermission_menuID] = React.useState<number[]>([]);
 
   const handleImageClick = (src: string | null | undefined) => {
     setImageSrc(src);
@@ -350,7 +353,10 @@ export default function ListNacPage() {
         );
 
         if (resData.status === 200) {
-          setRows(resData.data);
+          const dataTrue = permission_menuID.includes(5)
+            ? resData.data.filter((res: CountAssetRow) => res.typeCode === assets_TypeGroup[0].typeCode)
+            : resData.data.filter((res: CountAssetRow) => res.typeCode === assets_TypeGroup[0].typeCode && res.OwnerID === parsedData.UserCode)
+          setRows(dataTrue);
           setOriginalRows(resData.data);
         } else {
           setRows([]);
@@ -380,6 +386,15 @@ export default function ListNacPage() {
           { Description: '' },
           dataConfig.headers
         );
+
+        const resFetchAssets = await Axios.get(dataConfig.http + '/FA_Control_Assets_TypeGroup', dataConfig.headers)
+        const resData: Assets_TypeGroup[] = resFetchAssets.data
+        setAssets_TypeGroup(resData)
+        setAssets_TypeGroupSelect(resData[0].typeCode)
+
+        const permiss = await Axios.post(dataConfig.http + '/select_Permission_Menu_NAC', { Permission_TypeID: 1, userID: parsedData.userid }, dataConfig.headers)
+        setPermission_menuID(permiss.data.data.map((res: { Permission_MenuID: number; }) => res.Permission_MenuID))
+
         if (response.status === 200) {
           setLoading(false)
           setOptionDct(response.data);
@@ -553,6 +568,28 @@ export default function ListNacPage() {
               renderInput={(params) => <TextField {...params} label="Location" />}
             />
           </Grid>
+        </Grid>
+        <Grid justifyContent="flex-start" size={12} sx={{ mt: 2 }}>
+          <Tabs
+            // originalRows
+            value={assets_TypeGroupSelect}
+            onChange={(event: React.SyntheticEvent, newValue: string) => {
+              const newData = permission_menuID.includes(5)
+                ? originalRows.filter((res: CountAssetRow) => res.typeCode === newValue)
+                : originalRows.filter((res: CountAssetRow) => res.typeCode === newValue && res.OwnerID === parsedData.UserCode)
+              setRows(newData)
+              setAssets_TypeGroupSelect(newValue);
+            }}
+          >
+            {assets_TypeGroup.filter((fil) => fil.typeMenu === 0).map((res) => (
+              <Tab
+                label={`${res.typeCode} (${res.typeName})`}
+                value={res.typeCode}
+                key={res.typeGroupID}
+                sx={{ textTransform: 'none' }}
+              />
+            ))}
+          </Tabs>
         </Grid>
         <Card variant="outlined">
           <DataTable

@@ -7,7 +7,7 @@ import {
 } from '@mui/x-data-grid';
 import { styled } from '@mui/material/styles';
 import Box from '@mui/material/Box';
-import { AssetRecord, DataUser } from '../../../type/nacType';
+import { AssetRecord, DataUser, Assets_TypeGroup } from '../../../type/nacType';
 import CustomToolbar from './CustomToobar';
 
 interface DataTableProps {
@@ -15,7 +15,10 @@ interface DataTableProps {
   rows: AssetRecord[];
   loading: boolean;
   users: DataUser[];
+  assets_TypeGroup: Assets_TypeGroup[]
   isCellEditable: (params: GridCellParams) => boolean;
+  setTimer: React.Dispatch<React.SetStateAction<number>>;
+  fetchData: () => Promise<void>;
 }
 
 const other = {
@@ -80,7 +83,7 @@ function CustomNoRowsOverlay() {
   );
 }
 
-export default function AntDesignGrid({ rows, columns, loading, users }: Readonly<DataTableProps>) {
+export default function AntDesignGrid({ rows, columns, loading, users, assets_TypeGroup, setTimer, fetchData }: Readonly<DataTableProps>) {
   const [paginationModel, setPaginationModel] = React.useState<GridPaginationModel>({
     page: 0,
     pageSize: PAGE_SIZE,
@@ -124,7 +127,7 @@ export default function AntDesignGrid({ rows, columns, loading, users }: Readonl
         }
         slots={{
           noRowsOverlay: CustomNoRowsOverlay,
-          toolbar: () => <CustomToolbar rows={rows} users={users} />,
+          toolbar: () => <CustomToolbar rows={rows} users={users} assets_TypeGroup={assets_TypeGroup} setTimer={setTimer} fetchData={fetchData}/>,
         }}
         sx={(theme) => ({
           '--DataGrid-overlayHeight': '300px',
