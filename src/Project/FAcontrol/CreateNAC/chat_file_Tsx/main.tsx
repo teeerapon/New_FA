@@ -469,5 +469,7 @@ export default function ChatCard({ nac_type, createDoc }: DataFromHeader) {
         </Grid2>
       </Grid2 >
     );
+  } else {
+    return null;
   }
 }
