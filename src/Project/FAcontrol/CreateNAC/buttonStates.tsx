@@ -64,27 +64,29 @@ export default function ButtonStates({ createDoc, setOpenBackdrop, detailNAC, id
   };
 
   const submitDoc = async () => {
-    try {
-      const header = [...createDoc]
-      header[0].usercode = parsedData.UserCode;
-      setHideBT(true);
-      setOpenBackdrop(true)
-      const missingFields = validateFields(createDoc[0]);
-      if (missingFields.length > 0) {
-        setOpenBackdrop(false)
-        setHideBT(false);
-        Swal.fire({
-          icon: "warning",
-          title: `กรุณาระบุข้อมูล ${missingFields.join(', ')} ให้ครบ`,
-          showConfirmButton: false,
-          timer: 1500
-        })
-        return; // Exit the function if there are missing fields
-      }
 
-      // Validate each item
-      for (const item of detailNAC) {
-        const missingFields = validateFieldsAsset(item, createDoc[0].nac_type ?? 0, createDoc[0].nac_status ?? 0);
+    const uniquePrefixes = Array.from(
+      new Set(
+        detailNAC
+          .map(item => item.nacdtl_assetsCode?.substring(0, 2)) // ตัดตัวอักษร 2 ตัวแรก
+          .filter(prefix => prefix) // กรอง null หรือ undefined ออก
+      )
+    );
+
+    if (uniquePrefixes.length > 1) {
+      Swal.fire({
+        icon: "warning",
+        title: `พบรายการทรัพย์สินที่มีประเภทไม่ตรงกัน [${uniquePrefixes}]`,
+        showConfirmButton: false,
+        timer: 1500
+      })
+    } else {
+      try {
+        const header = [...createDoc]
+        header[0].usercode = parsedData.UserCode;
+        setHideBT(true);
+        setOpenBackdrop(true)
+        const missingFields = validateFields(createDoc[0]);
         if (missingFields.length > 0) {
           setOpenBackdrop(false)
           setHideBT(false);
@@ -96,24 +98,40 @@ export default function ButtonStates({ createDoc, setOpenBackdrop, detailNAC, id
           })
           return; // Exit the function if there are missing fields
         }
+
+        // Validate each item
+        for (const item of detailNAC) {
+          const missingFields = validateFieldsAsset(item, createDoc[0].nac_type ?? 0, createDoc[0].nac_status ?? 0);
+          if (missingFields.length > 0) {
+            setOpenBackdrop(false)
+            setHideBT(false);
+            Swal.fire({
+              icon: "warning",
+              title: `กรุณาระบุข้อมูล ${missingFields.join(', ')} ให้ครบ`,
+              showConfirmButton: false,
+              timer: 1500
+            })
+            return; // Exit the function if there are missing fields
+          }
+        }
+        const res = await Axios.post(
+          dataConfig.http + '/FA_Control_Create_Document_NAC',
+          createDoc[0], // assuming you're sending only the first document
+          dataConfig.headers
+        );
+        if (res.status === 200 && res.data[0].nac_code) {
+          sendDataToAPI(res.data[0].nac_code)
+        }
+      } catch (error) {
+        setOpenBackdrop(false)
+        setHideBT(false);
+        Swal.fire({
+          icon: "error",
+          title: `Error sending data to API: ${error}`,
+          showConfirmButton: false,
+          timer: 1500
+        })
       }
-      const res = await Axios.post(
-        dataConfig.http + '/FA_Control_Create_Document_NAC',
-        createDoc[0], // assuming you're sending only the first document
-        dataConfig.headers
-      );
-      if (res.status === 200 && res.data[0].nac_code) {
-        sendDataToAPI(res.data[0].nac_code)
-      }
-    } catch (error) {
-      setOpenBackdrop(false)
-      setHideBT(false);
-      Swal.fire({
-        icon: "error",
-        title: `Error sending data to API: ${error}`,
-        showConfirmButton: false,
-        timer: 1500
-      })
     }
   }
 
