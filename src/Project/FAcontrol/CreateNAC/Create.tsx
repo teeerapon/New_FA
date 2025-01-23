@@ -1,6 +1,6 @@
 import * as React from 'react';
 import Typography from '@mui/material/Typography';
-import { AppBar, Toolbar, Container, Paper, Stack, Box, Grid2, TableContainer, Table, TableHead, TableRow, TableBody, IconButton, alpha, Card, Divider, List, ListItem, ListItemText, Dialog, DialogContent, DialogTitle, Button, DialogActions } from '@mui/material';
+import { AppBar, Toolbar, Container, Paper, Stack, Box, Grid2, TableContainer, Table, TableHead, TableRow, TableBody, IconButton, alpha, Card, Divider, List, ListItem, ListItemText, Dialog, DialogContent, DialogTitle, Button, DialogActions, Alert } from '@mui/material';
 import logoPure from '../../../image/Picture1.png'
 import { StyledTableCell, StyledTableCellHeader } from '../../../components/StyledTable'
 import { RequestCreateDocument, DataUser, DataAsset, FAControlCreateDetail, WorkflowApproval } from '../../../type/nacType';
@@ -421,6 +421,9 @@ export default function Create() {
               </Card>
             </Stack>
           )}
+          <Alert severity="warning" sx={{ mx: { xs: 2, md: 3 }, overflow: 'hidden', my: { xs: 1, md: 2 } }}>
+            *หมายเหตุ (ทรัพย์สินกลุ่ม PURETHAI และ SFL จะไม่สามารถทำรายการรวมอยู่เอกสารเดียวกันได้)
+          </Alert>
           <Paper sx={{ mx: { xs: 2, md: 3 }, overflow: 'hidden' }}>
             <TableContainer>
               <Table size="small">
