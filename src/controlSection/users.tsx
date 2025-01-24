@@ -4,7 +4,7 @@ import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import Grid from '@mui/material/Grid2';
 import Typography from '@mui/material/Typography';
-import { Autocomplete, Avatar, Button, CardHeader, Chip, Dialog, DialogActions, DialogContent, DialogTitle, Divider, IconButton, InputAdornment, ListItem, ListItemAvatar, ListItemText, Stack, styled, TextField } from '@mui/material';
+import { Alert, Autocomplete, Avatar, Button, CardHeader, Chip, Dialog, DialogActions, DialogContent, DialogTitle, Divider, IconButton, InputAdornment, ListItem, ListItemAvatar, ListItemText, Stack, styled, TextField } from '@mui/material';
 import { Branch, DataUser, Department, UserSaved } from '../type/nacType';
 import Axios from 'axios';
 import Swal from 'sweetalert2';
@@ -303,6 +303,9 @@ export default function Profile() {
           }
         />
         <Divider />
+        <Alert severity="warning" sx={{ mx: { xs: 2, md: 3 }, overflow: 'hidden', my: { xs: 1, md: 2 } }}>
+          *หมายเหตุ MD (กรรมการผู้จัดการ){'>'}FM (ผู้จัดการสายงาน){'>'}DM (ผู้จัดการฝ่าย){'>'}SM (ผู้จัดการแผนก){'>'}SN (เจ้าหน้าที่อาวุโส){'>'}ST (เจ้าหน้าที่ทั่วไป)
+        </Alert>
         <CardContent>
           <DataTable
             rows={filteredRows}

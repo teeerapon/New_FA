@@ -322,6 +322,9 @@ export default function Create() {
           }}
           maxWidth="xl"
         >
+          <Alert severity="warning" sx={{ mx: { xs: 2, md: 3 }, overflow: 'hidden', my: { xs: 1, md: 2 } }}>
+            *หมายเหตุ (ทรัพย์สินที่มีประเภทรหัสทรัพย์สินต่างกันจะไม่สามารถทำรายการรวมอยู่เอกสารเดียวกันได้)
+          </Alert>
           <List sx={{
             p: 1, m: { xs: 2, md: 3 },
             overflow: 'hidden',
@@ -421,9 +424,6 @@ export default function Create() {
               </Card>
             </Stack>
           )}
-          <Alert severity="warning" sx={{ mx: { xs: 2, md: 3 }, overflow: 'hidden', my: { xs: 1, md: 2 } }}>
-            *หมายเหตุ (ทรัพย์สินกลุ่ม PURETHAI และ SFL จะไม่สามารถทำรายการรวมอยู่เอกสารเดียวกันได้)
-          </Alert>
           <Paper sx={{ mx: { xs: 2, md: 3 }, overflow: 'hidden' }}>
             <TableContainer>
               <Table size="small">

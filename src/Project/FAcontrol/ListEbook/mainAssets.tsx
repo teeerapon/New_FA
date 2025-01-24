@@ -242,7 +242,7 @@ export default function ListNacPage() {
                 setAssets_TypeGroupSelect(newValue);
               }}
             >
-              {assets_TypeGroup.filter((fil) => fil.typeMenu === 0).map((res) => (
+              {assets_TypeGroup.map((res) => (
                 <Tab
                   label={`${res.typeCode} (${res.typeName})`}
                   value={res.typeCode}

@@ -22,6 +22,7 @@ import AdminPanelSettingsOutlinedIcon from '@mui/icons-material/AdminPanelSettin
 import { UserInfo } from '../type/nacType';
 import Axios from 'axios';
 import { dataConfig } from '../config';
+import Login from '../login';
 
 const darkTheme = createTheme({
   palette: {
@@ -69,7 +70,7 @@ export default function MenuAppBar() {
         });
     }
     fetData();
-  }, [parsedData.userid]);
+  }, []);
 
   const toggleDrawerTree = (newOpen: boolean) => () => {
     setOpenTree(newOpen);
@@ -88,9 +89,8 @@ export default function MenuAppBar() {
   );
 
   const handleLogOut = () => {
-    setAuth(false);
     localStorage.clear();
-    window.location.reload();
+    setAuth(false);
   };
 
   const handleMenu = (event: React.MouseEvent<HTMLElement>) => {
@@ -113,128 +113,133 @@ export default function MenuAppBar() {
     }
   }, []);
 
-  return (
-    <Box sx={{ flexGrow: 1 }}>
-      <ThemeProvider theme={darkTheme}>
-        <AppBar position="static">
-          <Drawer
-            sx={{
-              minWidth: 300,
-              flexShrink: 0,
-              '& .MuiDrawer-paper': {
+
+  if (!auth) {
+    return <Login />
+  } else {
+    return (
+      <Box sx={{ flexGrow: 1 }}>
+        <ThemeProvider theme={darkTheme}>
+          <AppBar position="static">
+            <Drawer
+              sx={{
                 minWidth: 300,
-                boxSizing: 'border-box',
-              },
-            }}
-            open={openTree} onClose={toggleDrawerTree(false)}>
-            {DrawerList}
-          </Drawer>
-          <Toolbar>
-            <Stack direction="row" component="div" sx={{ flexGrow: 1 }}>
-              <IconButton
-                size="large"
-                edge="start"
-                color="inherit"
-                aria-label="menu"
-                sx={{ mr: 2 }}
-                onClick={toggleDrawerTree(true)}
-              >
-                <MenuIcon />
-              </IconButton>
-              <Button onClick={() => navigate("/")} variant='text'>
-                <Typography
-                  style={{ color: '#ea0c80' }}
-                  variant="body1"
-                  sx={{
-                    flexGrow: 1,
-                    fontFamily: 'monospace',
-                    fontWeight: 700,
-                    letterSpacing: '.3em',
-                    color: 'inherit',
-                    textDecoration: 'none',
-                  }}
+                flexShrink: 0,
+                '& .MuiDrawer-paper': {
+                  minWidth: 300,
+                  boxSizing: 'border-box',
+                },
+              }}
+              open={openTree} onClose={toggleDrawerTree(false)}>
+              {DrawerList}
+            </Drawer>
+            <Toolbar>
+              <Stack direction="row" component="div" sx={{ flexGrow: 1 }}>
+                <IconButton
+                  size="large"
+                  edge="start"
+                  color="inherit"
+                  aria-label="menu"
+                  sx={{ mr: 2 }}
+                  onClick={toggleDrawerTree(true)}
                 >
-                  <b>DATA</b>
-                </Typography>
-                <Typography
-                  style={{ color: '#07519e' }}
-                  variant="body1"
-                  sx={{
-                    flexGrow: 1,
-                    fontFamily: 'monospace',
-                    fontWeight: 700,
-                    letterSpacing: '.3em',
-                    color: 'inherit',
-                    textDecoration: 'none',
-                  }}
-                >
-                  <b>CENTER</b>
-                </Typography>
-              </Button>
-            </Stack>
-            <Stack direction="row" component="div" spacing={2} sx={{ justifyContent: "center", alignItems: "center", }}>
-              <Typography variant="body1">
-                <b>{userData?.name}</b>
-              </Typography>
-              {auth && (
-                <div>
-                  <IconButton
-                    size="large"
-                    aria-label="account of current user"
-                    aria-controls="menu-appbar"
-                    aria-haspopup="true"
-                    onClick={handleMenu}
-                    color="inherit"
-                  >
-                    <Avatar
-                      alt={userData && userData.UserCode || ''}
-                      src={userData && userData.img_profile || ''}
-                      sx={{ width: 35, height: 35 }}
-                    />
-                  </IconButton>
-                  <Menu
-                    sx={{ mt: '45px' }}
-                    id="menu-appbar"
-                    anchorEl={anchorEl}
-                    anchorOrigin={{
-                      vertical: 'top',
-                      horizontal: 'right',
+                  <MenuIcon />
+                </IconButton>
+                <Button onClick={() => navigate("/")} variant='text'>
+                  <Typography
+                    style={{ color: '#ea0c80' }}
+                    variant="body1"
+                    sx={{
+                      flexGrow: 1,
+                      fontFamily: 'monospace',
+                      fontWeight: 700,
+                      letterSpacing: '.3em',
+                      color: 'inherit',
+                      textDecoration: 'none',
                     }}
-                    keepMounted
-                    transformOrigin={{
-                      vertical: 'top',
-                      horizontal: 'right',
-                    }}
-                    open={Boolean(anchorEl)}
-                    onClose={handleClose}
                   >
-                    <MenuItem disabled={userData?.depcode !== '101ITO'} onClick={() => navigate(`/Profile`)}>
-                      <ListItemIcon sx={{ minWidth: '15% !important' }}>
-                        <ManageAccountsOutlinedIcon />
-                      </ListItemIcon>
-                      <ListItemText>&nbsp; &nbsp;User Profile</ListItemText>
-                    </MenuItem>
-                    {permission_menuID.includes(20) && (
-                      <MenuItem onClick={() => navigate(`/ControlSection`)}>
+                    <b>DATA</b>
+                  </Typography>
+                  <Typography
+                    style={{ color: '#07519e' }}
+                    variant="body1"
+                    sx={{
+                      flexGrow: 1,
+                      fontFamily: 'monospace',
+                      fontWeight: 700,
+                      letterSpacing: '.3em',
+                      color: 'inherit',
+                      textDecoration: 'none',
+                    }}
+                  >
+                    <b>CENTER</b>
+                  </Typography>
+                </Button>
+              </Stack>
+              <Stack direction="row" component="div" spacing={2} sx={{ justifyContent: "center", alignItems: "center", }}>
+                <Typography variant="body1">
+                  <b>{userData?.name}</b>
+                </Typography>
+                {auth && (
+                  <div>
+                    <IconButton
+                      size="large"
+                      aria-label="account of current user"
+                      aria-controls="menu-appbar"
+                      aria-haspopup="true"
+                      onClick={handleMenu}
+                      color="inherit"
+                    >
+                      <Avatar
+                        alt={userData && userData.UserCode || ''}
+                        src={userData && userData.img_profile || ''}
+                        sx={{ width: 35, height: 35 }}
+                      />
+                    </IconButton>
+                    <Menu
+                      sx={{ mt: '45px' }}
+                      id="menu-appbar"
+                      anchorEl={anchorEl}
+                      anchorOrigin={{
+                        vertical: 'top',
+                        horizontal: 'right',
+                      }}
+                      keepMounted
+                      transformOrigin={{
+                        vertical: 'top',
+                        horizontal: 'right',
+                      }}
+                      open={Boolean(anchorEl)}
+                      onClose={handleClose}
+                    >
+                      <MenuItem disabled={userData?.depcode !== '101ITO'} onClick={() => navigate(`/Profile`)}>
                         <ListItemIcon sx={{ minWidth: '15% !important' }}>
-                          <AdminPanelSettingsOutlinedIcon />
+                          <ManageAccountsOutlinedIcon />
                         </ListItemIcon>
-                        <ListItemText>&nbsp; &nbsp;Control section</ListItemText>
+                        <ListItemText>&nbsp; &nbsp;User Profile</ListItemText>
                       </MenuItem>
-                    )}
-                    <MenuItem onClick={handleLogOut}>
-                      <ListItemIcon sx={{ minWidth: '15% !important' }}>
-                        <LogoutOutlinedIcon />
-                      </ListItemIcon>
-                      <ListItemText>&nbsp; &nbsp;Log Out</ListItemText>
-                    </MenuItem>
-                  </Menu>
-                </div>
-              )}
-            </Stack>
-          </Toolbar>
-        </AppBar>
-      </ThemeProvider>
-    </Box>
-  );
+                      {permission_menuID.includes(20) && (
+                        <MenuItem onClick={() => navigate(`/ControlSection`)}>
+                          <ListItemIcon sx={{ minWidth: '15% !important' }}>
+                            <AdminPanelSettingsOutlinedIcon />
+                          </ListItemIcon>
+                          <ListItemText>&nbsp; &nbsp;Control section</ListItemText>
+                        </MenuItem>
+                      )}
+                      <MenuItem onClick={handleLogOut}>
+                        <ListItemIcon sx={{ minWidth: '15% !important' }}>
+                          <LogoutOutlinedIcon />
+                        </ListItemIcon>
+                        <ListItemText>&nbsp; &nbsp;Log Out</ListItemText>
+                      </MenuItem>
+                    </Menu>
+                  </div>
+                )}
+              </Stack>
+            </Toolbar>
+          </AppBar>
+        </ThemeProvider>
+      </Box>
+    );
+  }
 }
