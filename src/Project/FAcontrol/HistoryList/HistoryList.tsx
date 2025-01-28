@@ -1,8 +1,8 @@
 import { GridActionsCellItem, GridCellParams, GridColDef, GridRowParams } from "@mui/x-data-grid"
 import DataTable from "./DataTable"
 import React from "react";
-import { NACDetailHistory, ListNACHeaders,Assets_TypeGroup } from '../../../type/nacType';
-import { Typography, AppBar, Container, Toolbar, Autocomplete, TextField, Card, CssBaseline } from "@mui/material";
+import { NACDetailHistory, ListNACHeaders, Assets_TypeGroup, AssetRecord } from '../../../type/nacType';
+import { Typography, AppBar, Container, Toolbar, Autocomplete, TextField, Card, CssBaseline, Tab, Tabs } from "@mui/material";
 import { dataConfig } from "../../../config";
 import Axios from 'axios';
 import { Outlet, useNavigate } from "react-router";
@@ -17,6 +17,8 @@ export default function ListNacPage() {
 
   // State สำหรับการกรองแต่ละฟิลด์
   const [originalRows, setOriginalRows] = React.useState<NACDetailHistory[]>([]);
+  const [assets_TypeGroup, setAssets_TypeGroup] = React.useState<Assets_TypeGroup[]>([]);
+  const [assets_TypeGroupSelect, setAssets_TypeGroupSelect] = React.useState<string | null>(null);
   const [filterRows, setFilterRows] = React.useState<Partial<NACDetailHistory>>({
     nac_code: undefined,
     nacdtl_assetsCode: undefined,
@@ -25,7 +27,7 @@ export default function ListNacPage() {
     source_approve_userid: undefined,
     account_approve_id: undefined,
   });
-    const navigate = useNavigate();
+  const navigate = useNavigate();
 
   const searchFilterByKey = (newValue: String | null | undefined, key: keyof NACDetailHistory, reason: any) => {
     const listFilter = {
@@ -99,11 +101,17 @@ export default function ListNacPage() {
     setLoading(true)
     const fetchData = async () => {
       try {
+
+        const resFetchAssets = await Axios.get(dataConfig.http + '/FA_Control_Assets_TypeGroup', dataConfig.headers)
+        const resData: Assets_TypeGroup[] = resFetchAssets.data
+        setAssets_TypeGroup(resData)
+        setAssets_TypeGroupSelect(resData[0].typeCode)
+
         await Axios.post(`${dataConfig.http}/store_FA_control_HistorysAssets`, { userCode: parsedData.UserCode }, dataConfig.headers)
           .then((res) => {
             if (res.status === 200) {
               setLoading(false)
-              setRows(res.data.data);
+              setRows(res.data.data.filter((res: AssetRecord) => res.typeCode === resData[0].typeCode));
               setOriginalRows(res.data.data);
             } else {
               setLoading(false)
@@ -191,6 +199,26 @@ export default function ListNacPage() {
               renderInput={(params) => <TextField {...params} label="ผู้อนุมัติ" />}
             />
           </Grid>
+        </Grid>
+        <Grid justifyContent="flex-start" size={12} sx={{ mt: 2 }}>
+          <Tabs
+            // originalRows
+            value={assets_TypeGroupSelect}
+            onChange={(event: React.SyntheticEvent, newValue: string) => {
+              const newData = originalRows.filter((res: NACDetailHistory) => res.typeCode === newValue)
+              setRows(newData)
+              setAssets_TypeGroupSelect(newValue);
+            }}
+          >
+            {assets_TypeGroup.map((res) => (
+              <Tab
+                label={`${res.typeCode} (${res.typeName})`}
+                value={res.typeCode}
+                key={res.typeGroupID}
+                sx={{ textTransform: 'none' }}
+              />
+            ))}
+          </Tabs>
         </Grid>
         <Card variant="outlined">
           <DataTable

@@ -286,6 +286,7 @@ export interface NACDetailHistory {
   nacdtl_PriceSeals: number | null | undefined;
   nacdtl_profit: number | null | undefined;
   nacdtl_date_asset: Dayjs | null | undefined;
+  typeCode: string;
   update_date: Dayjs | null | undefined;
   create_by: string | null | undefined;
   source_approve_userid: string | null | undefined;
