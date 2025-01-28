@@ -1,42 +1,18 @@
-require("dotenv").config({
-    path: '.env.production'
-  });
-  
-  const { createServer } = require("http");
-  const { parse } = require("url");
-  const next = require("next");
-  
-  const dev = process.env.NODE_ENV !== "production";
-  
-  const port = process.env.PORT || 33051; // Change the port to the port that your IIS is running on. Default its 80 and 9999 if you are using it for developing.
-  const hostname = "localhost";
-  const app = next({ dev, hostname, port });
-  const handle = app.getRequestHandler();
-  
-  app.prepare().then(() => {
-    createServer(async (req, res) => {
-      try {
-        const parsedUrl = parse(req.url, true);
-        const { pathname, query } = parsedUrl;
-  
-        if (pathname === "/a") {
-          await app.render(req, res, "/a", query);
-        } else if (pathname === "/b") {
-          await app.render(req, res, "/b", query);
-        } else {
-          await handle(req, res, parsedUrl);
-        }
-      } catch (err) {
-        console.error("Error occurred handling", req.url, err);
-        res.statusCode = 500;
-        res.end("internal server error");
-      }
-    })
-      .once("error", (err) => {
-        console.error(err);
-        process.exit(1);
-      })
-      .listen(port, async () => {
-        console.log(`> Ready on http://localhost:${port}/${process.env.NODE_ENV}`);
-      });
-  });
+const express = require('express');
+const path = require('path');
+const app = express();
+
+const PORT = process.env.PORT || 33051;
+
+// ให้ Express ใช้ไฟล์ในโฟลเดอร์ build
+app.use(express.static(path.join(__dirname, 'build')));
+
+// ให้บริการ index.html สำหรับทุก route
+app.get('/*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'build', 'index.html'));
+});
+
+// เริ่มเซิร์ฟเวอร์
+app.listen(PORT, () => {
+  console.log(`Server is running on http://localhost:${PORT}`);
+});
