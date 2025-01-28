@@ -32,6 +32,7 @@ function getStatusColor(nac_status: number): string {
     13: '#6A5ACD',
     14: '#708090',
     15: '#6A5ACD',
+    18: '#6A5ACD',
   };
 
   return statusColors[nac_status] ?? '#DC143C';

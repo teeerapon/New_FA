@@ -42,14 +42,25 @@ export default function ButtonStates({ createDoc, setOpenBackdrop, detailNAC, id
     const missingFields = [];
 
     if (!dtl.nacdtl_assetsCode) missingFields.push('รหัสทรัพย์สิน');
-    // if (!dtl.nacdtl_image_1 && [1, 2].includes(nac_type) && status === 4) missingFields.push('รูปภาพที่ 1');
-    // if (!dtl.nacdtl_image_2 && [1, 2].includes(nac_type) && status === 4) missingFields.push('รูปภาพที่ 2');
+    if (!dtl.nacdtl_image_1 && [1, 2].includes(nac_type) && status === 4) missingFields.push('รูปภาพที่ 1');
+    if (!dtl.nacdtl_image_2 && [1, 2].includes(nac_type) && status === 4) missingFields.push('รูปภาพที่ 2');
     if (!dtl.nacdtl_image_1 && [4, 5].includes(nac_type)) missingFields.push('รูปภาพที่ 1');
-    if (!dtl.nacdtl_image_2 && [4, 5].includes(nac_type)) missingFields.push('รูปภาพที่ 2');
+    // if (!dtl.nacdtl_image_2 && [4, 5].includes(nac_type)) missingFields.push('รูปภาพที่ 2');
     if ((dtl.nacdtl_PriceSeals === undefined || dtl.nacdtl_PriceSeals === null) && [4, 5].includes(idSection ?? 0)) missingFields.push('ราคาขาย');
 
     return missingFields;
   };
+
+  const validateFieldsCode = (dtl: FAControlCreateDetail, nac_type: number, status: number) => {
+    // Check if any of the required fields are missing
+    const FieldsCode = [];
+
+    if (['FA'].includes(dtl.nacdtl_assetsCode?.substring(0, 2) ?? '')) FieldsCode.push(0);
+    if (['SF', 'BP'].includes(dtl.nacdtl_assetsCode?.substring(0, 2) ?? '')) FieldsCode.push(1);
+
+    return FieldsCode;
+  };
+
 
   const validateFields = (doc: RequestCreateDocument) => {
     // Check if any of the required fields are missing
@@ -137,13 +148,117 @@ export default function ButtonStates({ createDoc, setOpenBackdrop, detailNAC, id
 
   const checkWorkflow = (workflowApproval: WorkflowApproval[], sumPrice: number) => {
 
+    const textCode = validateFieldsCode(detailNAC[0], createDoc[0].nac_type ?? 0, createDoc[0].nac_status ?? 0)
+
+
     const lengthLessProce: number = workflowApproval.filter(res => (res.limitamount ?? 0) < sumPrice).length // สำหรับเช็คที่สถานะ รอยืนยัน
     const hasLevelZero = workflowApproval.some((item) => item.workflowlevel === 0); // สำหรับกรอก bookvalue ถ้ามี level 0
     const hasLimitBelowSum = workflowApproval.some((item) => (item.limitamount ?? 0) < sumPrice && (item.workflowlevel !== 0)); // น้อยกว่าต้นรวม
     const hasLimitAboveOrEqualSum = workflowApproval.some((item) => (item.limitamount ?? 0) >= sumPrice); // มากกว่าต้นรวม
 
-    if ([1, 2, 3].includes(createDoc[0].nac_type ?? 0)) {
-      if ([1].includes(createDoc[0].nac_status ?? 0) && [2, 3].includes(createDoc[0].nac_type ?? 0)) {
+    if ((textCode[0] ?? '') === 0) {
+      if ([1, 2, 3].includes(createDoc[0].nac_type ?? 0)) {
+        if ([1].includes(createDoc[0].nac_status ?? 0) && [2, 3].includes(createDoc[0].nac_type ?? 0)) {
+          const header = [...createDoc]
+          header[0].nac_status = lengthLessProce > 0 ? 2 : 3
+          setCreateDoc(header)
+          submitDoc()
+        } else if ([1].includes(createDoc[0].nac_status ?? 0) && [1].includes(createDoc[0].nac_type ?? 0)) {
+          const header = [...createDoc]
+          header[0].nac_status = 4
+          setCreateDoc(header)
+          submitDoc()
+        } else if ([2].includes(createDoc[0].nac_status ?? 0)) {
+          const header = [...createDoc]
+          header[0].verify_by_userid = parseInt(parsedData.userid)
+          header[0].verify_date = dayjs.tz(new Date(), "Asia/Bangkok")
+          header[0].nac_status =
+            (workflowApproval.find(res => ((res.limitamount ?? 0) >= sumPrice)
+              && ((res.approverid ?? 0) === parseInt(parsedData.userid))) || parsedPermission.includes(10)) ?
+              3 : 2
+          setCreateDoc(header)
+          submitDoc()
+        } else if ([3].includes(createDoc[0].nac_status ?? 0)) {
+          const header = [...createDoc]
+          header[0].source_approve_userid = parseInt(parsedData.userid)
+          header[0].source_approve_date = dayjs.tz(new Date(), "Asia/Bangkok")
+          header[0].nac_status = 5
+          setCreateDoc(header)
+          submitDoc()
+        } else if ([4].includes(createDoc[0].nac_status ?? 0)) {
+          const header = [...createDoc]
+          header[0].nac_status = 5
+          setCreateDoc(header)
+          submitDoc()
+        } else if ([5].includes(createDoc[0].nac_status ?? 0)) {
+          const header = [...createDoc]
+          header[0].account_aprrove_id = parseInt(parsedData.userid)
+          header[0].account_aprrove_date = dayjs.tz(new Date(), "Asia/Bangkok")
+          header[0].nac_status = 6
+          setCreateDoc(header)
+          submitDoc()
+        }
+      } else if ([4, 5].includes(createDoc[0].nac_type ?? 0)) {
+        if (hasLevelZero && [1].includes(createDoc[0].nac_status ?? 0)) {       // สถานะรอยืนยัน -> กรอก BV
+          const header = [...createDoc]
+          header[0].nac_status = 11
+          setCreateDoc(header)
+          submitDoc()
+        } else if (hasLimitAboveOrEqualSum && hasLimitBelowSum && [11].includes(createDoc[0].nac_status ?? 0)) {// กรอก BV -> รอตรวจสอบ
+          const header = [...createDoc]
+          header[0].nac_status = 2
+          setCreateDoc(header)
+          submitDoc()
+        } else if (hasLimitAboveOrEqualSum && !hasLimitBelowSum && [11].includes(createDoc[0].nac_status ?? 0)) { // กรอก BV -> รออนุมัติ
+          const header = [...createDoc]
+          header[0].nac_status = 3
+          setCreateDoc(header)
+          submitDoc()
+        } else if ([2].includes(createDoc[0].nac_status ?? 0)) { //รอตรวจสอบ -> รออนุมัติ
+          const header = [...createDoc]
+          header[0].verify_by_userid = parseInt(parsedData.userid)
+          header[0].verify_date = dayjs.tz(new Date(), "Asia/Bangkok")
+          header[0].nac_status =
+            (workflowApproval.find(res => ((res.limitamount ?? 0) >= sumPrice)
+              && ((res.approverid ?? 0) === parseInt(parsedData.userid))) || parsedPermission.includes(10)) ?
+              3 : 2
+          setCreateDoc(header)
+          submitDoc()
+        } else if ([3].includes(createDoc[0].nac_status ?? 0)) { //รออนุมัติ -> กรอกราคาขาย
+          const header = [...createDoc]
+          header[0].source_approve_userid = parseInt(parsedData.userid)
+          header[0].source_approve_date = dayjs.tz(new Date(), "Asia/Bangkok")
+          header[0].nac_status = (typeof createDoc[0].real_price === 'number' || [4].includes(createDoc[0].nac_type ?? 0)) ? 15 : 12
+          setCreateDoc(header)
+          submitDoc()
+        } else if ([12].includes(createDoc[0].nac_status ?? 0)) { //กรอกราคาขาย -> รอบัญชี หรือ ปิดรายการ
+          const totalPriceSeals = detailNAC.reduce((sum, item) => {
+            return item.nacdtl_PriceSeals ? sum + item.nacdtl_PriceSeals : sum;
+          }, 0);
+          const header = [...createDoc]
+          header[0].source_approve_userid = (createDoc[0].real_price ?? 0) < totalPriceSeals ? null : (createDoc[0].source_approve_userid ?? null)
+          header[0].source_approve_date = (createDoc[0].real_price ?? 0) < totalPriceSeals ? null : (createDoc[0].source_approve_date ?? null)
+          header[0].nac_status = (createDoc[0].real_price ?? 0) < totalPriceSeals ? 3 : 15
+          setCreateDoc(header)
+          submitDoc()
+        } else if ([15].includes(createDoc[0].nac_status ?? 0)) { //รอบัญชี -> การเงิน
+          const header = [...createDoc]
+          header[0].account_aprrove_id = parseInt(parsedData.userid)
+          header[0].account_aprrove_date = dayjs.tz(new Date(), "Asia/Bangkok")
+          header[0].nac_status = 13
+          setCreateDoc(header)
+          submitDoc()
+        } else if ([13].includes(createDoc[0].nac_status ?? 0)) { //การเงิน -> ปิดรายการ
+          const header = [...createDoc]
+          header[0].finance_aprrove_id = parseInt(parsedData.userid)
+          header[0].finance_aprrove_date = dayjs.tz(new Date(), "Asia/Bangkok")
+          header[0].nac_status = 6
+          setCreateDoc(header)
+          submitDoc()
+        }
+      }
+    } else if ((textCode[0] ?? '') === 1) {
+      if ([1].includes(createDoc[0].nac_status ?? 0)) {
         const header = [...createDoc]
         header[0].nac_status = lengthLessProce > 0 ? 2 : 3
         setCreateDoc(header)
@@ -167,73 +282,15 @@ export default function ButtonStates({ createDoc, setOpenBackdrop, detailNAC, id
         const header = [...createDoc]
         header[0].source_approve_userid = parseInt(parsedData.userid)
         header[0].source_approve_date = dayjs.tz(new Date(), "Asia/Bangkok")
-        header[0].nac_status = 5
+        header[0].nac_status = 18
         setCreateDoc(header)
         submitDoc()
-      } else if ([4].includes(createDoc[0].nac_status ?? 0)) {
+      } else if ([18].includes(createDoc[0].nac_status ?? 0)) {
         const header = [...createDoc]
         header[0].nac_status = 5
         setCreateDoc(header)
         submitDoc()
       } else if ([5].includes(createDoc[0].nac_status ?? 0)) {
-        const header = [...createDoc]
-        header[0].account_aprrove_id = parseInt(parsedData.userid)
-        header[0].account_aprrove_date = dayjs.tz(new Date(), "Asia/Bangkok")
-        header[0].nac_status = 6
-        setCreateDoc(header)
-        submitDoc()
-      }
-    } else if ([4, 5].includes(createDoc[0].nac_type ?? 0)) {
-      if (hasLevelZero && [1].includes(createDoc[0].nac_status ?? 0)) {       // สถานะรอยืนยัน -> กรอก BV
-        const header = [...createDoc]
-        header[0].nac_status = 11
-        setCreateDoc(header)
-        submitDoc()
-      } else if (hasLimitAboveOrEqualSum && hasLimitBelowSum && [11].includes(createDoc[0].nac_status ?? 0)) {// กรอก BV -> รอตรวจสอบ
-        const header = [...createDoc]
-        header[0].nac_status = 2
-        setCreateDoc(header)
-        submitDoc()
-      } else if (hasLimitAboveOrEqualSum && !hasLimitBelowSum && [11].includes(createDoc[0].nac_status ?? 0)) { // กรอก BV -> รออนุมัติ
-        const header = [...createDoc]
-        header[0].nac_status = 3
-        setCreateDoc(header)
-        submitDoc()
-      } else if ([2].includes(createDoc[0].nac_status ?? 0)) { //รอตรวจสอบ -> รออนุมัติ
-        const header = [...createDoc]
-        header[0].verify_by_userid = parseInt(parsedData.userid)
-        header[0].verify_date = dayjs.tz(new Date(), "Asia/Bangkok")
-        header[0].nac_status =
-          (workflowApproval.find(res => ((res.limitamount ?? 0) >= sumPrice)
-            && ((res.approverid ?? 0) === parseInt(parsedData.userid))) || parsedPermission.includes(10)) ?
-            3 : 2
-        setCreateDoc(header)
-        submitDoc()
-      } else if ([3].includes(createDoc[0].nac_status ?? 0)) { //รออนุมัติ -> กรอกราคาขาย
-        const header = [...createDoc]
-        header[0].source_approve_userid = parseInt(parsedData.userid)
-        header[0].source_approve_date = dayjs.tz(new Date(), "Asia/Bangkok")
-        header[0].nac_status = (typeof createDoc[0].real_price === 'number' || [4].includes(createDoc[0].nac_type ?? 0)) ? 15 : 12
-        setCreateDoc(header)
-        submitDoc()
-      } else if ([12].includes(createDoc[0].nac_status ?? 0)) { //กรอกราคาขาย -> รอบัญชี หรือ ปิดรายการ
-        const totalPriceSeals = detailNAC.reduce((sum, item) => {
-          return item.nacdtl_PriceSeals ? sum + item.nacdtl_PriceSeals : sum;
-        }, 0);
-        const header = [...createDoc]
-        header[0].source_approve_userid = (createDoc[0].real_price ?? 0) < totalPriceSeals ? null : (createDoc[0].source_approve_userid ?? null)
-        header[0].source_approve_date = (createDoc[0].real_price ?? 0) < totalPriceSeals ? null : (createDoc[0].source_approve_date ?? null)
-        header[0].nac_status = (createDoc[0].real_price ?? 0) < totalPriceSeals ? 3 : 15
-        setCreateDoc(header)
-        submitDoc()
-      } else if ([15].includes(createDoc[0].nac_status ?? 0)) { //รอบัญชี -> การเงิน
-        const header = [...createDoc]
-        header[0].account_aprrove_id = parseInt(parsedData.userid)
-        header[0].account_aprrove_date = dayjs.tz(new Date(), "Asia/Bangkok")
-        header[0].nac_status = 13
-        setCreateDoc(header)
-        submitDoc()
-      } else if ([13].includes(createDoc[0].nac_status ?? 0)) { //การเงิน -> ปิดรายการ
         const header = [...createDoc]
         header[0].finance_aprrove_id = parseInt(parsedData.userid)
         header[0].finance_aprrove_date = dayjs.tz(new Date(), "Asia/Bangkok")
@@ -326,6 +383,10 @@ export default function ButtonStates({ createDoc, setOpenBackdrop, detailNAC, id
           (([1, 4, 11, 12, 14].includes(createDoc[0].nac_status ?? 0) || parsedPermission.includes(10)) && createDoc[0].nac_code) &&
           <Button variant="contained" color="warning" endIcon={<UpdateIcon />} onClick={submitDoc}>UPDATE</Button>
         }
+        {
+          (checkAt || parsedPermission.includes(16)) && createDoc[0].nac_code && createDoc[0].nac_status !== 1 &&
+          <Button variant="contained" color="secondary" onClick={redo} endIcon={<BackspaceIcon />}>REDO</Button>
+        }
         {![6].includes(createDoc[0].nac_status ?? 0) &&
           <>
             {!createDoc[0].nac_code && <Button variant="contained" endIcon={<SendIcon />} onClick={submitDoc}>SUBMIT</Button>}
@@ -337,10 +398,6 @@ export default function ButtonStates({ createDoc, setOpenBackdrop, detailNAC, id
             }
             {([2, 3].includes(createDoc[0].nac_status ?? 0)) &&
               <>
-                {
-                  (checkAt || parsedPermission.includes(16)) &&
-                  <Button variant="contained" color="secondary" onClick={redo} endIcon={<BackspaceIcon />}>REDO</Button>
-                }
                 {
                   (checkAt || parsedPermission.includes(10)) &&
                   <Button variant="contained" color="success" endIcon={<SendIcon />} onClick={() => checkWorkflow(workflowApproval, createDoc[0].sum_price ?? 0)}>APPROVED</Button>

@@ -58,6 +58,8 @@ const getStatusColor = (status: number) => {
       return '#708090'; // SlateGray
     case 15:
       return '#6A5ACD'; // SlateBlue
+    case 18:
+      return '#6A5ACD'; // SlateBlue
     default:
       return '#DC143C'; // Crimson for unknown statuses
   }
