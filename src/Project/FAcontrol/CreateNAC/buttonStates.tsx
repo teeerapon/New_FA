@@ -41,11 +41,9 @@ export default function ButtonStates({ createDoc, setOpenBackdrop, detailNAC, id
     // Check if any of the required fields are missing
     const missingFields = [];
 
-    console.log(status, [1, 2].includes(nac_type));
-
     if (!dtl.nacdtl_assetsCode) missingFields.push('รหัสทรัพย์สิน');
-    if (!dtl.nacdtl_image_1 && [1, 2].includes(nac_type) && status === 4) missingFields.push('รูปภาพที่ 1');
-    if (!dtl.nacdtl_image_2 && [1, 2].includes(nac_type) && status === 4) missingFields.push('รูปภาพที่ 2');
+    if (!dtl.nacdtl_image_1 && [1, 2].includes(nac_type) && status > 3) missingFields.push('รูปภาพที่ 1');
+    if (!dtl.nacdtl_image_2 && [1].includes(nac_type) && status > 3) missingFields.push('รูปภาพที่ 2');
     if (!dtl.nacdtl_image_1 && [4, 5].includes(nac_type)) missingFields.push('รูปภาพที่ 1');
     // if (!dtl.nacdtl_image_2 && [4, 5].includes(nac_type)) missingFields.push('รูปภาพที่ 2');
     if ((dtl.nacdtl_PriceSeals === undefined || dtl.nacdtl_PriceSeals === null) && [4, 5].includes(idSection ?? 0)) missingFields.push('ราคาขาย');
@@ -116,8 +114,23 @@ export default function ButtonStates({ createDoc, setOpenBackdrop, detailNAC, id
           createDoc[0], // assuming you're sending only the first document
           dataConfig.headers
         );
-        if (res.status === 200 && res.data[0].nac_code) {
+        if (res.status === 200) {
           sendDataToAPI(res.data[0].nac_code)
+          if (createDoc[0].nac_status === 6) {
+            for (const item of detailNAC) {
+              const res = await Axios.post(
+                dataConfig.http + '/store_FA_control_upadate_table',
+                {
+                  nac_code: createDoc[0].nac_code,
+                  usercode: parsedData.UserCode,
+                  nacdtl_assetsCode: item.nacdtl_assetsCode,
+                  nac_type: createDoc[0].nac_type,
+                  nac_status: createDoc[0].nac_status,
+                }, // assuming you're sending only the first document
+                dataConfig.headers
+              );
+            }
+          }
         }
       } catch (error) {
         setOpenBackdrop(false)
@@ -178,6 +191,13 @@ export default function ButtonStates({ createDoc, setOpenBackdrop, detailNAC, id
             (workflowApproval.find(res => ((res.limitamount ?? 0) >= sumPrice)
               && ((res.approverid ?? 0) === parseInt(parsedData.userid))) || parsedPermission.includes(10)) ?
               3 : 2
+          setCreateDoc(header)
+          submitDoc()
+        } else if ([3].includes(createDoc[0].nac_status ?? 0) && [2].includes(createDoc[0].nac_type ?? 0)) {
+          const header = [...createDoc]
+          header[0].source_approve_userid = parseInt(parsedData.userid)
+          header[0].source_approve_date = dayjs.tz(new Date(), "Asia/Bangkok")
+          header[0].nac_status = 4
           setCreateDoc(header)
           submitDoc()
         } else if ([3].includes(createDoc[0].nac_status ?? 0)) {
@@ -347,17 +367,42 @@ export default function ButtonStates({ createDoc, setOpenBackdrop, detailNAC, id
 
   const cancelDoc = async () => {
     Swal.fire({
-      title: "Do you want to reject the changes?",
+      title: "กรุณาระบุเหตุผลสำหรับ Rejected!",
+      input: "text",
+      inputAttributes: {
+        autocapitalize: "off"
+      },
       showCancelButton: true,
       confirmButtonText: "Yes",
-      denyButtonText: `Cancel`
+      showLoaderOnConfirm: true,
+      preConfirm: async (body) => {
+        const response = await Axios.post(
+          dataConfig.http + '/store_FA_control_comment',
+          {
+            nac_code: createDoc[0].nac_code,
+            usercode: parsedData.UserCode,
+            comment: body,
+          },
+          dataConfig.headers
+        );
+        if (response.status === 200) {
+          const header = [...createDoc]
+          header[0].nac_status = 17
+          setCreateDoc(header)
+          submitDoc()
+        }
+      },
+      allowOutsideClick: () => !Swal.isLoading()
     }).then((result) => {
-      /* Read more about isConfirmed, isDenied below */
       if (result.isConfirmed) {
-        const header = [...createDoc]
-        header[0].nac_status = 17
-        setCreateDoc(header)
-        submitDoc()
+        Swal.fire({
+          icon: "success",
+          title: `บันทึกข้อมูลสำเร็จ`,
+          showConfirmButton: false,
+          timer: 1500
+        }).then(() => {
+          window.location.href = `/NAC_CREATE?id=${idSection}?nac_code=${createDoc[0].nac_code}`;
+        })
       }
     });
   }
