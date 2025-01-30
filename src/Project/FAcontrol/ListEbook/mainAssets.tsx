@@ -323,7 +323,7 @@ export default function ListNacPage() {
                     </Grid>
                     <Grid size={12}>
                       <Typography gutterBottom variant="body2" color={res.nac_processing ? 'error' : 'default'}>
-                        อื่น ๆ: {res.nac_processing ? `ถูกใช้งานที่ ${res.nac_processing}` : '-'}
+                        NAC STATUS: {res.nac_processing ? `ถูกใช้งานที่ ${res.nac_processing}` : '-'}
                       </Typography>
                     </Grid>
                     {/* nac_processing */}

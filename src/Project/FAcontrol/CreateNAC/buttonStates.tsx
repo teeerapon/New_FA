@@ -41,6 +41,8 @@ export default function ButtonStates({ createDoc, setOpenBackdrop, detailNAC, id
     // Check if any of the required fields are missing
     const missingFields = [];
 
+    console.log(status, [1, 2].includes(nac_type));
+
     if (!dtl.nacdtl_assetsCode) missingFields.push('รหัสทรัพย์สิน');
     if (!dtl.nacdtl_image_1 && [1, 2].includes(nac_type) && status === 4) missingFields.push('รูปภาพที่ 1');
     if (!dtl.nacdtl_image_2 && [1, 2].includes(nac_type) && status === 4) missingFields.push('รูปภาพที่ 2');
@@ -109,22 +111,6 @@ export default function ButtonStates({ createDoc, setOpenBackdrop, detailNAC, id
           })
           return; // Exit the function if there are missing fields
         }
-
-        // Validate each item
-        for (const item of detailNAC) {
-          const missingFields = validateFieldsAsset(item, createDoc[0].nac_type ?? 0, createDoc[0].nac_status ?? 0);
-          if (missingFields.length > 0) {
-            setOpenBackdrop(false)
-            setHideBT(false);
-            Swal.fire({
-              icon: "warning",
-              title: `กรุณาระบุข้อมูล ${missingFields.join(', ')} ให้ครบ`,
-              showConfirmButton: false,
-              timer: 1500
-            })
-            return; // Exit the function if there are missing fields
-          }
-        }
         const res = await Axios.post(
           dataConfig.http + '/FA_Control_Create_Document_NAC',
           createDoc[0], // assuming you're sending only the first document
@@ -155,6 +141,22 @@ export default function ButtonStates({ createDoc, setOpenBackdrop, detailNAC, id
     const hasLevelZero = workflowApproval.some((item) => item.workflowlevel === 0); // สำหรับกรอก bookvalue ถ้ามี level 0
     const hasLimitBelowSum = workflowApproval.some((item) => (item.limitamount ?? 0) < sumPrice && (item.workflowlevel !== 0)); // น้อยกว่าต้นรวม
     const hasLimitAboveOrEqualSum = workflowApproval.some((item) => (item.limitamount ?? 0) >= sumPrice); // มากกว่าต้นรวม
+
+    // Validate each item
+    for (const item of detailNAC) {
+      const missingFields = validateFieldsAsset(item, createDoc[0].nac_type ?? 0, createDoc[0].nac_status ?? 0);
+      if (missingFields.length > 0) {
+        setOpenBackdrop(false)
+        setHideBT(false);
+        Swal.fire({
+          icon: "warning",
+          title: `กรุณาระบุข้อมูล ${missingFields.join(', ')} ให้ครบ`,
+          showConfirmButton: false,
+          timer: 1500
+        })
+        return; // Exit the function if there are missing fields
+      }
+    }
 
     if ((textCode[0] ?? '') === 0) {
       if ([1, 2, 3].includes(createDoc[0].nac_type ?? 0)) {
@@ -303,17 +305,42 @@ export default function ButtonStates({ createDoc, setOpenBackdrop, detailNAC, id
 
   const redo = async () => {
     Swal.fire({
-      title: "Do you want to Redo the changes?",
+      title: "กรุณาระบุเหตุผลสำหรับ Redo!",
+      input: "text",
+      inputAttributes: {
+        autocapitalize: "off"
+      },
       showCancelButton: true,
       confirmButtonText: "Yes",
-      denyButtonText: `Cancel`
+      showLoaderOnConfirm: true,
+      preConfirm: async (body) => {
+        const response = await Axios.post(
+          dataConfig.http + '/store_FA_control_comment',
+          {
+            nac_code: createDoc[0].nac_code,
+            usercode: parsedData.UserCode,
+            comment: body,
+          },
+          dataConfig.headers
+        );
+        if (response.status === 200) {
+          const header = [...createDoc]
+          header[0].nac_status = 1
+          setCreateDoc(header)
+          submitDoc()
+        }
+      },
+      allowOutsideClick: () => !Swal.isLoading()
     }).then((result) => {
-      /* Read more about isConfirmed, isDenied below */
       if (result.isConfirmed) {
-        const header = [...createDoc]
-        header[0].nac_status = 1
-        setCreateDoc(header)
-        submitDoc()
+        Swal.fire({
+          icon: "success",
+          title: `บันทึกข้อมูลสำเร็จ`,
+          showConfirmButton: false,
+          timer: 1500
+        }).then(() => {
+          window.location.href = `/NAC_CREATE?id=${idSection}?nac_code=${createDoc[0].nac_code}`;
+        })
       }
     });
   }

@@ -90,7 +90,7 @@ export default function AntDesignGrid({ rows, columns, loading, users, assets_Ty
   });
 
   return (
-    <Box style={{ width: '100%' }}>
+    <Box sx={{ width: '100%' }}>
       <DataGrid
         paginationModel={paginationModel}
         onPaginationModelChange={setPaginationModel}
@@ -130,7 +130,6 @@ export default function AntDesignGrid({ rows, columns, loading, users, assets_Ty
           toolbar: () => <CustomToolbar rows={rows} users={users} assets_TypeGroup={assets_TypeGroup} setTimer={setTimer} fetchData={fetchData}/>,
         }}
         sx={(theme) => ({
-          '--DataGrid-overlayHeight': '300px',
           '& .MuiDataGrid-columnHeader': {
             borderRight: '1px solid #303030',
             color: '#f0f0f0',
