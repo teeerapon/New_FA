@@ -190,12 +190,12 @@ export default function ChatCard({ nac_type, createDoc }: DataFromHeader) {
   const fetDataUsers = async () => {
     try {
       const res = await Axios.get(
-        `${dataConfig.http}/getsUserForAssetsControl`,
+        `${dataConfig.http}/User_List`,
         dataConfig.headers
       );
 
       if (res.status === 200) {
-        setDataUsers(res.data.data)
+        setDataUsers(res.data)
       }
     } catch (error) {
       console.error("Error fetching profile:", error);

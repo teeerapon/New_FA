@@ -109,7 +109,7 @@ export default function Profile() {
     <Card
       variant="outlined"
       sx={{
-        width: "100%",
+        width: "100vw",
         maxWidth: "100vw", // ขยายความกว้างให้เต็ม viewport
         margin: "0 auto", // จัดกึ่งกลาง
       }}

@@ -181,9 +181,9 @@ export default function Create() {
 
     const fetData = async () => {
       // แสดง users ทั้งหมด
-      await Axios.get(dataConfig.http + '/getsUserForAssetsControl', dataConfig.headers)
+      await Axios.get(dataConfig.http + '/User_List', dataConfig.headers)
         .then((res) => {
-          setUsers(res.data.data)
+          setUsers(res.data)
         })
 
       // รหัสทรัพย์สินทั้งหมด

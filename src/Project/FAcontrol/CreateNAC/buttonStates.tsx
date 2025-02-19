@@ -464,7 +464,7 @@ export default function ButtonStates({ createDoc, setOpenBackdrop, detailNAC, id
             {!createDoc[0].nac_code && <Button variant="contained" endIcon={<SendIcon />} onClick={submitDoc}>SUBMIT</Button>}
             {
               (([11].includes(createDoc[0].nac_status ?? 0) && checkAt)
-                || (createDoc[0].nac_code && [11, 12, 16].some((val) => parsedPermission.includes(val)) && [11, 13, 15, 5].includes(createDoc[0].nac_status ?? 0))
+                || (createDoc[0].nac_code && [11, 12, 16].some((val) => parsedPermission.includes(val)) && [11, 13, 15, 5, 18, 19].includes(createDoc[0].nac_status ?? 0))
                 || [1, 12, 4].includes(createDoc[0].nac_status ?? 0)) &&
               <Button variant="contained" endIcon={<SendIcon />} onClick={() => checkWorkflow(workflowApproval, createDoc[0].sum_price ?? 0)}>SUBMIT</Button>
             }

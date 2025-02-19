@@ -6,7 +6,8 @@ export interface DataUser {
   UserCode: string;        // รหัสผู้ใช้
   Name: string | null;            // ชื่อเต็มของผู้ใช้
   BranchID: number;        // รหัสสาขา
-  DepID: number;           // รหัสแผนก
+  DepID: number;
+  SecCode: string | null;    // รหัสแผนก
   Email: string | null;           // อีเมลผู้ใช้
   DepCode: string;         // รหัสแผนก
   UserType: string | null; // ประเภทผู้ใช้ อาจเป็น string หรือ null
@@ -15,6 +16,7 @@ export interface DataUser {
   img_profile: string | null | undefined;
   Tel: string | null | undefined;
   Position: string | null | undefined;
+  PositionID: number;
   PositionCode: string | null | undefined;
   Actived: boolean;
   EmpUpper: string | null | undefined;
@@ -199,6 +201,7 @@ export interface Department {
   depid: number;
   depcode: string;
   name: string;
+  FuncID: number;
   depname: string;
 }
 
@@ -396,4 +399,30 @@ export interface Assets_TypeGroup {
   typeCode: string;
   typeName: string;
   typeMenu: number;
+}
+
+export interface HierarchyData {
+  FuncCode: string | null;
+  DepID: number | null; // อาจเป็น null ถ้าไม่มีข้อมูลใน Department
+  DepCode: string;
+  SecCode: string;
+  SecName: string;
+  FuncName: string;
+  name: string;
+  OwnerCode: string | null; // อาจเป็น null ถ้าไม่มี OwnerID
+  PositionCode: string | null; // อาจเป็น null ถ้าไม่มีตำแหน่ง
+  Level: number;
+}
+
+export interface EmployeeNode {
+  [x: string]: any;
+  id: string;
+  funcCode: string | null;
+  funcName: string | null;
+  depCode: string | null;
+  depName: string | null;
+  secCode: string | null;
+  secName: string | null;
+  label: string;
+  children?: EmployeeNode[];
 }

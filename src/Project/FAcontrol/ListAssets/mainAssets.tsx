@@ -214,9 +214,9 @@ export default function ListNacPage() {
         .then(async responsePermission => {
           setPermission_menuID(responsePermission.data.data.map((res: { Permission_MenuID: number; }) => res.Permission_MenuID))
           // แสดง users ทั้งหมด
-          await Axios.get(dataConfig.http + '/getsUserForAssetsControl', dataConfig.headers)
+          await Axios.get(dataConfig.http + '/User_List', dataConfig.headers)
             .then((res) => {
-              setUsers(res.data.data)
+              setUsers(res.data)
             })
 
           const resFetchAssets = await Axios.get(dataConfig.http + '/FA_Control_Assets_TypeGroup', dataConfig.headers)
