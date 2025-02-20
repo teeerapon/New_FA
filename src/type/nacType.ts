@@ -135,6 +135,12 @@ export interface FAControlCreateDetail {
   nac_code: string | null | undefined;
   nacdtl_row: number | null | undefined; // แถวของ Detail
   nacdtl_assetsCode: string | null | undefined; // assets code
+  OwnerCode: string | null | undefined;
+  nacdtl_assetsName: string | null | undefined;
+  nacdtl_assetsSeria: string | null | undefined;
+  nacdtl_assetsDtl: string | null | undefined;
+  nacdtl_assetsPrice: number;
+  create_date: Dayjs | null | undefined;
   nacdtl_bookV: number | null | undefined;
   nacdtl_PriceSeals: number | null | undefined;
   nacdtl_profit: number | null | undefined;
@@ -156,6 +162,7 @@ export interface ListNACHeaders {
   source_userid: string | null | undefined;
   des_userid: string | null | undefined;
   userid_approver: string | null | undefined;
+  TypeCode: string | null | undefined;
 }
 
 export interface FilterListNACHeaders {

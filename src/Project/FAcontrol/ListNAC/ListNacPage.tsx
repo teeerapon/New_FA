@@ -1,14 +1,15 @@
 import { GridActionsCellItem, GridCellParams, GridColDef, GridRenderCellParams, GridRowParams, useGridApiContext } from "@mui/x-data-grid"
 import DataTable from "./DataTable"
 import React from "react";
-import { ListNACHeaders, FilterListNACHeaders } from '../../../type/nacType';
-import { Stack, Typography, AppBar, Container, Toolbar, Autocomplete, TextField, Box, FormControl, Select, SelectChangeEvent, CssBaseline, Card } from "@mui/material";
+import { ListNACHeaders, FilterListNACHeaders, NACDetailHistory, Assets_TypeGroup } from '../../../type/nacType';
+import { Stack, Typography, AppBar, Container, Toolbar, Autocomplete, TextField, Box, FormControl, Select, SelectChangeEvent, CssBaseline, Card, Tab, Tabs } from "@mui/material";
 import Swal from "sweetalert2";
 import DeleteIcon from '@mui/icons-material/Delete';
 import ArticleIcon from '@mui/icons-material/Article'
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import ErrorIcon from '@mui/icons-material/Error';
 import Chip from '@mui/material/Chip';
+import Grid from '@mui/material/Grid2';
 import { dataConfig } from "../../../config";
 import Axios from 'axios';
 import { Outlet, useNavigate } from "react-router";
@@ -49,6 +50,8 @@ export default function ListNacPage() {
   const [loading, setLoading] = React.useState<boolean>(true);
   const [nac_status, setNac_status] = React.useState<{ nac_status_id: number; status_name: string; }[]>([]);
   const [originalRows, setOriginalRows] = React.useState<ListNACHeaders[]>([]);
+  const [typeGroup, setTypeGroup] = React.useState<Assets_TypeGroup[]>([]);
+  const [typeString, setTypeString] = React.useState<string | null>('');
   const [filterNAC, setFilterNAC] = React.useState<Partial<ListNACHeaders>>({
     nac_code: undefined,
     name: undefined,
@@ -379,6 +382,11 @@ export default function ListNacPage() {
     // Fetch NAC data and filter data from localStorage
     const fetchData = async () => {
       try {
+        const resFetchAssets = await Axios.get(dataConfig.http + '/FA_Control_Assets_TypeGroup', dataConfig.headers)
+        const resData: Assets_TypeGroup[] = resFetchAssets.data
+        setTypeGroup(resData)
+        setTypeString(resData[0].typeCode)
+
         const response = await Axios.post(
           dataConfig.http + url,
           { usercode: parsedData.UserCode },
@@ -395,7 +403,7 @@ export default function ListNacPage() {
         }
 
         if (response.status === 200) {
-          setRows(response.data.data);
+          setRows(response.data.data.filter((res: ListNACHeaders) => res.TypeCode === resData[0].typeCode));
           setOriginalRows(response.data.data);
           setLoading(false)
         } else {
@@ -536,6 +544,28 @@ export default function ListNacPage() {
           <Chip icon={<CheckCircleIcon fontSize="small" color="primary" />} label="ผ่านการตรวจสอบแล้ว" />
           <Chip icon={<CheckCircleIcon fontSize="small" color="success" />} label="ผ่านการอุนมัติแล้ว" />
         </Stack>
+        <Grid container spacing={2} sx={{ py: 1 }}>
+          <Grid justifyContent="flex-start" size={12} sx={{ mt: 2 }}>
+            <Tabs
+              // originalRows
+              value={typeString}
+              onChange={(event: React.SyntheticEvent, newValue: string) => {
+                const newData = originalRows.filter((res: ListNACHeaders) => res.TypeCode === newValue)
+                setRows(newData)
+                setTypeString(newValue);
+              }}
+            >
+              {typeGroup.map((res) => (
+                <Tab
+                  label={`${res.typeCode} (${res.typeName})`}
+                  value={res.typeCode}
+                  key={res.typeGroupID}
+                  sx={{ textTransform: 'none' }}
+                />
+              ))}
+            </Tabs>
+          </Grid>
+        </Grid>
         <Card variant="outlined">
           <DataTable
             rows={rows}

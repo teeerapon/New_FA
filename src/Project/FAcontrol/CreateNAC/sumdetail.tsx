@@ -50,28 +50,18 @@ const NumericFormatCustom = React.forwardRef<NumericFormatProps, CustomProps>(
 export default function SumDetail({ detailNAC, dataAssets, idSection, createDoc, setCreateDoc }: DataFromHeader) {
 
   const totalPrice = detailNAC.reduce((sum, item) => {
-    return item.nacdtl_assetsCode ? sum + dataAssets.filter(res => res.Code === item.nacdtl_assetsCode)[0].Price : sum;
+    const asset = dataAssets.find(res => res.Code === item.nacdtl_assetsCode);
+    return sum + (asset?.Price ?? 0);
   }, 0);
 
-  const totalPriceSeals = detailNAC.reduce((sum, item) => {
-    return item.nacdtl_PriceSeals ? sum + item.nacdtl_PriceSeals : sum;
-  }, 0);
+  const totalPriceSeals = detailNAC.reduce((sum, item) => sum + (item.nacdtl_PriceSeals ?? 0), 0);
 
-  const totalBookValue = detailNAC.reduce((sum, item) => {
-    return item.nacdtl_bookV ? sum + item.nacdtl_bookV : sum;
-  }, 0);
+  const totalBookValue = detailNAC.reduce((sum, item) => sum + (item.nacdtl_bookV ?? 0), 0);
 
-  const totalExVat = detailNAC.reduce((sum, item) => {
-    // ตรวจสอบว่ามีค่าของ `nacdtl_PriceSeals` และ `nacdtl_bookV` หรือไม่
-    const priceSeals = item.nacdtl_PriceSeals ?? 0;
+  const totalExVat = detailNAC.reduce((sum, item) => sum + (item.nacdtl_PriceSeals ?? 0) * (100 / 107), 0);
 
-    // รวมค่าทั้งสองและเพิ่มไปยัง sum
-    return sum + priceSeals * (100 / 107);
-  }, 0);
+  const totalProfit = detailNAC.reduce((sum, item) => sum + (item.nacdtl_profit ?? 0), 0);
 
-  const totalProfit = detailNAC.reduce((sum, item) => {
-    return item.nacdtl_profit ? sum + item.nacdtl_profit : sum;
-  }, 0);
 
   return (
     <React.Fragment>
@@ -139,7 +129,7 @@ export default function SumDetail({ detailNAC, dataAssets, idSection, createDoc,
               <TextField
                 name="numberformat"
                 id="formatted-numberformat-input"
-                value={((typeof totalPriceSeals === 'number') ? totalPriceSeals : 0)-((typeof totalBookValue === 'number') ? totalBookValue : 0)}
+                value={((typeof totalPriceSeals === 'number') ? totalPriceSeals : 0) - ((typeof totalBookValue === 'number') ? totalBookValue : 0)}
                 slotProps={{
                   input: {
                     inputComponent: NumericFormatCustom as any,

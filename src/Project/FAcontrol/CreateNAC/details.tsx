@@ -12,6 +12,7 @@ import FilePresentIcon from '@mui/icons-material/FilePresent';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import CloseIcon from '@mui/icons-material/Close';
 import { styled } from '@mui/material/styles';
+import dayjs from 'dayjs';
 
 const BootstrapDialog = styled(Dialog)(({ theme }) => ({
   '& .MuiDialogContent-root': {
@@ -41,7 +42,7 @@ const NumericFormatCustom = React.forwardRef<NumericFormatProps, CustomProps>(
         {...other}
         getInputRef={ref}
         onValueChange={(values: { value: string }) => {
-          onChange({
+          onChange?.({
             target: {
               name: props.name,
               value: values.value,
@@ -55,7 +56,7 @@ const NumericFormatCustom = React.forwardRef<NumericFormatProps, CustomProps>(
       />
     );
   },
-);
+)
 
 function CaluculatedExVat(nacdtl_PriceSeals: number | null | undefined) {
   if (nacdtl_PriceSeals) {
@@ -100,6 +101,12 @@ export default function Source({ dataAssets, detailNAC, setDetailNAC, columnDeta
         nac_code: undefined,
         nacdtl_row: undefined,
         nacdtl_assetsCode: undefined,
+        OwnerCode: undefined,
+        nacdtl_assetsName: undefined,
+        nacdtl_assetsSeria: undefined,
+        nacdtl_assetsDtl: undefined,
+        nacdtl_assetsPrice: 0,
+        create_date: undefined,
         nacdtl_bookV: undefined,
         nacdtl_PriceSeals: undefined,
         nacdtl_profit: undefined,
@@ -287,7 +294,7 @@ export default function Source({ dataAssets, detailNAC, setDetailNAC, columnDeta
                   return (
                     <StyledTableCell key={`serialNo-${index}`} colSpan={res.col}>
                       <Stack sx={{ justifyContent: "center", alignItems: "flex-start" }}>
-                        {resDtl.nacdtl_assetsCode ? dataAssets.filter(res => res.Code === resDtl.nacdtl_assetsCode)[0].SerialNo : ""}
+                        {resDtl.nacdtl_assetsSeria || ""}
                       </Stack>
                     </StyledTableCell>
                   );
@@ -295,7 +302,7 @@ export default function Source({ dataAssets, detailNAC, setDetailNAC, columnDeta
                   return (
                     <StyledTableCell key={`name-${index}`} colSpan={res.col}>
                       <Stack sx={{ justifyContent: "center", alignItems: "flex-start" }}>
-                        {resDtl.nacdtl_assetsCode ? dataAssets.filter(res => res.Code === resDtl.nacdtl_assetsCode)[0].Name : ""}
+                        {resDtl.nacdtl_assetsName || ""}
                       </Stack>
                     </StyledTableCell>
                   );
@@ -303,7 +310,7 @@ export default function Source({ dataAssets, detailNAC, setDetailNAC, columnDeta
                   return (
                     <StyledTableCell key={`date_asset-${index}`} colSpan={res.col}>
                       <Stack sx={{ justifyContent: "center", alignItems: "flex-start" }}>
-                        {resDtl.nacdtl_assetsCode ? formatDate(dataAssets.filter(res => res.Code === resDtl.nacdtl_assetsCode)[0].CreateDate) : ""}
+                        {dayjs(resDtl.create_date).format('DD/MM/YYYY HH:mm') || ""}
                       </Stack>
                     </StyledTableCell>
                   );
@@ -311,7 +318,7 @@ export default function Source({ dataAssets, detailNAC, setDetailNAC, columnDeta
                   return (
                     <StyledTableCell key={`OwnerCode-${index}`} colSpan={res.col}>
                       <Stack sx={{ justifyContent: "center", alignItems: "flex-start" }}>
-                        {resDtl.nacdtl_assetsCode ? dataAssets.filter(res => res.Code === resDtl.nacdtl_assetsCode)[0].OwnerCode : ""}
+                        {resDtl.OwnerCode || ""}
                       </Stack>
                     </StyledTableCell>
                   );
@@ -319,7 +326,7 @@ export default function Source({ dataAssets, detailNAC, setDetailNAC, columnDeta
                   return (
                     <StyledTableCell key={`detail-${index}`} colSpan={res.col}>
                       <Stack sx={{ justifyContent: "center", alignItems: "flex-start" }}>
-                        {resDtl.nacdtl_assetsCode ? dataAssets.filter(res => res.Code === resDtl.nacdtl_assetsCode)[0].Details : ""}
+                        {resDtl.nacdtl_assetsDtl || ""}
                       </Stack>
                     </StyledTableCell>
                   );
@@ -329,7 +336,7 @@ export default function Source({ dataAssets, detailNAC, setDetailNAC, columnDeta
                       <TextField
                         name="numberformat"
                         id="formatted-numberformat-input"
-                        value={resDtl.nacdtl_assetsCode ? dataAssets.filter(res => res.Code === resDtl.nacdtl_assetsCode)[0].Price : ""}
+                        value={(typeof resDtl.nacdtl_assetsPrice === 'number') ? resDtl.nacdtl_assetsPrice : ""}
                         slotProps={{
                           input: {
                             inputComponent: NumericFormatCustom as any,
