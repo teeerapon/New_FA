@@ -65,6 +65,8 @@ const App: React.FC = () => {
           <Route path="/History_of_Assets" element={<HistoryList />} />
           <Route path="/Profile" element={<Profile />} />
           <Route path="/ControlSection" element={<ControlSection />} />
+          <Route path="/EBookBranch" element={<MainEbookAssets />} />
+          <Route path="/Account_BrnachAssets" element={<MainAssets />} />
           {/* Profile */}
         </Routes>
       </Box>
