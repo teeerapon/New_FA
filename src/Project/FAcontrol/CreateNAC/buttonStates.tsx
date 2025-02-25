@@ -425,6 +425,7 @@ export default function ButtonStates({ createDoc, setOpenBackdrop, detailNAC, id
       for (let i = 0; i < requestData.length; i++) {
         const response = await Axios.post(dataConfig.http + '/FA_Control_Create_Detail_NAC', requestData[i], dataConfig.headers);
         if (response.status === 200 && (response.data[0].count_nac === requestData.length)) {
+          await Axios.post(dataConfig.http + '/store_FA_SendMail', { nac_code: nac_code }, dataConfig.headers);
           setOpenBackdrop(false);
           Swal.fire({
             icon: "success",

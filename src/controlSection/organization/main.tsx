@@ -1,46 +1,189 @@
 import * as React from 'react';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
-import { CardHeader, Divider, Stack, Typography } from '@mui/material';
-import { DataUser, EmployeeNode, HierarchyData } from '../../type/nacType';
+import { Autocomplete, Avatar, CardHeader, Chip, Divider, Stack, TextField, Typography } from '@mui/material';
+import { DataUser, EmployeeNode, HierarchyData, Employee } from '../../type/nacType';
 import Axios from 'axios';
 import { dataConfig } from '../../config';
 import { styled, alpha } from '@mui/material/styles';
+import CheckIcon from '@mui/icons-material/Check';
+import IconButton from '@mui/material/IconButton';
 import { RichTreeView } from '@mui/x-tree-view/RichTreeView';
-import { TreeItem, treeItemClasses } from '@mui/x-tree-view/TreeItem';
+import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
+import {
+  TreeItem2,
+  TreeItem2Label,
+  TreeItem2Props,
+} from '@mui/x-tree-view/TreeItem2';
+import {
+  UseTreeItem2LabelInputSlotOwnProps,
+  UseTreeItem2LabelSlotOwnProps,
+  useTreeItem2,
+} from '@mui/x-tree-view/useTreeItem2';
+import { useTreeItem2Utils } from '@mui/x-tree-view/hooks';
 import { TreeViewBaseItem } from '@mui/x-tree-view/models';
 
-const CustomTreeItem = styled(TreeItem)(({ theme }) => ({
-  color: theme.palette.grey[200],
-  [`& .${treeItemClasses.content}`]: {
-    borderRadius: theme.spacing(0.5),
-    padding: theme.spacing(0.5, 1),
-    margin: theme.spacing(0.2, 0),
-    [`& .${treeItemClasses.label}`]: {
-      fontSize: '0.8rem',
-      fontWeight: 500,
-    },
-  },
-  [`& .${treeItemClasses.iconContainer}`]: {
-    borderRadius: '50%',
-    backgroundColor: theme.palette.primary.dark,
-    padding: theme.spacing(0, 1.2),
-    ...theme.applyStyles('light', {
-      backgroundColor: alpha(theme.palette.primary.main, 0.25),
-    }),
-    ...theme.applyStyles('dark', {
-      color: theme.palette.primary.contrastText,
-    }),
-  },
-  [`& .${treeItemClasses.groupTransition}`]: {
-    marginLeft: 15,
-    paddingLeft: 18,
-    borderLeft: `1px dashed ${alpha(theme.palette.text.primary, 0.4)}`,
-  },
-  ...theme.applyStyles('light', {
-    color: theme.palette.grey[800],
-  }),
+type ExtendedTreeItemProps = {
+  editable?: boolean;
+  id: string;
+  label: string;
+  usercode: string;
+  position: string;
+};
+
+const StyledTextField = styled(TextField)(({ theme }) => ({
+  ...theme.typography.body1,
+  backgroundColor: theme.palette.background.paper,
+  borderRadius: theme.shape.borderRadius,
+  border: "none",
+  boxSizing: "border-box",
+  width: 150,
 }));
+
+function Label({ children, ...other }: UseTreeItem2LabelSlotOwnProps) {
+  return (
+    <TreeItem2Label
+      {...other}
+      sx={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 2,
+        justifyContent: 'space-between',
+        minHeight: 30,
+      }}
+    >
+      {children}
+    </TreeItem2Label>
+  );
+}
+
+interface CustomLabelInputProps extends UseTreeItem2LabelInputSlotOwnProps {
+  handleCancelItemLabelEditing: (event: React.SyntheticEvent) => void;
+  handleSaveItemLabel: (event: React.SyntheticEvent, label: string) => void;
+  item: TreeViewBaseItem<ExtendedTreeItemProps>;
+}
+
+const LabelInput = React.forwardRef(function LabelInput(
+  {
+    item,
+    handleCancelItemLabelEditing,
+    handleSaveItemLabel,
+    ...props
+  }: Omit<CustomLabelInputProps, 'ref'>,
+  ref: React.Ref<HTMLInputElement>,
+) {
+  const [users, setUsers] = React.useState<DataUser[]>([]);
+
+  const [initialNameValue, setInitialNameValue] = React.useState({
+    name: item.usercode,
+    label: item.label,
+    positin: item.position,
+  });
+
+  const [nameValue, setNameValue] = React.useState({
+    name: item.usercode,
+    label: item.label,
+    positin: item.position,
+  });
+
+  const handleNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setNameValue((prev) => ({ ...prev, name: event.target.value }));
+  };
+
+  const reset = () => {
+    setNameValue(initialNameValue);
+  };
+
+  const save = () => {
+    setInitialNameValue(nameValue);
+  };
+
+  const fetchDataUsers = async () => {
+    try {
+      // ดึงข้อมูล users ทั้งหมด
+      const userResponse = await Axios.get(`${dataConfig.http}/User_List`, dataConfig.headers);
+      if (userResponse.status === 200) {
+        setUsers(userResponse.data);
+      }
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
+  };
+
+  if (users.length === 0) {
+    fetchDataUsers()
+  }
+
+  return (
+    <React.Fragment>
+      <Autocomplete
+        freeSolo
+        options={users.map((option) => option.UserCode)}
+        value={nameValue.name}
+        renderInput={(params) => <StyledTextField {...params} size="small" />}
+      />
+      {nameValue.label}
+      <IconButton
+        color="success"
+        size="small"
+        onClick={(event: React.MouseEvent) => {
+          handleSaveItemLabel(event, `${nameValue.name} ${nameValue.label}`);
+          save();
+        }}
+      >
+        <CheckIcon fontSize="small" />
+      </IconButton>
+      <IconButton
+        color="error"
+        size="small"
+        onClick={(event: React.MouseEvent) => {
+          handleCancelItemLabelEditing(event);
+          reset();
+        }}
+      >
+        <CloseRoundedIcon fontSize="small" />
+      </IconButton>
+    </React.Fragment>
+  );
+});
+
+const CustomTreeItem2 = React.forwardRef(function CustomTreeItem2(
+  props: TreeItem2Props,
+  ref: React.Ref<HTMLLIElement>,
+) {
+  const { interactions } = useTreeItem2Utils({
+    itemId: props.itemId,
+    children: props.children,
+  });
+  const { publicAPI } = useTreeItem2(props);
+
+  const handleInputBlur: UseTreeItem2LabelInputSlotOwnProps['onBlur'] = (event) => {
+    event.defaultMuiPrevented = true;
+  };
+
+  const handleInputKeyDown: UseTreeItem2LabelInputSlotOwnProps['onKeyDown'] = (
+    event,
+  ) => {
+    event.defaultMuiPrevented = true;
+  };
+
+  return (
+    <TreeItem2
+      {...props}
+      ref={ref}
+      slots={{ label: Label, labelInput: LabelInput }}
+      slotProps={{
+        labelInput: {
+          item: publicAPI.getItem(props.itemId),
+          onBlur: handleInputBlur,
+          onKeyDown: handleInputKeyDown,
+          handleCancelItemLabelEditing: interactions.handleCancelItemLabelEditing,
+          handleSaveItemLabel: interactions.handleSaveItemLabel,
+        } as any,
+      }}
+    />
+  );
+});
 
 export default function Profile() {
   const data = localStorage.getItem('data');
@@ -71,8 +214,10 @@ export default function Profile() {
               กรรมการผู้จัดการ [MD]
             </Typography>
           ,
-          label: `${MD} กรรมการผู้จัดการ [MD]`,
+          label: `กรรมการผู้จัดการ [MD]`,
           position: `MD`,
+          usercode: MD,
+          editable: true,
           children: []
         });
       }
@@ -88,10 +233,11 @@ export default function Profile() {
           secCode: null,
           secName: null,
           label: `
-          ${FM} [FM]
-          ${funcFun.find((res) => res.OwnerCode === FM)?.FuncName} [${funcFun.find((res) => res.OwnerCode === FM)?.FuncCode}]
+          [FM] ${funcFun.find((res) => res.OwnerCode === FM)?.FuncName} [${funcFun.find((res) => res.OwnerCode === FM)?.FuncCode}]
           `,
           position: `FM`,
+          usercode: FM,
+          editable: true,
           children: []
         };
         fmMap.set(FM, fmNode);
@@ -109,10 +255,11 @@ export default function Profile() {
           secCode: null,
           secName: null,
           label: `
-          ${DM} [DM]
-          ${funcFun.find((res) => res.OwnerCode === DM)?.name} [${funcFun.find((res) => res.OwnerCode === DM)?.DepCode}]
+          [DM] ${funcFun.find((res) => res.OwnerCode === DM)?.name} [${funcFun.find((res) => res.OwnerCode === DM)?.DepCode}]
           `,
           position: `DM`,
+          usercode: DM,
+          editable: true,
           children: []
         };
         dmMap.set(DM, dmNode);
@@ -130,10 +277,11 @@ export default function Profile() {
           secCode: funcFun.find((res) => res.OwnerCode === SM)?.SecCode ?? null,
           secName: funcFun.find((res) => res.OwnerCode === SM)?.SecName ?? null,
           label: `
-          ${SM} [SM]
-          ${funcFun.find((res) => res.OwnerCode === SM)?.SecName} [${funcFun.find((res) => res.OwnerCode === SM)?.SecCode}]
+          [SM] ${funcFun.find((res) => res.OwnerCode === SM)?.SecName} [${funcFun.find((res) => res.OwnerCode === SM)?.SecCode}]
           `,
           position: `SM`,
+          usercode: SM,
+          editable: true,
           children: []
         };
         smMap.set(SM, smNode);
@@ -150,8 +298,10 @@ export default function Profile() {
           secCode: funcFun.find((res) => res.OwnerCode === ST)?.SecCode ?? null,
           secName: funcFun.find((res) => res.OwnerCode === ST)?.SecName ?? null,
           id: `${SM}_${ST}`,
-          label: `${ST} [${funcFun.find(res => res.OwnerCode === ST)?.PositionCode}]`,
+          label: `[${users.find(res => res.UserCode === ST)?.PositionCode}]`,
           position: `ST`,
+          usercode: ST,
+          editable: true,
         });
       }
     });
@@ -160,38 +310,48 @@ export default function Profile() {
 
 
 
-  const fetData = async () => {
-
-    // แสดง users ทั้งหมด
-    await Axios.get(dataConfig.http + '/User_List', dataConfig.headers)
-      .then((res) => {
-        setUsers(res.data)
-      })
-
-    // Fetch department list
-    const respobse_department = await Axios.get(`${dataConfig.http}/Organization_List`, dataConfig.headers)
-    if (respobse_department.data) {
-      const newArray = respobse_department.data
-      const respobse_Position = await Axios.get(`${dataConfig.http}/User_List_ByPosition`, dataConfig.headers)
-      if (respobse_Position.data) {
-        const transformedData = transformData(respobse_Position.data, newArray);
-        setTreeData(transformedData);
+  const fetchDataUsers = async () => {
+    try {
+      // ดึงข้อมูล users ทั้งหมด
+      const userResponse = await Axios.get(`${dataConfig.http}/User_List`, dataConfig.headers);
+      if (userResponse.status === 200) {
+        setUsers(userResponse.data);
       }
+    } catch (error) {
+      console.error("Error fetching data:", error);
     }
+  };
 
+  const fetchDataPosition = async () => {
+    try {
+      // ดึงข้อมูลแผนก
+      const departmentResponse = await Axios.get(`${dataConfig.http}/Organization_List`, dataConfig.headers);
+      if (!departmentResponse.data) return;
+
+      // ดึงข้อมูลตำแหน่ง
+      const positionResponse = await Axios.get(`${dataConfig.http}/User_List_ByPosition`, dataConfig.headers);
+      if (!positionResponse.data) return;
+
+      // แปลงข้อมูลและอัปเดต state
+      const transformedData = transformData(positionResponse.data, departmentResponse.data);
+      setTreeData(transformedData);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
+  };
+
+  if (users.length === 0) {
+    fetchDataUsers();
   }
 
-  React.useEffect(() => {
-    fetData();
-  }, [])
+  if (users.length > 0) {
+    fetchDataPosition();
+  }
 
-  // const renderTree = (nodes: EmployeeNode) => (
-  //   <TreeItem key={nodes.id} nodeId={nodes.id} label={nodes.name}>
-  //     {Array.isArray(nodes.children) && nodes.children.length > 0
-  //       ? nodes.children.map((child) => renderTree(child))
-  //       : null}
-  //   </TreeItem>
-  // );
+
+  // React.useEffect(() => {
+  //   fetchDataUsers();
+  // }, [])
 
   return (
     <React.Fragment>
@@ -221,11 +381,79 @@ export default function Profile() {
         />
         <Divider />
         <CardContent sx={{ width: '100%' }}>
-          <RichTreeView
-            defaultExpandedItems={['grid']}
-            slots={{ item: CustomTreeItem }}
-            items={treeData}
-          />
+          {/* {(users.length === 0 || treeData.length === 0) ? 'Loading...' : (
+            <RichTreeView
+              slots={{ item: CustomTreeItem2 }}
+              experimentalFeatures={{ labelEditing: true }}
+              getItemLabel={(item) => `${item.usercode} ${item.label}`}
+              isItemEditable
+              items={treeData}
+            />
+          )} */}
+          <Stack
+            spacing={2}
+            useFlexGap
+            sx={{
+              flexWrap: 'wrap',
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
+            {treeData.map((resMD) => (
+              <React.Fragment>
+                <Stack sx={{ border: '1px solid', p: 1 }}>
+                  <Chip avatar={<Avatar>{resMD.position}</Avatar>} label={resMD.usercode} variant="outlined" />
+                </Stack>
+                <Stack>
+                  <Stack
+                    direction="row"
+                    spacing={2}
+                    useFlexGap
+                    sx={{
+                      justifyContent: "center",
+                      alignItems: "center",
+                      flexWrap: 'wrap'
+                    }}
+                  >
+                    {resMD.children?.map((resFM) => (
+                      <Stack
+                        spacing={2}
+                        useFlexGap
+                        sx={{
+                          flexWrap: 'wrap',
+                          justifyContent: "center",
+                          alignItems: "center",
+                          border: '1px solid', p: 1
+                        }}
+                      >
+                        <Stack>
+                          <Chip avatar={<Avatar>{resFM.position}</Avatar>} label={resFM.usercode} variant="outlined" />
+                        </Stack>
+                        <Stack>
+                          <Stack
+                            direction="row"
+                            spacing={2}
+                            useFlexGap
+                            sx={{
+                              justifyContent: "center",
+                              alignItems: "center",
+                              flexWrap: 'wrap'
+                            }}
+                          >
+                            {resFM.children?.map((resDM) => (
+                              <Stack>
+                                <Chip avatar={<Avatar>{resDM.position}</Avatar>} label={resDM.usercode} variant="outlined" />
+                              </Stack>
+                            ))}
+                          </Stack>
+                        </Stack>
+                      </Stack>
+                    ))}
+                  </Stack>
+                </Stack>
+              </React.Fragment>
+            ))}
+          </Stack>
         </CardContent>
       </Card>
     </React.Fragment >

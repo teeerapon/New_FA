@@ -310,7 +310,7 @@ export default function Source({ dataAssets, detailNAC, setDetailNAC, columnDeta
                   return (
                     <StyledTableCell key={`date_asset-${index}`} colSpan={res.col}>
                       <Stack sx={{ justifyContent: "center", alignItems: "flex-start" }}>
-                        {dayjs(resDtl.create_date).format('DD/MM/YYYY HH:mm') || ""}
+                        {resDtl.create_date && dayjs(resDtl.create_date).format('DD/MM/YYYY HH:mm')}
                       </Stack>
                     </StyledTableCell>
                   );

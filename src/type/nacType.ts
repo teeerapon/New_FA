@@ -433,3 +433,14 @@ export interface EmployeeNode {
   label: string;
   children?: EmployeeNode[];
 }
+
+export interface Employee {
+  id: string;
+  funcCode: string | null;
+  funcName: string | null;
+  depCode: string | null;
+  depName: string | null;
+  secCode: string | null;
+  secName: string | null;
+  label: string;
+}

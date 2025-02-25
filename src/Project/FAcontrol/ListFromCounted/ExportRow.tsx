@@ -41,7 +41,9 @@ export const exportToExcel = (rows: CountAssetRow[]) => {
     { key: 'detail', header: 'สถานะล่าสุด', },
     { key: 'Reference', header: 'สถานะครั้งนี้', },
     { key: 'comment', header: 'Comment', },
-    { key: 'remarker', header: 'ผลการตรวจนับ', }
+    { key: 'remarker', header: 'ผลการตรวจนับ', },
+    { key: 'ImagePath', header: 'รูปภาพที่ 1', },
+    { key: 'ImagePath_2', header: 'รูปภาพที่ 2', }
   ];
 
   // Add headers to worksheet
@@ -75,6 +77,8 @@ export const exportToExcel = (rows: CountAssetRow[]) => {
   rows.forEach(item => {
     const formattedItem = {
       ...item,
+      ImagePath: item.ImagePath ? 'Yes' : 'No',
+      ImagePath_2: item.ImagePath_2 ? 'Yes' : 'No',
     };
 
     const row = worksheet.addRow(formattedItem);
@@ -107,6 +111,17 @@ export const exportToExcel = (rows: CountAssetRow[]) => {
             break;
           default:
             cell.font = { color: { argb: '000000' } }; // Default to black if no match
+        }
+      }
+      // Apply font color for ImagePath and ImagePath_2
+      if (headers[colNumber - 1].key === 'ImagePath' || headers[colNumber - 1].key === 'ImagePath_2') {
+        switch (cell.value) {
+          case 'Yes':
+            cell.font = { color: { argb: '008000' } }; // Green for Yes
+            break;
+          case 'No':
+            cell.font = { color: { argb: 'FF0000' } }; // Red for No
+            break;
         }
       }
     });

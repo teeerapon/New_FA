@@ -153,6 +153,7 @@ export default function ListNacPage() {
           <GridActionsCellItem
             icon={<DeleteIcon />}
             label="Delete"
+            onClick={() => delete_period(params.row)}
             color="error"
           />,
         ];
@@ -180,6 +181,23 @@ export default function ListNacPage() {
       console.error('Error fetching data:', error);
     }
   }, [parsedData.UserCode]);
+
+  const delete_period = async (params: Period) => {
+    Swal.fire({
+      title: "Do you want to delete this peroid?",
+      showDenyButton: false,
+      showCancelButton: true,
+      confirmButtonText: `Yes`
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        await Axios.post(
+          dataConfig.http + `/delete_period`,
+          { PeriodID: params?.PeriodID },
+          dataConfig.headers
+        ).then(() => fetchData());
+      }
+    });
+  }
 
   React.useEffect(() => {
     setLoading(true)

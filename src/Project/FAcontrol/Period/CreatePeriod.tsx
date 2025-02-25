@@ -64,34 +64,37 @@ export default function ListNacPage() {
 
   const createPeriod = async () => {
     setLoading(true);
-    let allSuccess = true;
+    try {
+      // ส่งทุก request พร้อมกันด้วย Promise.all
+      const responses = await Axios.post(`${dataConfig.http}/craete_period`, rows[0], dataConfig.headers);
 
-    for (let i = 1; i > rows.length; i++) {
-      const res = await Axios.post(`${dataConfig.http}/craete_period`, rows[i], dataConfig.headers);
-      console.log(rows[i]);
-      if (res.status !== 200) {
-        allSuccess = false;
+      // ตรวจสอบว่าทุก response สำเร็จหรือไม่
+      if (responses.status === 200) {
+        setLoading(false);
+
+        await Swal.fire({
+          icon: responses.status === 200 ? "success" : "error",
+          title: responses.status === 200 ? "ทำรายการสำเร็จ" : "Some rows failed to process.",
+          showConfirmButton: false,
+          timer: 1500,
+        });
+
+        if (responses.status === 200) {
+          window.location.href = "/EditPeriod";
+        }
       }
-    }
-    if (allSuccess) {
-      setLoading(false);
-      await Swal.fire({
-        icon: "success",
-        title: "ทำรายการสำเร็จ",
-        showConfirmButton: false,
-        timer: 1500,
-      });
-      window.location.href = "/EditPeriod";
-    } else {
+    } catch (error) {
+      console.error("Error creating periods:", error);
       setLoading(false);
       await Swal.fire({
         icon: "error",
-        title: "Some rows failed to process.",
+        title: "เกิดข้อผิดพลาดในการส่งข้อมูล",
         showConfirmButton: false,
         timer: 1500,
       });
     }
   };
+
 
 
   React.useEffect(() => {
@@ -110,8 +113,6 @@ export default function ListNacPage() {
       await Axios.post<{ data: Department[] }>(`${dataConfig.http}/Department_List`, { branchid: parsedData.branchid }, dataConfig.headers)
         .then((response) => {
           const newArray = response.data.data.filter((dep) => dep.depid > 14);
-          console.log(newArray);
-
           setDepartment(newArray);
         })
         .catch((error) => {
@@ -479,7 +480,6 @@ export default function ListNacPage() {
                               keyID: rows[0]?.keyID ?? ""
                             }
                           });
-                          console.log(newData);
                           setRows(newData);
                         } else {
                           const newData = {
@@ -548,7 +548,6 @@ export default function ListNacPage() {
                               keyID: rows[0]?.keyID ?? ""
                             }
                           });
-                          console.log(newData);
                           setRows(newData);
                         } else {
                           const newData = {
@@ -597,7 +596,7 @@ export default function ListNacPage() {
                             begindate: dayjs.tz(new Date(), "Asia/Bangkok"),
                             enddate: dayjs.tz(new Date(), "Asia/Bangkok"),
                             branchid: newValue[0].BranchID.toString(),
-                            description: rows[0].description,
+                            description: rows[0]?.description ?? "",
                             usercode: parsedData.UserCode,
                             depcode: "",
                             personID: newValue[0].UserCode ?? "",  // Assign the newValue to personID
@@ -617,7 +616,6 @@ export default function ListNacPage() {
                               keyID: rows[0]?.keyID ?? ""
                             }
                           });
-                          console.log(newData);
                           setRows(newData);
                         } else {
                           const newData = {
