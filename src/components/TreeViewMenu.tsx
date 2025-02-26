@@ -148,8 +148,8 @@ export default function CustomStyling() {
       id: "NAC-5",
       menuName: OAIcon("ขายทรัพย์สิน", false),
       menu_url: "/NAC_CREATE",
-      permission: parsedData.branchid === 901,
-      permission_branch: parsedData.branchid === 901,
+      permission: true,
+      permission_branch: true,
     },
     {
       id: "NAC-4",

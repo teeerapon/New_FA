@@ -75,75 +75,86 @@ export default function ButtonStates({ createDoc, setOpenBackdrop, detailNAC, id
   };
 
   const submitDoc = async () => {
-
-    const uniquePrefixes = Array.from(
-      new Set(
-        detailNAC
-          .map(item => item.nacdtl_assetsCode?.substring(0, 2)) // ตัดตัวอักษร 2 ตัวแรก
-          .filter(prefix => prefix) // กรอง null หรือ undefined ออก
-      )
-    );
-
-    if (uniquePrefixes.length > 1) {
-      Swal.fire({
-        icon: "warning",
-        title: `พบรายการทรัพย์สินที่มีประเภทไม่ตรงกัน [${uniquePrefixes}]`,
-        showConfirmButton: false,
-        timer: 1500
-      })
-    } else {
-      try {
-        const header = [...createDoc]
-        header[0].usercode = parsedData.UserCode;
-        setHideBT(true);
-        setOpenBackdrop(true)
-        const missingFields = validateFields(createDoc[0]);
-        if (missingFields.length > 0) {
-          setOpenBackdrop(false)
-          setHideBT(false);
-          Swal.fire({
-            icon: "warning",
-            title: `กรุณาระบุข้อมูล ${missingFields.join(', ')} ให้ครบ`,
-            showConfirmButton: false,
-            timer: 1500
-          })
-          return; // Exit the function if there are missing fields
-        }
-        const res = await Axios.post(
-          dataConfig.http + '/FA_Control_Create_Document_NAC',
-          createDoc[0], // assuming you're sending only the first document
-          dataConfig.headers
-        );
-        if (res.status === 200) {
-          sendDataToAPI(res.data[0].nac_code)
-          if (createDoc[0].nac_status === 6) {
-            for (const item of detailNAC) {
-              const res = await Axios.post(
-                dataConfig.http + '/store_FA_control_upadate_table',
+    try {
+      // รวม FA และ SI ให้เป็นประเภทเดียวกัน
+      const uniquePrefixes = Array.from(
+        new Set(
+          detailNAC
+            .map(item => {
+              const prefix = (item.nacdtl_assetsCode ?? "").substring(0, 2); // กัน undefined
+              return ["FA", "SI"].includes(prefix) ? "FA" : prefix;
+            })
+            .filter(Boolean) // ลบค่า null หรือ undefined
+        )
+      );
+  
+      if (uniquePrefixes.length > 1) {
+        return Swal.fire({
+          icon: "warning",
+          title: `พบรายการทรัพย์สินที่มีประเภทไม่ตรงกัน [${uniquePrefixes}]`,
+          showConfirmButton: false,
+          timer: 1500
+        });
+      }
+  
+      // ตรวจสอบค่าว่าง
+      const missingFields = validateFields(createDoc[0]);
+      if (missingFields.length > 0) {
+        return Swal.fire({
+          icon: "warning",
+          title: `กรุณาระบุข้อมูล ${missingFields.join(", ")} ให้ครบ`,
+          showConfirmButton: false,
+          timer: 1500
+        });
+      }
+  
+      setHideBT(true);
+      setOpenBackdrop(true);
+  
+      // ส่งข้อมูล Header
+      const header = { ...createDoc[0], usercode: parsedData.UserCode };
+      const res = await Axios.post(
+        `${dataConfig.http}/FA_Control_Create_Document_NAC`,
+        header,
+        dataConfig.headers
+      );
+  
+      if (res.status === 200) {
+        sendDataToAPI(res.data[0].nac_code);
+  
+        // ถ้า nac_status === 6 ให้ส่งข้อมูล detailNAC
+        if (createDoc[0].nac_status === 6) {
+          await Promise.all(
+            detailNAC.map(item =>
+              Axios.post(
+                `${dataConfig.http}/store_FA_control_upadate_table`,
                 {
                   nac_code: createDoc[0].nac_code,
                   usercode: parsedData.UserCode,
                   nacdtl_assetsCode: item.nacdtl_assetsCode,
                   nac_type: createDoc[0].nac_type,
-                  nac_status: createDoc[0].nac_status,
-                }, // assuming you're sending only the first document
+                  nac_status: createDoc[0].nac_status
+                },
                 dataConfig.headers
-              );
-            }
-          }
+              )
+            )
+          );
         }
-      } catch (error) {
-        setOpenBackdrop(false)
-        setHideBT(false);
-        Swal.fire({
-          icon: "error",
-          title: `Error sending data to API: ${error}`,
-          showConfirmButton: false,
-          timer: 1500
-        })
       }
+    } catch (error) {
+      console.error("Error:", error);
+      Swal.fire({
+        icon: "error",
+        title: `Error sending data to API: ${error}`,
+        showConfirmButton: false,
+        timer: 1500
+      });
+    } finally {
+      setOpenBackdrop(false);
+      setHideBT(false);
     }
-  }
+  };
+  
 
   const checkWorkflow = (workflowApproval: WorkflowApproval[], sumPrice: number) => {
 

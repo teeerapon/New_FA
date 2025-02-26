@@ -43,9 +43,9 @@ export default function ListNacPage() {
   const navigate = useNavigate();
   const pathname = window.location.pathname;
   const data = localStorage.getItem('data');
-  const checkUserWeb = localStorage.getItem('sucurity');
+  // const checkUserWeb = localStorage.getItem('sucurity');
   const parsedData = data ? JSON.parse(data) : null;
-  const parsedUserWeb = checkUserWeb ? JSON.parse(checkUserWeb) : null;
+  // const parsedUserWeb = checkUserWeb ? JSON.parse(checkUserWeb) : null;
   const [rows, setRows] = React.useState<ListNACHeaders[]>([]);
   const [loading, setLoading] = React.useState<boolean>(true);
   const [nac_status, setNac_status] = React.useState<{ nac_status_id: number; status_name: string; }[]>([]);
@@ -266,7 +266,9 @@ export default function ListNacPage() {
 
               // Check conditions for disallowing deletion
               if (
-                (parsedUserWeb === 'admin' && [6, 17].includes(params.row.nac_status) && params.row.source_approve_userid) ||
+                (
+                  // parsedUserWeb === 'admin' && 
+                  [6, 17].includes(params.row.nac_status) && params.row.source_approve_userid) ||
                 (pathname === "/NAC_OPERATOR" && (parsedData.UserCode === params.row.create_by || parsedData.UserCode !== params.row.create_by) && params.row.source_approve_userid)
               ) {
                 Swal.fire({

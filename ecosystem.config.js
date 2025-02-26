@@ -1,11 +1,11 @@
 module.exports = {
     apps: [
       {
-        name: "NEW_FA_33051",
+        name: "NEW_FA_33001",
         script: "./server.js",
         env: {
           NODE_ENV: "production",
-          PORT: 33051
+          PORT: 33001
         }
       }
     ]

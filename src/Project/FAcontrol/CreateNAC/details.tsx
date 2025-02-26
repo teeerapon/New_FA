@@ -294,7 +294,7 @@ export default function Source({ dataAssets, detailNAC, setDetailNAC, columnDeta
                   return (
                     <StyledTableCell key={`serialNo-${index}`} colSpan={res.col}>
                       <Stack sx={{ justifyContent: "center", alignItems: "flex-start" }}>
-                        {resDtl.nacdtl_assetsSeria || ""}
+                        {resDtl.nacdtl_assetsSeria || dataAssets.find(res => res.Code === resDtl.nacdtl_assetsCode)?.SerialNo || ''}
                       </Stack>
                     </StyledTableCell>
                   );
@@ -302,7 +302,7 @@ export default function Source({ dataAssets, detailNAC, setDetailNAC, columnDeta
                   return (
                     <StyledTableCell key={`name-${index}`} colSpan={res.col}>
                       <Stack sx={{ justifyContent: "center", alignItems: "flex-start" }}>
-                        {resDtl.nacdtl_assetsName || ""}
+                        {resDtl.nacdtl_assetsName || dataAssets.find(res => res.Code === resDtl.nacdtl_assetsCode)?.Name || ''}
                       </Stack>
                     </StyledTableCell>
                   );
@@ -310,7 +310,7 @@ export default function Source({ dataAssets, detailNAC, setDetailNAC, columnDeta
                   return (
                     <StyledTableCell key={`date_asset-${index}`} colSpan={res.col}>
                       <Stack sx={{ justifyContent: "center", alignItems: "flex-start" }}>
-                        {resDtl.create_date && dayjs(resDtl.create_date).format('DD/MM/YYYY HH:mm')}
+                        {resDtl.create_date && dayjs(resDtl.create_date).format('DD/MM/YYYY') || dayjs(dataAssets.find(res => res.Code === resDtl.nacdtl_assetsCode)?.CreateDate).format('DD/MM/YYYY') || ''}
                       </Stack>
                     </StyledTableCell>
                   );
@@ -318,7 +318,7 @@ export default function Source({ dataAssets, detailNAC, setDetailNAC, columnDeta
                   return (
                     <StyledTableCell key={`OwnerCode-${index}`} colSpan={res.col}>
                       <Stack sx={{ justifyContent: "center", alignItems: "flex-start" }}>
-                        {resDtl.OwnerCode || ""}
+                        {resDtl.OwnerCode || dataAssets.find(res => res.Code === resDtl.nacdtl_assetsCode)?.OwnerCode || ''}
                       </Stack>
                     </StyledTableCell>
                   );
@@ -326,7 +326,7 @@ export default function Source({ dataAssets, detailNAC, setDetailNAC, columnDeta
                   return (
                     <StyledTableCell key={`detail-${index}`} colSpan={res.col}>
                       <Stack sx={{ justifyContent: "center", alignItems: "flex-start" }}>
-                        {resDtl.nacdtl_assetsDtl || ""}
+                        {resDtl.nacdtl_assetsDtl || dataAssets.find(res => res.Code === resDtl.nacdtl_assetsCode)?.Details || ''}
                       </Stack>
                     </StyledTableCell>
                   );
@@ -336,7 +336,8 @@ export default function Source({ dataAssets, detailNAC, setDetailNAC, columnDeta
                       <TextField
                         name="numberformat"
                         id="formatted-numberformat-input"
-                        value={(typeof resDtl.nacdtl_assetsPrice === 'number') ? resDtl.nacdtl_assetsPrice : ""}
+                        value={resDtl.nacdtl_assetsPrice || dataAssets.find(res => res.Code === resDtl.nacdtl_assetsCode)?.Price || 0}
+                        disabled
                         slotProps={{
                           input: {
                             inputComponent: NumericFormatCustom as any,
