@@ -34,7 +34,9 @@ export default function ButtonStates({ createDoc, setOpenBackdrop, detailNAC, id
   const parsedData = data ? JSON.parse(data) : null;
   const permission = localStorage.getItem('permission_MenuID');
   const parsedPermission = permission ? JSON.parse(permission) : null;
-  const checkAt = workflowApproval.find(res => (res.approverid ?? 0) === parseInt(parsedData.userid ?? 0))
+  const checkAt = workflowApproval.find(res => (res.approverid || "") === (parsedData.UserCode || ""))
+  
+
   const [hideBT, setHideBT] = React.useState<boolean>(false)
 
   const validateFieldsAsset = (dtl: FAControlCreateDetail, nac_type: number, status: number) => {
@@ -87,7 +89,7 @@ export default function ButtonStates({ createDoc, setOpenBackdrop, detailNAC, id
             .filter(Boolean) // ลบค่า null หรือ undefined
         )
       );
-  
+
       if (uniquePrefixes.length > 1) {
         return Swal.fire({
           icon: "warning",
@@ -96,7 +98,7 @@ export default function ButtonStates({ createDoc, setOpenBackdrop, detailNAC, id
           timer: 1500
         });
       }
-  
+
       // ตรวจสอบค่าว่าง
       const missingFields = validateFields(createDoc[0]);
       if (missingFields.length > 0) {
@@ -107,10 +109,10 @@ export default function ButtonStates({ createDoc, setOpenBackdrop, detailNAC, id
           timer: 1500
         });
       }
-  
+
       setHideBT(true);
       setOpenBackdrop(true);
-  
+
       // ส่งข้อมูล Header
       const header = { ...createDoc[0], usercode: parsedData.UserCode };
       const res = await Axios.post(
@@ -118,10 +120,10 @@ export default function ButtonStates({ createDoc, setOpenBackdrop, detailNAC, id
         header,
         dataConfig.headers
       );
-  
+
       if (res.status === 200) {
         sendDataToAPI(res.data[0].nac_code);
-  
+
         // ถ้า nac_status === 6 ให้ส่งข้อมูล detailNAC
         if (createDoc[0].nac_status === 6) {
           await Promise.all(
@@ -154,7 +156,7 @@ export default function ButtonStates({ createDoc, setOpenBackdrop, detailNAC, id
       setHideBT(false);
     }
   };
-  
+
 
   const checkWorkflow = (workflowApproval: WorkflowApproval[], sumPrice: number) => {
 
