@@ -200,7 +200,7 @@ export default function ListNacPage() {
               size="small"
               sx={{ flexGrow: 1, padding: 1 }}
               value={filter.OwnerID || ''}
-              onChange={(e, newValue, reason) => searchFilterByKey(newValue, 'OwnerID', reason)}
+              onChange={(e, newValue, reason) => handleChangeFilterNAC(newValue ?? '', 'OwnerID')}
               options={rows ? Array.from(new Set(rows.map(res => res.OwnerID).filter(x => !!x))) : []}
               renderInput={(params) => <TextField {...params} label="OwnerCode" />}
             />
