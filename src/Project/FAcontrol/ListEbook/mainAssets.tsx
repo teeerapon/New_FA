@@ -293,7 +293,7 @@ export default function ListNacPage() {
                       imagePath={res.ImagePath ?? 'http://vpnptec.dyndns.org:10280/OPS_Fileupload/ATT_230400022.jpg'}
                       name={'Image 1'}
                       originalRows={originalRows}
-                      rows={rows}
+                      rows={renderRows(rows)}
                       index={index}
                       fieldData={`ImagePath`}
                       setRows={setRows}
@@ -305,7 +305,7 @@ export default function ListNacPage() {
                       imagePath={res.ImagePath_2 ?? 'http://vpnptec.dyndns.org:10280/OPS_Fileupload/ATT_230400022.jpg'}
                       name={'Image '}
                       originalRows={originalRows}
-                      rows={rows}
+                      rows={renderRows(rows)}
                       index={index}
                       fieldData={`ImagePath_2`}
                       setRows={setRows}
