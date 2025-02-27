@@ -172,10 +172,10 @@ export default function ListNacPage() {
               id="autocomplete-status-name"
               size="small"
               sx={{ flexGrow: 1, padding: 1 }}
-              value={filter.SerialNo || ''}
-              onChange={(e, newValue, reason) => searchFilterByKey(newValue, 'SerialNo', reason)}
-              options={rows ? Array.from(new Set(rows.map(res => res.SerialNo).filter(x => !!x))) : []}
-              renderInput={(params) => <TextField {...params} label="SerialNo" />}
+              value={filter.OwnerID || ''}
+              onChange={(e, newValue, reason) => searchFilterByKey(newValue, 'OwnerID', reason)}
+              options={rows ? Array.from(new Set(rows.map(res => res.OwnerID).filter(x => !!x))) : []}
+              renderInput={(params) => <TextField {...params} label="OwnerCode" />}
             />
           </Grid>
           <Grid display="flex" justifyContent="center" alignItems="center" size="grow">
