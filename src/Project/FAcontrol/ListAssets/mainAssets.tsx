@@ -137,7 +137,7 @@ export default function ListNacPage() {
   const [filterRows, setFilterRows] = React.useState<Partial<AssetRecord>>({
     Code: undefined,
     Name: undefined,
-    SerialNo: undefined,
+    OwnerID: undefined,
     Asset_group: undefined,
     Group_name: undefined,
     BranchID: undefined,
@@ -148,7 +148,7 @@ export default function ListNacPage() {
     const lengthRows: number = rows.filter(res =>
       filterRows.Code === res.Code ||
       filterRows.Name === res.Name ||
-      filterRows.SerialNo === res.SerialNo ||
+      filterRows.OwnerID === res.OwnerID ||
       filterRows.Asset_group === res.Asset_group ||
       filterRows.Group_name === res.Group_name ||
       filterRows.Position === res.Position
@@ -157,7 +157,7 @@ export default function ListNacPage() {
       return rows.filter(res =>
         filterRows.Code === res.Code ||
         filterRows.Name === res.Name ||
-        filterRows.SerialNo === res.SerialNo ||
+        filterRows.OwnerID === res.OwnerID ||
         filterRows.Asset_group === res.Asset_group ||
         filterRows.Group_name === res.Group_name ||
         filterRows.Position === res.Position
@@ -305,10 +305,10 @@ export default function ListNacPage() {
               id="autocomplete-status-name"
               size="small"
               sx={{ flexGrow: 1, padding: 1 }}
-              value={filterRows.SerialNo || ''}
-              onChange={(e, newValue) => handleChangeFilterNAC(newValue ?? '', 'SerialNo')}
-              options={rows ? Array.from(new Set(rows.map(res => res.SerialNo).filter(x => !!x))) : []}
-              renderInput={(params) => <TextField {...params} label="SerialNo" />}
+              value={filterRows.OwnerID || ''}
+              onChange={(e, newValue) => handleChangeFilterNAC(newValue ?? '', 'OwnerID')}
+              options={rows ? Array.from(new Set(rows.map(res => res.OwnerID).filter(x => !!x))) : []}
+              renderInput={(params) => <TextField {...params} label="OwnerCode" />}
             />
           </Grid>
           <Grid display="flex" justifyContent="center" alignItems="center" size="grow">
