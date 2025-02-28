@@ -35,7 +35,7 @@ export default function ButtonStates({ createDoc, setOpenBackdrop, detailNAC, id
   const permission = localStorage.getItem('permission_MenuID');
   const parsedPermission = permission ? JSON.parse(permission) : null;
   const checkAt = workflowApproval.find(res => (res.approverid || "") === (parsedData.UserCode || ""))
-  
+
 
   const [hideBT, setHideBT] = React.useState<boolean>(false)
 
@@ -114,7 +114,8 @@ export default function ButtonStates({ createDoc, setOpenBackdrop, detailNAC, id
       setOpenBackdrop(true);
 
       // ส่งข้อมูล Header
-      const header = { ...createDoc[0], usercode: parsedData.UserCode };
+      const header = { ...createDoc[0], nac_status: 1, usercode: parsedData.UserCode };
+
       const res = await Axios.post(
         `${dataConfig.http}/FA_Control_Create_Document_NAC`,
         header,

@@ -139,6 +139,7 @@ export default function Create() {
     sourceFristName: null,
     sourceLastName: null,
   }), [idSection, parsedData.UserCode]); // Add dependencies if needed
+  
 
   //Header NAC
   const [createDoc, setCreateDoc] = React.useState<RequestCreateDocument[]>([exampleDocument]);
