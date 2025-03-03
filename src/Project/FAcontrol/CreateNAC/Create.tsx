@@ -191,9 +191,9 @@ export default function Create() {
 
   const Export_PDF_DATA_NAC = () => {
     if ([4, 5].includes(idSection || 0)) {
-      window.location.href = 'http://ptecdba:10250/OPS/reports/nac_sale.aspx?nac_code=' + exampleDocument.nac_code
+      window.location.href = 'http://ptecdba:10250/OPS/reports/nac_sale.aspx?nac_code=' + createDoc[0].nac_code
     } else if ([1, 2].includes(idSection || 0)) {
-      window.location.href = 'http://ptecdba:10250/OPS/reports/nac.aspx?nac_code=' + exampleDocument.nac_code
+      window.location.href = 'http://ptecdba:10250/OPS/reports/nac.aspx?nac_code=' + createDoc[0].nac_code
     }
   }
 
@@ -345,27 +345,21 @@ export default function Create() {
           }}
         >
           <Toolbar>
-            <Stack
-              direction="row"
-              spacing={2}
-              sx={{
-                justifyContent: "space-around",
-                alignItems: "center",
-              }}
-            >
-              <Typography variant="subtitle1" color="inherit">
-                {idSection ? getHeaderSection(idSection) : 'Loading...'}
+            <Box sx={{ display: "flex", justifyContent: "space-between", width: "100%" }}>
+              <Typography variant="subtitle1" color="inherit" component="div">
+                {idSection ? getHeaderSection(idSection) : "Loading..."}
               </Typography>
               <IconButton
                 aria-label="delete"
-                size="large"
+                size="small"
+                sx={{ mr: 5 }}
                 onClick={() => {
                   window.location.href = permission_menuID.includes(2) ? "/NAC_OPERATOR" : "/NAC_ROW";
                 }}
               >
                 <ArticleIcon fontSize="inherit" />
               </IconButton>
-            </Stack>
+            </Box>
           </Toolbar>
         </AppBar>
         <Container
@@ -519,7 +513,14 @@ export default function Create() {
                               <Typography variant="subtitle1">
                                 <b>{createDoc[0].nac_code}</b>
                               </Typography>
-                              <Button onClick={Export_PDF_DATA_NAC}>
+                              <Button
+                                onClick={Export_PDF_DATA_NAC}
+                                sx={{
+                                  fontSize: 10,
+                                }}
+                                variant='contained'
+                                color='warning'
+                              >
                                 REPORT
                               </Button>
                             </Stack>
