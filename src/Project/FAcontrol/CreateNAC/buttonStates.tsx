@@ -114,7 +114,7 @@ export default function ButtonStates({ createDoc, setOpenBackdrop, detailNAC, id
       setOpenBackdrop(true);
 
       // ส่งข้อมูล Header
-      const header = { ...createDoc[0], nac_status: 1, usercode: parsedData.UserCode };
+      const header = { ...createDoc[0], nac_status: createDoc[0].nac_status ? createDoc[0].nac_status : 1, usercode: parsedData.UserCode };
 
       const res = await Axios.post(
         `${dataConfig.http}/FA_Control_Create_Document_NAC`,

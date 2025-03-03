@@ -21,6 +21,7 @@ import Swal from 'sweetalert2';
 import ChatTSX from './chat_file_Tsx/main'
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
+import ArticleIcon from '@mui/icons-material/Article';
 import 'dayjs/locale/th'
 
 
@@ -83,6 +84,7 @@ const getQueryParam = (url: string, param: string): string | null => {
 export default function Create() {
   // Backdrop 
   const [openBackdrop, setOpenBackdrop] = React.useState(false);
+  const [permission_menuID, setPermission_menuID] = React.useState<number[]>([]);
 
   // useEffect Data
   const location = useLocation();
@@ -139,7 +141,7 @@ export default function Create() {
     sourceFristName: null,
     sourceLastName: null,
   }), [idSection, parsedData.UserCode]); // Add dependencies if needed
-  
+
 
   //Header NAC
   const [createDoc, setCreateDoc] = React.useState<RequestCreateDocument[]>([exampleDocument]);
@@ -187,6 +189,14 @@ export default function Create() {
     setDetailNAC((prevDetailNAC) => [...prevDetailNAC, newRow]);
   };
 
+  const Export_PDF_DATA_NAC = () => {
+    if ([4, 5].includes(idSection || 0)) {
+      window.location.href = 'http://ptecdba:10250/OPS/reports/nac_sale.aspx?nac_code=' + exampleDocument.nac_code
+    } else if ([1, 2].includes(idSection || 0)) {
+      window.location.href = 'http://ptecdba:10250/OPS/reports/nac.aspx?nac_code=' + exampleDocument.nac_code
+    }
+  }
+
   React.useEffect(() => {
     const url_pathname = location.search; // สร้าง URLSearchParams จาก location.search
     const idParam = getQueryParam(url_pathname, 'id');
@@ -198,6 +208,12 @@ export default function Create() {
         .then((res) => {
           setUsers(res.data)
         })
+
+      //permission
+      await Axios.post(dataConfig.http + '/select_Permission_Menu_NAC', { Permission_TypeID: 1, userID: parsedData.userid }, dataConfig.headers)
+        .then(response => {
+          setPermission_menuID(response.data.data.map((res: { Permission_MenuID: number; }) => res.Permission_MenuID))
+        });
 
       // รหัสทรัพย์สินทั้งหมด
       await Axios.post(dataConfig.http + '/AssetsAll_Control', { BranchID: parsedData.branchid }, dataConfig.headers)
@@ -329,9 +345,27 @@ export default function Create() {
           }}
         >
           <Toolbar>
-            <Typography variant="subtitle1" color="inherit">
-              {idSection ? getHeaderSection(idSection) : 'Loading...'}
-            </Typography>
+            <Stack
+              direction="row"
+              spacing={2}
+              sx={{
+                justifyContent: "space-around",
+                alignItems: "center",
+              }}
+            >
+              <Typography variant="subtitle1" color="inherit">
+                {idSection ? getHeaderSection(idSection) : 'Loading...'}
+              </Typography>
+              <IconButton
+                aria-label="delete"
+                size="large"
+                onClick={() => {
+                  window.location.href = permission_menuID.includes(2) ? "/NAC_OPERATOR" : "/NAC_ROW";
+                }}
+              >
+                <ArticleIcon fontSize="inherit" />
+              </IconButton>
+            </Stack>
           </Toolbar>
         </AppBar>
         <Container
@@ -478,10 +512,16 @@ export default function Create() {
                         <Grid2 size={4}>
                           {
                             createDoc[0].nac_code &&
-                            <Stack sx={{ justifyContent: "center", alignItems: "flex-end", }}>
+                            <Stack
+
+                              sx={{ justifyContent: "center", alignItems: "flex-end", }}
+                            >
                               <Typography variant="subtitle1">
                                 <b>{createDoc[0].nac_code}</b>
                               </Typography>
+                              <Button onClick={Export_PDF_DATA_NAC}>
+                                REPORT
+                              </Button>
                             </Stack>
                           }
                         </Grid2>
