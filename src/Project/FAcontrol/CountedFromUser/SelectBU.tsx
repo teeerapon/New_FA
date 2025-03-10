@@ -292,7 +292,7 @@ export default function ListNacPage() {
     },
     {
       field: 'EndDate_Success', headerName: 'วันที่ทำ NAC ล่าสุด', width: 150, headerAlign: 'center', align: 'center',
-      renderCell: (params) => params.row.Date ? dayjs(new Date(params.row.EndDate_Success)).format('DD/MM/YYYY') : '',
+      renderCell: (params) => params.row.EndDate_Success ? dayjs(new Date(params.row.EndDate_Success)).format('DD/MM/YYYY') : '',
     },
     { field: 'UserID', headerName: 'ผู้ตรวจ', width: 100, headerAlign: 'center', align: 'center', },
     { field: 'detail', headerName: 'สถานะล่าสุด', headerAlign: 'center', flex: 1, align: 'center', },
