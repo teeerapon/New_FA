@@ -58,57 +58,23 @@ export default function ListNacPage() {
     OwnerID: undefined,
     Asset_group: undefined,
     Group_name: undefined,
-    BranchID: undefined,
+    Position: undefined,
   });
 
-  // ฟังก์ชันในการกรองข้อมูลเมื่อมีการเปลี่ยนแปลงฟิลเตอร์
-  function renderRows(rows: AssetRecord[]) {
-    const lengthRows: number = rows.filter(res =>
-      filter.Code === res.Code ||
-      filter.Name === res.Name ||
-      filter.OwnerID === res.OwnerID ||
-      filter.Asset_group === res.Asset_group ||
-      filter.Group_name === res.Group_name ||
-      filter.Position === res.Position
-    ).length
-    if (lengthRows > 0) {
-      return rows.filter(res =>
-        filter.Code === res.Code ||
-        filter.Name === res.Name ||
-        filter.OwnerID === res.OwnerID ||
-        filter.Asset_group === res.Asset_group ||
-        filter.Group_name === res.Group_name ||
-        filter.Position === res.Position
-      ).slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
-    } else {
-      return rows.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
-    }
-  }
-
-  const handleChangeFilterNAC = (newValue: string | number, id: string) => {
-    setFilter(prev => ({ ...prev, [id]: newValue }));
+  const handleChangeFilterNAC = (newValue: string | number | undefined, id: string) => {
+    setFilter(prevFilter => {
+      const updatedFilter = { ...prevFilter, [id]: newValue };
+  
+      const filteredRows = originalRows.filter(res =>
+        Object.entries(updatedFilter).every(([key, value]) =>
+          value === undefined || value === null || res[key as keyof AssetRecord] === value
+        )
+      );
+  
+      setRows(filteredRows); // อัปเดต rows หลังจาก filter เปลี่ยนแปลง
+      return updatedFilter;
+    });
   };
-
-  // const searchFilterByKey = (newValue: String | null | undefined, key: keyof AssetRecord, reason: any) => {
-  //   const listFilter = {
-  //     ...filter, [key]: ['', null, undefined].includes(newValue as string | null | undefined) ?
-  //       undefined : newValue,
-  //   }
-  //   const original = originalRows;
-  //   const filteredRows = original.filter(row => {
-  //     return Object.keys(filter).every(key => {
-  //       const fieldKey = key as keyof AssetRecord;
-  //       return listFilter[fieldKey] === undefined || listFilter[fieldKey] === row[fieldKey];
-  //     });
-  //   });
-  //   if (filteredRows.length === 0) {
-  //     setRows(originalRows);
-  //     setFilter(listFilter);
-  //   } else {
-  //     setFilter(listFilter);
-  //     setRows(filteredRows);
-  //   }
-  // };
 
   const fetchData = async () => {
     try {
@@ -174,7 +140,7 @@ export default function ListNacPage() {
               size="small"
               sx={{ flexGrow: 1, padding: 1 }}
               value={filter.Code || ''}
-              onChange={(e, newValue) => handleChangeFilterNAC(newValue ?? '', 'Code')}
+              onChange={(e, newValue) => handleChangeFilterNAC(newValue ?? undefined, 'Code')}
               options={rows ? Array.from(new Set(rows.map(res => res.Code).filter(x => !!x))) : []}
               renderInput={(params) => <TextField {...params} label="Code" />}
             />
@@ -187,7 +153,7 @@ export default function ListNacPage() {
               size="small"
               sx={{ flexGrow: 1, padding: 1 }}
               value={filter.Name || ''}
-              onChange={(e, newValue) => handleChangeFilterNAC(newValue ?? '', 'Name')}
+              onChange={(e, newValue) => handleChangeFilterNAC(newValue ?? undefined, 'Name')}
               options={rows ? Array.from(new Set(rows.map(res => res.Name).filter(x => !!x))) : []}
               renderInput={(params) => <TextField {...params} label="Name" />}
             />
@@ -200,7 +166,7 @@ export default function ListNacPage() {
               size="small"
               sx={{ flexGrow: 1, padding: 1 }}
               value={filter.OwnerID || ''}
-              onChange={(e, newValue, reason) => handleChangeFilterNAC(newValue ?? '', 'OwnerID')}
+              onChange={(e, newValue, reason) => handleChangeFilterNAC(newValue ?? undefined, 'OwnerID')}
               options={rows ? Array.from(new Set(rows.map(res => res.OwnerID).filter(x => !!x))) : []}
               renderInput={(params) => <TextField {...params} label="OwnerCode" />}
             />
@@ -213,7 +179,7 @@ export default function ListNacPage() {
               size="small"
               sx={{ flexGrow: 1, padding: 1 }}
               value={filter.Asset_group || ''}
-              onChange={(e, newValue) => handleChangeFilterNAC(newValue ?? '', 'Asset_group')}
+              onChange={(e, newValue) => handleChangeFilterNAC(newValue ?? undefined, 'Asset_group')}
               options={rows ? Array.from(new Set(rows.map(res => res.Asset_group).filter(x => !!x))) : []}
               renderInput={(params) => <TextField {...params} label="Asset_group" />}
             />
@@ -226,7 +192,7 @@ export default function ListNacPage() {
               size="small"
               sx={{ flexGrow: 1, padding: 1 }}
               value={filter.Group_name || ''}
-              onChange={(e, newValue) => handleChangeFilterNAC(newValue ?? '', 'Asset_group')}
+              onChange={(e, newValue) => handleChangeFilterNAC(newValue ?? undefined, 'Asset_group')}
               options={rows ? Array.from(new Set(rows.map(res => res.Group_name).filter(x => !!x))) : []}
               renderInput={(params) => <TextField {...params} label="Group_name" />}
             />
@@ -239,7 +205,7 @@ export default function ListNacPage() {
               size="small"
               sx={{ flexGrow: 1, padding: 1 }}
               value={filter.Position || ''}
-              onChange={(e, newValue) => handleChangeFilterNAC(newValue ?? '', 'Position')}
+              onChange={(e, newValue) => handleChangeFilterNAC(newValue ?? undefined, 'Position')}
               options={rows ? Array.from(new Set(rows.map(res => res.Position).filter(x => !!x))) : []}
               renderInput={(params) => <TextField {...params} label="Location" />}
             />
@@ -284,16 +250,16 @@ export default function ListNacPage() {
               <Loading />
             </Grid>
           )}
-          {!loading && renderRows(rows).map((res, index) => (
+          {!loading && rows.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((res, index) => (
             <Grid display="flex" key={res.AssetID} justifyContent="center" alignItems="center" size={3}>
               <Card variant="outlined">
                 <ImageList sx={{ height: 140, objectFit: 'cover', cursor: 'pointer' }} cols={2}>
                   <div>
                     <ImageCell
-                      imagePath={res.ImagePath ?? 'http://vpnptec.dyndns.org:10280/OPS_Fileupload/ATT_230400022.jpg'}
+                      imagePath={res.ImagePath ?? 'http://vpnptec.dyndns.org:10280/OPS_Fileupload/ATT_250300515.jpg'}
                       name={'Image 1'}
                       originalRows={originalRows}
-                      rows={renderRows(rows)}
+                      rows={rows}
                       index={index}
                       fieldData={`ImagePath`}
                       setRows={setRows}
@@ -302,10 +268,10 @@ export default function ListNacPage() {
                   </div>
                   <div>
                     <ImageCell
-                      imagePath={res.ImagePath_2 ?? 'http://vpnptec.dyndns.org:10280/OPS_Fileupload/ATT_230400022.jpg'}
+                      imagePath={res.ImagePath_2 ?? 'http://vpnptec.dyndns.org:10280/OPS_Fileupload/ATT_250300515.jpg'}
                       name={'Image '}
                       originalRows={originalRows}
-                      rows={renderRows(rows)}
+                      rows={rows}
                       index={index}
                       fieldData={`ImagePath_2`}
                       setRows={setRows}

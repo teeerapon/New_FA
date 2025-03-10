@@ -29,20 +29,19 @@ export default function ListNacPage() {
   });
   const navigate = useNavigate();
 
-  const searchFilterByKey = (newValue: String | null | undefined, key: keyof NACDetailHistory, reason: any) => {
-    const listFilter = {
-      ...filterRows, [key]: ['', null, undefined].includes(newValue as string | null | undefined) ?
-        undefined : newValue,
-    }
-    const original = originalRows;
-    const filteredRows = original.filter(row => {
-      return Object.keys(filterRows).every(key => {
-        const fieldKey = key as keyof NACDetailHistory;
-        return listFilter[fieldKey] === undefined || listFilter[fieldKey] === row[fieldKey];
-      });
+  const searchFilterByKey = (newValue: String | null | undefined, id: keyof NACDetailHistory, reason: any) => {
+    setFilterRows(prevFilter => {
+      const updatedFilter = { ...prevFilter, [id]: newValue };
+
+      const filteredRows = originalRows.filter(res =>
+        Object.entries(updatedFilter).every(([key, value]) =>
+          value === undefined || value === null || res[key as keyof NACDetailHistory] === value
+        )
+      );
+
+      setRows(filteredRows); // อัปเดต rows หลังจาก filter เปลี่ยนแปลง
+      return updatedFilter;
     });
-    setFilterRows(listFilter);
-    setRows(filteredRows);
   };
 
   const columns: GridColDef[] = [
@@ -155,7 +154,7 @@ export default function ListNacPage() {
               size="small"
               sx={{ flexGrow: 1, padding: 1 }}
               value={filterRows.nac_code || ''}
-              onChange={(e, newValue, reason) => searchFilterByKey(newValue, 'nac_code', reason)}
+              onChange={(e, newValue, reason) => searchFilterByKey(newValue ?? undefined, 'nac_code', reason)}
               options={rows ? Array.from(new Set(rows.map(res => res.nac_code).filter(x => !!x))) : []}
               renderInput={(params) => <TextField {...params} label="nac_code" />}
             />
@@ -168,7 +167,7 @@ export default function ListNacPage() {
               size="small"
               sx={{ flexGrow: 1, padding: 1 }}
               value={filterRows.nacdtl_assetsCode || ''}
-              onChange={(e, newValue, reason) => searchFilterByKey(newValue, 'nacdtl_assetsCode', reason)}
+              onChange={(e, newValue, reason) => searchFilterByKey(newValue ?? undefined, 'nacdtl_assetsCode', reason)}
               options={rows ? Array.from(new Set(rows.map(res => res.nacdtl_assetsCode).filter(x => !!x))) : []}
               renderInput={(params) => <TextField {...params} label="Code" />}
             />
@@ -181,7 +180,7 @@ export default function ListNacPage() {
               size="small"
               sx={{ flexGrow: 1, padding: 1 }}
               value={filterRows.name || ''}
-              onChange={(e, newValue, reason) => searchFilterByKey(newValue, 'name', reason)}
+              onChange={(e, newValue, reason) => searchFilterByKey(newValue ?? undefined, 'name', reason)}
               options={rows ? Array.from(new Set(rows.map(res => res.name).filter(x => !!x))) : []}
               renderInput={(params) => <TextField {...params} label="หัวข้อรายการ" />}
             />
@@ -194,7 +193,7 @@ export default function ListNacPage() {
               size="small"
               sx={{ flexGrow: 1, padding: 1 }}
               value={filterRows.account_approve_id || ''}
-              onChange={(e, newValue, reason) => searchFilterByKey(newValue, 'account_approve_id', reason)}
+              onChange={(e, newValue, reason) => searchFilterByKey(newValue ?? undefined, 'account_approve_id', reason)}
               options={rows ? Array.from(new Set(rows.map(res => res.account_approve_id).filter(x => !!x))) : []}
               renderInput={(params) => <TextField {...params} label="ผู้อนุมัติ" />}
             />
