@@ -168,14 +168,13 @@ const ImageCell = ({ imagePath, name, rows, setRows, index, fieldData, originalR
     <>
       <ImageListItem key={imagePath}>
         <img
-          src={`${imagePath}?w=248&fit=crop&auto=format`}
-          srcSet={`${imagePath}?w=248&fit=crop&auto=format&dpr=2 2x`}
+          src={imagePath}
           alt={name}
           style={{ height: 140, objectFit: 'cover', cursor: 'pointer' }}
           onClick={() => handleClickOpen(imagePath, index)}
           onError={({ currentTarget }) => {
             currentTarget.onerror = null; // prevents looping
-            currentTarget.src = "http://vpnptec.dyndns.org:10280/OPS_Fileupload/ATT_230400022.jpg";
+            currentTarget.src = "http://vpnptec.dyndns.org:10280/OPS_Fileupload/ATT_250300515.jpg";
           }}
           loading="lazy"
         />
@@ -218,7 +217,7 @@ const ImageCell = ({ imagePath, name, rows, setRows, index, fieldData, originalR
               style={{ width: '100%', height: 'auto', maxWidth: '400px', maxHeight: '60vh' }}
               onError={({ currentTarget }) => {
                 currentTarget.onerror = null; // prevents looping
-                currentTarget.src = "http://vpnptec.dyndns.org:10280/OPS_Fileupload/ATT_230400022.jpg";
+                currentTarget.src = "http://vpnptec.dyndns.org:10280/OPS_Fileupload/ATT_250300515.jpg";
               }}
             />
             <Button

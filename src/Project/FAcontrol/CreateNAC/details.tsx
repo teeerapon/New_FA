@@ -525,7 +525,7 @@ export default function Source({ dataAssets, detailNAC, setDetailNAC, columnDeta
               style={{ width: '100%', height: 'auto', maxWidth: '400px', maxHeight: '60vh' }}
               onError={({ currentTarget }) => {
                 currentTarget.onerror = null; // prevents looping
-                currentTarget.src = "http://vpnptec.dyndns.org:10280/OPS_Fileupload/ATT_230400022.jpg";
+                currentTarget.src = "http://vpnptec.dyndns.org:10280/OPS_Fileupload/ATT_250300515.jpg";
               }}
             />
             <Button

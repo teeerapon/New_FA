@@ -140,35 +140,22 @@ export default function ListNacPage() {
     OwnerID: undefined,
     Asset_group: undefined,
     Group_name: undefined,
-    BranchID: undefined,
+    Position: undefined,
   });
 
-  // ฟังก์ชันในการกรองข้อมูลเมื่อมีการเปลี่ยนแปลงฟิลเตอร์
-  function renderRows(rows: AssetRecord[]) {
-    const lengthRows: number = rows.filter(res =>
-      filterRows.Code === res.Code ||
-      filterRows.Name === res.Name ||
-      filterRows.OwnerID === res.OwnerID ||
-      filterRows.Asset_group === res.Asset_group ||
-      filterRows.Group_name === res.Group_name ||
-      filterRows.Position === res.Position
-    ).length
-    if (lengthRows > 0) {
-      return rows.filter(res =>
-        filterRows.Code === res.Code ||
-        filterRows.Name === res.Name ||
-        filterRows.OwnerID === res.OwnerID ||
-        filterRows.Asset_group === res.Asset_group ||
-        filterRows.Group_name === res.Group_name ||
-        filterRows.Position === res.Position
-      )
-    } else {
-      return rows
-    }
-  }
+  const handleChangeFilterNAC = (newValue: string | number | undefined, id: string) => {
+    setFilterRows(prevFilter => {
+      const updatedFilter = { ...prevFilter, [id]: newValue };
 
-  const handleChangeFilterNAC = (newValue: string | number, id: string) => {
-    setFilterRows(prev => ({ ...prev, [id]: newValue }));
+      const filteredRows = originalRows.filter(res =>
+        Object.entries(updatedFilter).every(([key, value]) =>
+          value === undefined || value === null || res[key as keyof AssetRecord] === value
+        )
+      );
+
+      setRows(filteredRows); // อัปเดต rows หลังจาก filter เปลี่ยนแปลง
+      return updatedFilter;
+    });
   };
 
   const columns: GridColDef[] = [
@@ -280,7 +267,7 @@ export default function ListNacPage() {
               size="small"
               sx={{ flexGrow: 1, padding: 1 }}
               value={filterRows.Code || ''}
-              onChange={(e, newValue) => handleChangeFilterNAC(newValue ?? '', 'Code')}
+              onChange={(e, newValue) => handleChangeFilterNAC(newValue ?? undefined, 'Code')}
               options={rows ? Array.from(new Set(rows.map(res => res.Code).filter(x => !!x))) : []}
               renderInput={(params) => <TextField {...params} label="Code" />}
             />
@@ -293,7 +280,7 @@ export default function ListNacPage() {
               size="small"
               sx={{ flexGrow: 1, padding: 1 }}
               value={filterRows.Name || ''}
-              onChange={(e, newValue) => handleChangeFilterNAC(newValue ?? '', 'Name')}
+              onChange={(e, newValue) => handleChangeFilterNAC(newValue ?? undefined, 'Name')}
               options={rows ? Array.from(new Set(rows.map(res => res.Name).filter(x => !!x))) : []}
               renderInput={(params) => <TextField {...params} label="Name" />}
             />
@@ -306,7 +293,7 @@ export default function ListNacPage() {
               size="small"
               sx={{ flexGrow: 1, padding: 1 }}
               value={filterRows.OwnerID || ''}
-              onChange={(e, newValue) => handleChangeFilterNAC(newValue ?? '', 'OwnerID')}
+              onChange={(e, newValue) => handleChangeFilterNAC(newValue ?? undefined, 'OwnerID')}
               options={rows ? Array.from(new Set(rows.map(res => res.OwnerID).filter(x => !!x))) : []}
               renderInput={(params) => <TextField {...params} label="OwnerCode" />}
             />
@@ -319,7 +306,7 @@ export default function ListNacPage() {
               size="small"
               sx={{ flexGrow: 1, padding: 1 }}
               value={filterRows.Asset_group || ''}
-              onChange={(e, newValue) => handleChangeFilterNAC(newValue ?? '', 'Asset_group')}
+              onChange={(e, newValue) => handleChangeFilterNAC(newValue ?? undefined, 'Asset_group')}
               options={rows ? Array.from(new Set(rows.map(res => res.Asset_group).filter(x => !!x))) : []}
               renderInput={(params) => <TextField {...params} label="Asset_group" />}
             />
@@ -332,7 +319,7 @@ export default function ListNacPage() {
               size="small"
               sx={{ flexGrow: 1, padding: 1 }}
               value={filterRows.Group_name || ''}
-              onChange={(e, newValue) => handleChangeFilterNAC(newValue ?? '', 'Group_name')}
+              onChange={(e, newValue) => handleChangeFilterNAC(newValue ?? undefined, 'Group_name')}
               options={rows ? Array.from(new Set(rows.map(res => res.Group_name).filter(x => !!x))) : []}
               renderInput={(params) => <TextField {...params} label="Group_name" />}
             />
@@ -345,7 +332,7 @@ export default function ListNacPage() {
               size="small"
               sx={{ flexGrow: 1, padding: 1 }}
               value={filterRows.Position || ''}
-              onChange={(e, newValue) => handleChangeFilterNAC(newValue ?? '', 'Position')}
+              onChange={(e, newValue) => handleChangeFilterNAC(newValue ?? undefined, 'Position')}
               options={rows ? Array.from(new Set(rows.map(res => res.Position).filter(x => !!x))) : []}
               renderInput={(params) => <TextField {...params} label="Location" />}
             />
@@ -376,7 +363,7 @@ export default function ListNacPage() {
         <Grid justifyContent="center" alignItems="center" size={12}>
           <Card variant="outlined">
             <DataTable
-              rows={renderRows(rows)}
+              rows={rows}
               columns={columns}
               loading={loading}
               users={users}

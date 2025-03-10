@@ -405,9 +405,37 @@ export default function ListNacPage() {
         }
 
         if (response.status === 200) {
-          setRows(response.data.data.filter((res: ListNACHeaders) => res.TypeCode === resData[0].typeCode));
-          setOriginalRows(response.data.data);
-          setLoading(false)
+          const allData = response.data.data;
+          const typeCode = resData[0]?.typeCode; // ป้องกัน error กรณี resData ว่าง
+
+          if (!typeCode) {
+            setRows([]);
+            setOriginalRows([]);
+            setLoading(false);
+            return;
+          }
+
+          const filteredByType = allData.filter((res: ListNACHeaders) => res.TypeCode === typeCode);
+
+          setOriginalRows(allData); // เก็บข้อมูลต้นฉบับก่อน
+          setRows(filteredByType); // เซ็ตข้อมูลที่ถูกกรองตาม TypeCode
+          setLoading(false);
+
+          // โหลดค่าที่เคยกรองไว้จาก localStorage
+          const savedFilter = localStorage.getItem("filterNAC");
+          if (savedFilter) {
+            const parsedFilter = JSON.parse(savedFilter);
+            setFilterNAC(parsedFilter);
+
+            // กรองข้อมูลตาม filter ที่บันทึกไว้
+            const finalFilteredRows = filteredByType.filter((res: ListNACHeaders) =>
+              Object.entries(parsedFilter).every(([key, value]) =>
+                value === undefined || value === null || res[key as keyof ListNACHeaders] === value
+              )
+            );
+
+            setRows(finalFilteredRows); // อัปเดต rows ที่ถูกกรองตาม filter ที่บันทึกไว้
+          }
         } else {
           setRows([]);
           setOriginalRows([]);
@@ -421,24 +449,22 @@ export default function ListNacPage() {
     fetchData();
   }, [parsedData.UserCode, pathname]);
 
-  const searchFilterByKey = (newValue: String | null | undefined, key: keyof ListNACHeaders, reason: any) => {
-    const listFilter = {
-      ...filterNAC, [key]: ['', null, undefined].includes(newValue as string | null | undefined) ?
-        undefined : newValue,
-    }
-    const filteredRows = originalRows.filter(row => {
-      return Object.keys(filterNAC).every(key => {
-        const fieldKey = key as keyof ListNACHeaders;
-        return listFilter[fieldKey] === undefined || listFilter[fieldKey] === row[fieldKey];
-      });
+  const searchFilterByKey = (newValue: String | null | undefined, id: keyof ListNACHeaders, reason: any) => {
+    setFilterNAC(prevFilter => {
+      const updatedFilter = { ...prevFilter, [id]: newValue };
+
+      // บันทึกค่า filter ลงใน localStorage
+      localStorage.setItem("filterNAC", JSON.stringify(updatedFilter));
+
+      const filteredRows = originalRows.filter(res =>
+        Object.entries(updatedFilter).every(([key, value]) =>
+          value === undefined || value === null || res[key as keyof ListNACHeaders] === value
+        )
+      );
+
+      setRows(filteredRows); // อัปเดต rows หลังจาก filter เปลี่ยนแปลง
+      return updatedFilter;
     });
-    if (filteredRows.length === 0) {
-      setRows(originalRows);
-      setFilterNAC(listFilter);
-    } else {
-      setFilterNAC(listFilter);
-      setRows(filteredRows);
-    }
   };
 
   return (
@@ -482,7 +508,7 @@ export default function ListNacPage() {
             size="small"
             sx={{ flexGrow: 1, padding: 1 }}
             value={filterNAC.nac_code || ''} // Ensure value is controlled, fallback to empty string
-            onChange={(e, newValue, reason) => searchFilterByKey(newValue, 'nac_code', reason)}
+            onChange={(e, newValue, reason) => searchFilterByKey(newValue ?? undefined, 'nac_code', reason)}
             options={rows ? Array.from(new Set(rows.map(res => res.nac_code).filter(x => !!x))) : []}
             renderInput={(params) => <TextField {...params} label="เลขที่ NAC" />} // Input with label
           />
@@ -494,7 +520,7 @@ export default function ListNacPage() {
             size="small"
             sx={{ flexGrow: 1, padding: 1 }}
             value={filterNAC.name || ''} // Ensure value is controlled, fallback to empty string
-            onChange={(e, newValue, reason) => searchFilterByKey(newValue, 'name', reason)}
+            onChange={(e, newValue, reason) => searchFilterByKey(newValue ?? undefined, 'name', reason)}
             options={rows ? Array.from(new Set(rows.map(res => res.name).filter(x => !!x))) : []}
             renderInput={(params) => <TextField {...params} label="หัวข้อรายการ" />} // Input with label
           />
@@ -506,7 +532,7 @@ export default function ListNacPage() {
             size="small"
             sx={{ flexGrow: 1, padding: 1 }}
             value={filterNAC.source_userid || ''} // Ensure value is controlled, fallback to empty string
-            onChange={(e, newValue, reason) => searchFilterByKey(newValue, 'source_userid', reason)}
+            onChange={(e, newValue, reason) => searchFilterByKey(newValue ?? undefined, 'source_userid', reason)}
             options={rows ? Array.from(new Set(rows.map(res => res.source_userid).filter(x => !!x))) : []}
             renderInput={(params) => <TextField {...params} label="ผู้ส่งมอบ" />} // Input with label
           />
@@ -518,7 +544,7 @@ export default function ListNacPage() {
             size="small"
             sx={{ flexGrow: 1, padding: 1 }}
             value={filterNAC.des_userid || ''} // Ensure value is controlled, fallback to empty string
-            onChange={(e, newValue, reason) => searchFilterByKey(newValue, 'des_userid', reason)}
+            onChange={(e, newValue, reason) => searchFilterByKey(newValue ?? undefined, 'des_userid', reason)}
             options={rows ? Array.from(new Set(rows.map(res => res.des_userid).filter(x => !!x))) : []}
             renderInput={(params) => <TextField {...params} label="ผู้รับมอบ" />} // Input with label
           />
@@ -530,7 +556,7 @@ export default function ListNacPage() {
             size="small"
             sx={{ flexGrow: 1, padding: 1 }}
             value={filterNAC.status_name || ''} // Ensure value is controlled, fallback to empty string
-            onChange={(e, newValue, reason) => searchFilterByKey(newValue, 'status_name', reason)}
+            onChange={(e, newValue, reason) => searchFilterByKey(newValue ?? undefined, 'status_name', reason)}
             options={rows ? Array.from(new Set(rows.map(res => res.status_name).filter(x => !!x))) : []}
             renderInput={(params) => <TextField {...params} label="สถานะ" />} // Input with label
           />

@@ -64,20 +64,19 @@ export default function ListNacPage() {
     Position: undefined,
   });
 
-  const searchFilterByKey = (newValue: String | null | undefined, key: keyof CountAssetRow, reason: any) => {
-    const listFilter = {
-      ...filterRows, [key]: ['', null, undefined].includes(newValue as string | null | undefined) ?
-        undefined : newValue,
-    }
-    const original = originalRows;
-    const filteredRows = original.filter(row => {
-      return Object.keys(filterRows).every(key => {
-        const fieldKey = key as keyof CountAssetRow;
-        return listFilter[fieldKey] === undefined || listFilter[fieldKey] === row[fieldKey];
-      });
+  const searchFilterByKey = (newValue: String | null | undefined, id: keyof CountAssetRow, reason: any) => {
+    setFilterRows(prevFilter => {
+      const updatedFilter = { ...prevFilter, [id]: newValue };
+
+      const filteredRows = originalRows.filter(res =>
+        Object.entries(updatedFilter).every(([key, value]) =>
+          value === undefined || value === null || res[key as keyof CountAssetRow] === value
+        )
+      );
+
+      setRows(filteredRows); // อัปเดต rows หลังจาก filter เปลี่ยนแปลง
+      return updatedFilter;
     });
-    setFilterRows(listFilter);
-    setRows(filteredRows);
   };
 
   function SelectEditInputCellDetail(props: Readonly<GridRenderCellParams>) {
@@ -523,7 +522,7 @@ export default function ListNacPage() {
               size="small"
               sx={{ flexGrow: 1, padding: 1 }}
               value={filterRows.Code || ''}
-              onChange={(e, newValue, reason) => searchFilterByKey(newValue, 'Code', reason)}
+              onChange={(e, newValue, reason) => searchFilterByKey(newValue ?? undefined, 'Code', reason)}
               options={rows ? Array.from(new Set(rows.map(res => res.Code).filter(x => !!x))) : []}
               renderInput={(params) => <TextField {...params} label="Code" />}
             />
@@ -536,7 +535,7 @@ export default function ListNacPage() {
               size="small"
               sx={{ flexGrow: 1, padding: 1 }}
               value={filterRows.Name || ''}
-              onChange={(e, newValue, reason) => searchFilterByKey(newValue ?? '', 'Name', reason)}
+              onChange={(e, newValue, reason) => searchFilterByKey(newValue ?? undefined, 'Name', reason)}
               options={rows ? Array.from(new Set(rows.map(res => res.Name).filter(x => !!x))) : []}
               renderInput={(params) => <TextField {...params} label="Name" />}
             />
@@ -549,7 +548,7 @@ export default function ListNacPage() {
               size="small"
               sx={{ flexGrow: 1, padding: 1 }}
               value={filterRows.Reference || ''}
-              onChange={(e, newValue, reason) => searchFilterByKey(newValue ?? '', 'Reference', reason)}
+              onChange={(e, newValue, reason) => searchFilterByKey(newValue ?? undefined, 'Reference', reason)}
               options={rows ? Array.from(new Set(rows.map(res => res.Reference).filter(x => !!x))) : []}
               renderInput={(params) => <TextField {...params} label="สถานะครั้งนี้" />}
             />
@@ -562,7 +561,7 @@ export default function ListNacPage() {
               size="small"
               sx={{ flexGrow: 1, padding: 1 }}
               value={filterRows.Position || ''}
-              onChange={(e, newValue, reason) => searchFilterByKey(newValue ?? '', 'Position', reason)}
+              onChange={(e, newValue, reason) => searchFilterByKey(newValue ?? undefined, 'Position', reason)}
               options={rows ? Array.from(new Set(rows.map(res => res.Position).filter(x => !!x))) : []}
               renderInput={(params) => <TextField {...params} label="Location" />}
             />
@@ -637,7 +636,7 @@ export default function ListNacPage() {
                 style={{ width: '100%', height: 'auto', maxWidth: '400px', maxHeight: '60vh' }}
                 onError={({ currentTarget }) => {
                   currentTarget.onerror = null; // prevents looping
-                  currentTarget.src = "http://vpnptec.dyndns.org:10280/OPS_Fileupload/ATT_230400022.jpg";
+                  currentTarget.src = "http://vpnptec.dyndns.org:10280/OPS_Fileupload/ATT_250300515.jpg";
                 }}
               />
               <Button
