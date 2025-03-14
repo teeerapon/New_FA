@@ -578,8 +578,14 @@ export default function ListNacPage() {
               // originalRows
               value={typeString}
               onChange={(event: React.SyntheticEvent, newValue: string) => {
-                const newData = originalRows.filter((res: ListNACHeaders) => res.TypeCode === newValue)
-                setRows(newData)
+                const filterOnChange = { ...filterNAC }
+                const filteredRows = originalRows.filter(res =>
+                  Object.entries(filterOnChange).every(([key, value]) =>
+                    value === undefined || value === null || res[key as keyof ListNACHeaders] === value
+                    && res.TypeCode === newValue
+                  )
+                )
+                setRows(filteredRows); // อัปเดต rows หลังจาก filter เปลี่ยนแปลง
                 setTypeString(newValue);
               }}
             >
