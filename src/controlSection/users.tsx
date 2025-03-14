@@ -112,15 +112,37 @@ export default function Profile() {
     setFilteredRows(filtered.length === 0 ? users : filtered);
   };
 
-  const handleChangeActive = (params: GridRowParams<DataUser>) => {
-    const updatedRows = filteredRows.map((row) =>
-      row.UserID === params.row.UserID
-        ? { ...row, Actived: !params.row.Actived }
-        : row
-    );
-    setUsers(updatedRows);
-    setFilteredRows(updatedRows);
+  const handleChangeActive = async (params: GridRowParams<DataUser>) => {
+    try {
+      const response = await Axios.post(
+        `${dataConfig.http}/User_active`,
+        {
+          userid: params.row.UserID,
+          active: !params.row.Actived,
+        },
+        dataConfig.headers
+      );
+      // อัปเดตสถานะของผู้ใช้ใน state
+      setUsers((prevUsers) =>
+        prevUsers.map((row) =>
+          row.UserID === params.row.UserID
+            ? { ...row, Actived: !params.row.Actived }
+            : { ...row }
+        )
+      );
+
+      setFilteredRows((prevFiltered) =>
+        prevFiltered.map((row) =>
+          row.UserID === params.row.UserID
+            ? { ...row, Actived: !params.row.Actived }
+            : { ...row }
+        )
+      );
+    } catch (error) {
+      console.error("Error updating user active status:", error);
+    }
   };
+
 
   const handleEditCell = (params: GridRowParams) => {
     const updatedRow = {
@@ -303,9 +325,9 @@ export default function Profile() {
           }
         />
         <Divider />
-        <Alert severity="warning" sx={{ mx: { xs: 2, md: 3 }, overflow: 'hidden', my: { xs: 1, md: 2 } }}>
+        {/* <Alert severity="warning" sx={{ mx: { xs: 2, md: 3 }, overflow: 'hidden', my: { xs: 1, md: 2 } }}>
           *หมายเหตุ MD (กรรมการผู้จัดการ){'>'}FM (ผู้จัดการสายงาน){'>'}DM (ผู้จัดการฝ่าย){'>'}SM (ผู้จัดการแผนก){'>'}SN (เจ้าหน้าที่อาวุโส){'>'}ST (เจ้าหน้าที่ทั่วไป)
-        </Alert>
+        </Alert> */}
         <CardContent>
           <DataTable
             rows={filteredRows}
