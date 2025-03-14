@@ -1,4 +1,4 @@
-const httpPTEC_TEST = 'http://vpnptec.dyndns.org:32001/api' //main
+const httpPTEC = 'http://vpnptec.dyndns.org:32001/api' //main
 const httpLandOffice = 'http://10.20.100.29:33052/api' //TEST
 const httpHome = 'http://172.16.4.164:33052/api' //Home
 const wifioffice = 'http://10.20.105.215:33052/api'
@@ -22,5 +22,5 @@ export const dataConfig: DataConfig = {
     'Content-Type': `multipart/form-data`,
     'Accept': 'application/json'
   },
-  http: httpLandOffice
+  http: httpPTEC
 }
