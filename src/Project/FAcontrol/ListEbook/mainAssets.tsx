@@ -64,13 +64,13 @@ export default function ListNacPage() {
   const handleChangeFilterNAC = (newValue: string | number | undefined, id: string) => {
     setFilter(prevFilter => {
       const updatedFilter = { ...prevFilter, [id]: newValue };
-  
+
       const filteredRows = originalRows.filter(res =>
         Object.entries(updatedFilter).every(([key, value]) =>
           value === undefined || value === null || res[key as keyof AssetRecord] === value
         )
       );
-  
+
       setRows(filteredRows); // อัปเดต rows หลังจาก filter เปลี่ยนแปลง
       return updatedFilter;
     });
@@ -228,10 +228,21 @@ export default function ListNacPage() {
               // originalRows
               value={assets_TypeGroupSelect}
               onChange={(event: React.SyntheticEvent, newValue: string) => {
-                const newData = permission_menuID.includes(5)
-                  ? originalRows.filter((res: AssetRecord) => res.typeCode === newValue)
-                  : originalRows.filter((res: AssetRecord) => res.typeCode === newValue && res.OwnerID === parsedData.UserCode)
-                setRows(newData)
+                const filterRows = { ...filter }
+                const filteredRows = permission_menuID.includes(5) ?
+                  originalRows.filter(res =>
+                    Object.entries(filterRows).every(([key, value]) =>
+                      value === undefined || value === null || res[key as keyof AssetRecord] === value
+                      && res.typeCode === newValue
+                    )
+                  ) :
+                  originalRows.filter(res =>
+                    Object.entries(filterRows).every(([key, value]) =>
+                      value === undefined || value === null || res[key as keyof AssetRecord] === value
+                      && res.typeCode === newValue && res.OwnerID === parsedData.UserCode
+                    )
+                  );
+                setRows(filteredRows); // อัปเดต rows หลังจาก filter เปลี่ยนแปลง
                 setAssets_TypeGroupSelect(newValue);
               }}
             >

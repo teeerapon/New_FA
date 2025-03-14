@@ -570,13 +570,23 @@ export default function ListNacPage() {
         </Grid>
         <Grid justifyContent="flex-start" size={12} sx={{ mt: 2 }}>
           <Tabs
-            // originalRows
             value={assets_TypeGroupSelect}
             onChange={(event: React.SyntheticEvent, newValue: string) => {
-              const newData = permission_menuID.includes(5)
-                ? originalRows.filter((res: CountAssetRow) => res.typeCode === newValue)
-                : originalRows.filter((res: CountAssetRow) => res.typeCode === newValue && res.OwnerID === parsedData.UserCode)
-              setRows(newData)
+              const filterOnChange = { ...filterRows }
+              const filteredRows = permission_menuID.includes(5) ?
+                originalRows.filter(res =>
+                  Object.entries(filterOnChange).every(([key, value]) =>
+                    value === undefined || value === null || res[key as keyof CountAssetRow] === value
+                    && res.typeCode === newValue
+                  )
+                ) :
+                originalRows.filter(res =>
+                  Object.entries(filterOnChange).every(([key, value]) =>
+                    value === undefined || value === null || res[key as keyof CountAssetRow] === value
+                    && res.typeCode === newValue && res.OwnerID === parsedData.UserCode
+                  )
+                );
+              setRows(filteredRows); // อัปเดต rows หลังจาก filter เปลี่ยนแปลง
               setAssets_TypeGroupSelect(newValue);
             }}
           >
