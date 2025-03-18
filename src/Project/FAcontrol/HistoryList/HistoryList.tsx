@@ -39,7 +39,8 @@ export default function ListNacPage() {
         )
       );
 
-      setRows(filteredRows); // อัปเดต rows หลังจาก filter เปลี่ยนแปลง
+      const filterType = filteredRows.filter(res => res.typeCode === assets_TypeGroupSelect)
+      setRows(filterType); // อัปเดต rows หลังจาก filter เปลี่ยนแปลง
       return updatedFilter;
     });
   };
@@ -204,7 +205,13 @@ export default function ListNacPage() {
             // originalRows
             value={assets_TypeGroupSelect}
             onChange={(event: React.SyntheticEvent, newValue: string) => {
-              const newData = originalRows.filter((res: NACDetailHistory) => res.typeCode === newValue)
+              const filter = { ...filterRows }
+              const filteredRows = originalRows.filter(res =>
+                Object.entries(filter).every(([key, value]) =>
+                  value === undefined || value === null || res[key as keyof NACDetailHistory] === value
+                )
+              )
+              const newData = filteredRows.filter((res: NACDetailHistory) => res.typeCode === newValue)
               setRows(newData)
               setAssets_TypeGroupSelect(newValue);
             }}

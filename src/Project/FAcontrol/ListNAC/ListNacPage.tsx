@@ -462,7 +462,8 @@ export default function ListNacPage() {
         )
       );
 
-      setRows(filteredRows); // อัปเดต rows หลังจาก filter เปลี่ยนแปลง
+      const filterType = filteredRows.filter(res => res.TypeCode === typeString)
+      setRows(filterType); // อัปเดต rows หลังจาก filter เปลี่ยนแปลง
       return updatedFilter;
     });
   };
@@ -582,10 +583,10 @@ export default function ListNacPage() {
                 const filteredRows = originalRows.filter(res =>
                   Object.entries(filterOnChange).every(([key, value]) =>
                     value === undefined || value === null || res[key as keyof ListNACHeaders] === value
-                    && res.TypeCode === newValue
                   )
                 )
-                setRows(filteredRows); // อัปเดต rows หลังจาก filter เปลี่ยนแปลง
+                const typeFil = filteredRows.filter(res => res.TypeCode === newValue)
+                setRows(typeFil); // อัปเดต rows หลังจาก filter เปลี่ยนแปลง
                 setTypeString(newValue);
               }}
             >
@@ -612,6 +613,6 @@ export default function ListNacPage() {
         </Card>
         <Outlet />
       </Container>
-    </React.Fragment>
+    </React.Fragment >
   );
 }
