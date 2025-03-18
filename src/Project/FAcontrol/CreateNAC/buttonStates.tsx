@@ -53,13 +53,12 @@ export default function ButtonStates({ createDoc, setOpenBackdrop, detailNAC, id
     return missingFields;
   };
 
-  const validateFieldsCode = (dtl: FAControlCreateDetail, nac_type: number, status: number) => {
+  const validateFieldsCode = (dtl: FAControlCreateDetail) => {
     // Check if any of the required fields are missing
     const FieldsCode = [];
 
-    if (['FA'].includes(dtl.nacdtl_assetsCode?.substring(0, 2) ?? '')) FieldsCode.push(0);
     if (['SF', 'BP'].includes(dtl.nacdtl_assetsCode?.substring(0, 2) ?? '')) FieldsCode.push(1);
-
+    if (!['SF','BP'].includes(dtl.nacdtl_assetsCode?.substring(0, 2) ?? '')) FieldsCode.push(0);
     return FieldsCode;
   };
 
@@ -161,7 +160,8 @@ export default function ButtonStates({ createDoc, setOpenBackdrop, detailNAC, id
 
   const checkWorkflow = (workflowApproval: WorkflowApproval[], sumPrice: number) => {
 
-    const textCode = validateFieldsCode(detailNAC[0], createDoc[0].nac_type ?? 0, createDoc[0].nac_status ?? 0)
+    const textCode = validateFieldsCode(detailNAC[0])
+    
 
 
     const lengthLessProce: number = workflowApproval.filter(res => (res.limitamount ?? 0) < sumPrice).length // สำหรับเช็คที่สถานะ รอยืนยัน
