@@ -58,7 +58,7 @@ export default function ButtonStates({ createDoc, setOpenBackdrop, detailNAC, id
     const FieldsCode = [];
 
     if (['SF', 'BP'].includes(dtl.nacdtl_assetsCode?.substring(0, 2) ?? '')) FieldsCode.push(1);
-    if (!['SF','BP'].includes(dtl.nacdtl_assetsCode?.substring(0, 2) ?? '')) FieldsCode.push(0);
+    if (!['SF', 'BP'].includes(dtl.nacdtl_assetsCode?.substring(0, 2) ?? '')) FieldsCode.push(0);
     return FieldsCode;
   };
 
@@ -161,7 +161,7 @@ export default function ButtonStates({ createDoc, setOpenBackdrop, detailNAC, id
   const checkWorkflow = (workflowApproval: WorkflowApproval[], sumPrice: number) => {
 
     const textCode = validateFieldsCode(detailNAC[0])
-    
+
 
 
     const lengthLessProce: number = workflowApproval.filter(res => (res.limitamount ?? 0) < sumPrice).length // สำหรับเช็คที่สถานะ รอยืนยัน
@@ -264,7 +264,7 @@ export default function ButtonStates({ createDoc, setOpenBackdrop, detailNAC, id
           const header = [...createDoc]
           header[0].source_approve_userid = parseInt(parsedData.userid)
           header[0].source_approve_date = dayjs.tz(new Date(), "Asia/Bangkok")
-          header[0].nac_status = (typeof createDoc[0].real_price === 'number' || [4].includes(createDoc[0].nac_type ?? 0)) ? 15 : 12
+          header[0].nac_status = (typeof createDoc[0].real_price === 'number' || [4].includes(createDoc[0].nac_type ?? 0)) ? 13 : 12
           setCreateDoc(header)
           submitDoc()
         } else if ([12].includes(createDoc[0].nac_status ?? 0)) { //กรอกราคาขาย -> รอบัญชี หรือ ปิดรายการ
@@ -430,6 +430,11 @@ export default function ButtonStates({ createDoc, setOpenBackdrop, detailNAC, id
         nac_code: nac_code,
         nacdtl_row: index,
         nacdtl_assetsCode: detail.nacdtl_assetsCode ?? null,
+        OwnerCode: detail.OwnerCode ?? null,
+        nacdtl_assetsName: detail.nacdtl_assetsName ?? null,
+        nacdtl_assetsSeria: detail.nacdtl_assetsSeria ?? null,
+        nacdtl_assetsDtl: detail.nacdtl_assetsDtl ?? null,
+        create_date: detail.create_date ?? null,
         nacdtl_bookV: detail.nacdtl_bookV ?? null,
         nacdtl_PriceSeals: detail.nacdtl_PriceSeals ?? null,
         nacdtl_profit: detail.nacdtl_profit ?? null,

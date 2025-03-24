@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { FAControlCreateDetail, DataAsset } from '../../../type/nacType';
 import { StyledTableCell } from '../../../components/StyledTable';
-import { alpha, Autocomplete, Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, List, ListItem, ListItemIcon, Stack, TableBody, TableRow, TextField, Tooltip } from '@mui/material';
+import { alpha, Autocomplete, Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Divider, IconButton, List, ListItem, ListItemIcon, Stack, TableBody, TableRow, TextField, Tooltip } from '@mui/material';
 import DeleteOutlineOutlinedIcon from '@mui/icons-material/DeleteOutlineOutlined';
 import { NumericFormat, NumericFormatProps } from 'react-number-format';
 import { format } from 'date-fns';
@@ -293,40 +293,125 @@ export default function Source({ dataAssets, detailNAC, setDetailNAC, columnDeta
                 case 'serialNo':
                   return (
                     <StyledTableCell key={`serialNo-${index}`} colSpan={res.col}>
-                      <Stack sx={{ justifyContent: "center", alignItems: "flex-start" }}>
-                        {resDtl.nacdtl_assetsSeria || dataAssets.find(res => res.Code === resDtl.nacdtl_assetsCode)?.SerialNo || ''}
+                      <Stack direction="column" sx={{ justifyContent: "space-between", alignItems: "flex-start" }}>
+                        {nac_type !== 3 && resDtl.nacdtl_assetsSeria && resDtl.nacdtl_assetsSeria || dataAssets.find(res => res.Code === resDtl.nacdtl_assetsCode)?.SerialNo}
+                        {nac_type === 3 && resDtl.nacdtl_assetsCode && dataAssets.find(res => res.Code === resDtl.nacdtl_assetsCode)?.SerialNo}
+                        {nac_type === 3 && dataAssets.find(res => res.Code === resDtl.nacdtl_assetsCode)?.SerialNo && (
+                          <React.Fragment>
+                            <Divider />
+                            <TextField
+                              id="standard-basic"
+                              placeholder="new SerialNo"
+                              variant="standard"
+                              size="small"
+                              value={!resDtl.nacdtl_assetsSeria ? dataAssets.find(res => res.Code === resDtl.nacdtl_assetsCode)?.SerialNo : resDtl.nacdtl_assetsSeria}
+                              onChange={(e) => {
+                                const list = [...detailNAC]
+                                list[indexDtl]['nacdtl_assetsSeria'] = e.target.value
+                                setDetailNAC(list)
+                              }}
+                            />
+                          </React.Fragment>
+                        )}
                       </Stack>
                     </StyledTableCell>
                   );
                 case 'name':
                   return (
                     <StyledTableCell key={`name-${index}`} colSpan={res.col}>
-                      <Stack sx={{ justifyContent: "center", alignItems: "flex-start" }}>
-                        {resDtl.nacdtl_assetsName || dataAssets.find(res => res.Code === resDtl.nacdtl_assetsCode)?.Name || ''}
+                      <Stack direction="column" sx={{ justifyContent: "space-between", alignItems: "flex-start" }}>
+                        {nac_type !== 3 && resDtl.nacdtl_assetsName && resDtl.nacdtl_assetsName || nac_type !== 3 && dataAssets.find(res => res.Code === resDtl.nacdtl_assetsCode)?.Name}
+                        {nac_type === 3 && resDtl.nacdtl_assetsCode && dataAssets.find(res => res.Code === resDtl.nacdtl_assetsCode)?.Name}
+                        {nac_type === 3 && resDtl.nacdtl_assetsCode && (
+                          <React.Fragment>
+                            <Divider />
+                            <TextField
+                              id="standard-basic"
+                              placeholder="new Name"
+                              variant="standard"
+                              size="small"
+                              value={!resDtl.nacdtl_assetsName ? dataAssets.find(res => res.Code === resDtl.nacdtl_assetsCode)?.Name : resDtl.nacdtl_assetsName}
+                              onChange={(e) => {
+                                const list = [...detailNAC]
+                                list[indexDtl]['nacdtl_assetsName'] = e.target.value
+                                setDetailNAC(list)
+                              }}
+                            />
+                          </React.Fragment>
+                        )}
                       </Stack>
                     </StyledTableCell>
                   );
                 case 'date_asset':
                   return (
                     <StyledTableCell key={`date_asset-${index}`} colSpan={res.col}>
-                      <Stack sx={{ justifyContent: "center", alignItems: "flex-start" }}>
-                        {resDtl.create_date && dayjs(resDtl.create_date).format('DD/MM/YYYY') || dayjs(dataAssets.find(res => res.Code === resDtl.nacdtl_assetsCode)?.CreateDate).format('DD/MM/YYYY') || ''}
+                      <Stack direction="column" sx={{ justifyContent: "space-between", alignItems: "flex-start" }}>
+                        {nac_type !== 3 && resDtl.create_date && dayjs(resDtl.create_date).format('DD/MM/YYYY') || nac_type !== 3 && dayjs(dataAssets.find(res => res.Code === resDtl.nacdtl_assetsCode)?.CreateDate).format('DD/MM/YYYY') || ''}
+                        {nac_type === 3 && resDtl.nacdtl_assetsCode && dayjs(dataAssets.find(res => res.Code === resDtl.nacdtl_assetsCode)?.CreateDate).format('DD/MM/YYYY') || ''}
+                        {nac_type === 3 && resDtl.nacdtl_assetsCode && (
+                          <React.Fragment>
+                            <Divider />
+                            <TextField
+                              id="standard-basic"
+                              placeholder="new Date"
+                              variant="standard"
+                              size="small"
+                              value={!resDtl.create_date && resDtl.nacdtl_assetsCode && dayjs(dataAssets.find(res => res.Code === resDtl.nacdtl_assetsCode)?.CreateDate).format('DD/MM/YYYY') || ''}
+                            />
+                          </React.Fragment>
+                        )}
                       </Stack>
                     </StyledTableCell>
                   );
                 case 'OwnerCode':
                   return (
                     <StyledTableCell key={`OwnerCode-${index}`} colSpan={res.col}>
-                      <Stack sx={{ justifyContent: "center", alignItems: "flex-start" }}>
-                        {resDtl.OwnerCode || dataAssets.find(res => res.Code === resDtl.nacdtl_assetsCode)?.OwnerCode || ''}
+                      <Stack direction="column" sx={{ justifyContent: "space-between", alignItems: "flex-start" }}>
+                        {nac_type !== 3 && resDtl.OwnerCode && resDtl.OwnerCode || nac_type !== 3 && dataAssets.find(res => res.Code === resDtl.nacdtl_assetsCode)?.OwnerCode}
+                        {nac_type === 3 && resDtl.nacdtl_assetsCode && dataAssets.find(res => res.Code === resDtl.nacdtl_assetsCode)?.OwnerCode}
+                        {nac_type === 3 && resDtl.nacdtl_assetsCode && (
+                          <React.Fragment>
+                            <Divider />
+                            <TextField
+                              id="standard-basic"
+                              placeholder="new OwnerCode"
+                              variant="standard"
+                              size="small"
+                              value={!resDtl.OwnerCode ? dataAssets.find(res => res.Code === resDtl.nacdtl_assetsCode)?.OwnerCode : resDtl.OwnerCode}
+                              onChange={(e) => {
+                                const list = [...detailNAC]
+                                list[indexDtl]['OwnerCode'] = e.target.value
+                                setDetailNAC(list)
+                              }}
+                            />
+                          </React.Fragment>
+                        )}
                       </Stack>
                     </StyledTableCell>
                   );
                 case 'detail':
                   return (
                     <StyledTableCell key={`detail-${index}`} colSpan={res.col}>
-                      <Stack sx={{ justifyContent: "center", alignItems: "flex-start" }}>
-                        {resDtl.nacdtl_assetsDtl || dataAssets.find(res => res.Code === resDtl.nacdtl_assetsCode)?.Details || ''}
+                      <Stack direction="column" sx={{ justifyContent: "space-between", alignItems: "flex-start" }}>
+                        {nac_type !== 3 && resDtl.nacdtl_assetsDtl && resDtl.nacdtl_assetsDtl || nac_type !== 3 && dataAssets.find(res => res.Code === resDtl.nacdtl_assetsCode)?.Details}
+                        {nac_type === 3 && resDtl.nacdtl_assetsCode && dataAssets.find(res => res.Code === resDtl.nacdtl_assetsCode)?.Details}
+                        {nac_type === 3 && resDtl.nacdtl_assetsCode && (
+                          <React.Fragment>
+                            <Divider />
+                            <TextField
+                              id="standard-basic"
+                              placeholder="new Details"
+                              variant="standard"
+                              size="small"
+                              value={!resDtl.nacdtl_assetsDtl ? dataAssets.find(res => res.Code === resDtl.nacdtl_assetsCode)?.Details : resDtl.nacdtl_assetsDtl}
+                              onChange={(e) => {
+                                const list = [...detailNAC]
+                                list[indexDtl]['nacdtl_assetsDtl'] = e.target.value
+                                setDetailNAC(list)
+                              }}
+                            />
+                          </React.Fragment>
+                        )}
                       </Stack>
                     </StyledTableCell>
                   );
@@ -338,6 +423,16 @@ export default function Source({ dataAssets, detailNAC, setDetailNAC, columnDeta
                         id="formatted-numberformat-input"
                         value={resDtl.nacdtl_assetsPrice || dataAssets.find(res => res.Code === resDtl.nacdtl_assetsCode)?.Price || 0}
                         disabled
+                        sx={{
+                          backgroundColor: "transparent", // ลบสีพื้นหลัง
+                          "& .MuiInputBase-input.Mui-disabled": {
+                            WebkitTextFillColor: "#000", // เปลี่ยนสีตัวอักษรเป็นดำ
+                            opacity: 1, // ป้องกันสีซีด
+                          },
+                          "&:before, &:after": {
+                            display: "none", // ลบเส้นใต้
+                          },
+                        }}
                         slotProps={{
                           input: {
                             inputComponent: NumericFormatCustom as any,
@@ -387,7 +482,7 @@ export default function Source({ dataAssets, detailNAC, setDetailNAC, columnDeta
                 case 'Expiration':
                   return (
                     <StyledTableCell key={`Expiration-${index}`} colSpan={res.col}>
-                      <Stack sx={{ justifyContent: "center", alignItems: "center" }}>
+                      <Stack sx={{ justifyContent: "space-between", alignItems: "center" }}>
                         <TextField
                           name="numberformat"
                           id="formatted-numberformat-input"
@@ -427,7 +522,7 @@ export default function Source({ dataAssets, detailNAC, setDetailNAC, columnDeta
                         <Stack
                           direction="row"
                           sx={{
-                            justifyContent: "center",
+                            justifyContent: "space-between",
                             alignItems: "center",
                           }}
                         >
@@ -515,7 +610,7 @@ export default function Source({ dataAssets, detailNAC, setDetailNAC, columnDeta
             direction="column"
             spacing={2}
             sx={{
-              justifyContent: "center",
+              justifyContent: "space-between",
               alignItems: "center",
             }}
           >

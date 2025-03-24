@@ -361,9 +361,7 @@ export default function ListNacPage() {
             showConfirmButton: false,
             timer: 1500
           })
-          setRows(responseAfterDrop.data.data);
-          setOriginalRows(responseAfterDrop.data.data);
-          setLoading(false)
+          fetchData();
         }
       } else {
         setRows([]);
@@ -376,76 +374,76 @@ export default function ListNacPage() {
   }
 
 
-  React.useEffect(() => {
+  const fetchData = async () => {
     setLoading(true)
     setRows([]);
     setOriginalRows([]);
     const url: string = pathname === "/NAC_ROW" ? '/FA_Control_Select_MyNAC' : '/FA_Control_Select_MyNAC_Approve'
     // Fetch NAC data and filter data from localStorage
-    const fetchData = async () => {
-      try {
-        const resFetchAssets = await Axios.get(dataConfig.http + '/FA_Control_Assets_TypeGroup', dataConfig.headers)
-        const resData: Assets_TypeGroup[] = resFetchAssets.data
-        setTypeGroup(resData)
-        setTypeString(resData[0].typeCode)
+    try {
+      const resFetchAssets = await Axios.get(dataConfig.http + '/FA_Control_Assets_TypeGroup', dataConfig.headers)
+      const resData: Assets_TypeGroup[] = resFetchAssets.data
+      setTypeGroup(resData)
+      setTypeString(resData[0].typeCode)
 
-        const response = await Axios.post(
-          dataConfig.http + url,
-          { usercode: parsedData.UserCode },
-          dataConfig.headers
-        );
+      const response = await Axios.post(
+        dataConfig.http + url,
+        { usercode: parsedData.UserCode },
+        dataConfig.headers
+      );
 
-        const dataStatus = await Axios.get(
-          dataConfig.http + `/FA_Control_ListStatus`,
-          dataConfig.headers,
-        );
+      const dataStatus = await Axios.get(
+        dataConfig.http + `/FA_Control_ListStatus`,
+        dataConfig.headers,
+      );
 
-        if (dataStatus.status === 200) {
-          setNac_status(dataStatus.data);
-        }
+      if (dataStatus.status === 200) {
+        setNac_status(dataStatus.data);
+      }
 
-        if (response.status === 200) {
-          const allData = response.data.data;
-          const typeCode = resData[0]?.typeCode; // ป้องกัน error กรณี resData ว่าง
+      if (response.status === 200) {
+        const allData = response.data.data;
+        const typeCode = resData[0]?.typeCode; // ป้องกัน error กรณี resData ว่าง
 
-          if (!typeCode) {
-            setRows([]);
-            setOriginalRows([]);
-            setLoading(false);
-            return;
-          }
-
-          const filteredByType = allData.filter((res: ListNACHeaders) => res.TypeCode === typeCode);
-
-          setOriginalRows(allData); // เก็บข้อมูลต้นฉบับก่อน
-          setRows(filteredByType); // เซ็ตข้อมูลที่ถูกกรองตาม TypeCode
-          setLoading(false);
-
-          // โหลดค่าที่เคยกรองไว้จาก localStorage
-          const savedFilter = localStorage.getItem("filterNAC");
-          if (savedFilter) {
-            const parsedFilter = JSON.parse(savedFilter);
-            setFilterNAC(parsedFilter);
-
-            // กรองข้อมูลตาม filter ที่บันทึกไว้
-            const finalFilteredRows = filteredByType.filter((res: ListNACHeaders) =>
-              Object.entries(parsedFilter).every(([key, value]) =>
-                value === undefined || value === null || res[key as keyof ListNACHeaders] === value
-              )
-            );
-
-            setRows(finalFilteredRows); // อัปเดต rows ที่ถูกกรองตาม filter ที่บันทึกไว้
-          }
-        } else {
+        if (!typeCode) {
           setRows([]);
           setOriginalRows([]);
-          setLoading(false)
+          setLoading(false);
+          return;
         }
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      }
-    };
 
+        const filteredByType = allData.filter((res: ListNACHeaders) => res.TypeCode === typeCode);
+
+        setOriginalRows(allData); // เก็บข้อมูลต้นฉบับก่อน
+        setRows(filteredByType); // เซ็ตข้อมูลที่ถูกกรองตาม TypeCode
+        setLoading(false);
+
+        // โหลดค่าที่เคยกรองไว้จาก localStorage
+        const savedFilter = localStorage.getItem("filterNAC");
+        if (savedFilter) {
+          const parsedFilter = JSON.parse(savedFilter);
+          setFilterNAC(parsedFilter);
+
+          // กรองข้อมูลตาม filter ที่บันทึกไว้
+          const finalFilteredRows = filteredByType.filter((res: ListNACHeaders) =>
+            Object.entries(parsedFilter).every(([key, value]) =>
+              value === undefined || value === null || res[key as keyof ListNACHeaders] === value
+            )
+          );
+
+          setRows(finalFilteredRows); // อัปเดต rows ที่ถูกกรองตาม filter ที่บันทึกไว้
+        }
+      } else {
+        setRows([]);
+        setOriginalRows([]);
+        setLoading(false)
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
+
+  React.useEffect(() => {
     fetchData();
   }, [parsedData.UserCode, pathname]);
 

@@ -45,7 +45,7 @@ export default function Source({ users, createDoc, setCreateDoc }: DataFromHeade
         <Autocomplete
           id="free-solo-demo"
           freeSolo
-          value={createDoc[0].source_usercode ?? ""}
+          value={createDoc[0].source_usercode }
           options={users.map((option) => option.UserCode)}
           onChange={(_event, newValue) => {
             const dataList = [...createDoc]

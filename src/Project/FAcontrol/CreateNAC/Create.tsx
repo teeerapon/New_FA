@@ -102,10 +102,10 @@ export default function Create() {
     nac_type: idSection,
     status_name: null,
     nac_status: null,
-    source_dep_owner: null,
-    source_bu_owner: null,
-    source_usercode: null,
-    source_userid: null,
+    source_dep_owner: users.find(res => res.UserCode===parsedData.UserCode)?.DepCode,
+    source_bu_owner: users.find(res => res.UserCode===parsedData.UserCode)?.BranchID === 901 ? 'Center' : 'Oil',
+    source_usercode: parsedData.UserCode,
+    source_userid: users.find(res => res.UserCode===parsedData.UserCode)?.UserID,
     source_name: null,
     source_date: dayjs.tz(new Date(), "Asia/Bangkok"),
     source_approve_usercode: null,
@@ -138,8 +138,8 @@ export default function Create() {
     finance_aprrove_date: null,
     desFristName: null,
     desLastName: null,
-    sourceFristName: null,
-    sourceLastName: null,
+    sourceFristName: users.find(res => res.UserCode===parsedData.UserCode)?.fristName,
+    sourceLastName: users.find(res => res.UserCode===parsedData.UserCode)?.lastName,
   }), [idSection, parsedData.UserCode]); // Add dependencies if needed
 
 

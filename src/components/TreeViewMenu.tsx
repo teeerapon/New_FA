@@ -130,13 +130,13 @@ export default function CustomStyling() {
       permission: permission_menuID.includes(1),
       permission_branch: parsedData.branchid === 901,
     },
-    // {
-    //   id: "NAC-3",
-    //   menuName: OAIcon("เปลี่ยนแปลงรายละเอียด", permission_menuID.includes(1)),
-    //   menu_url: "/NAC_CREATE",
-    //   permission: permission_menuID.includes(1),
-    //   permission_branch: parsedData.branchid === 901,
-    // },
+    {
+      id: "NAC-3",
+      menuName: OAIcon("เปลี่ยนแปลงรายละเอียด", permission_menuID.includes(1)),
+      menu_url: "/NAC_CREATE",
+      permission: permission_menuID.includes(1),
+      permission_branch: parsedData.branchid === 901,
+    },
     {
       id: "NAC-2",
       menuName: OAIcon("โยกย้ายทรัพย์สิน", false),
