@@ -91,6 +91,7 @@ export default function MenuAppBar() {
   const handleLogOut = () => {
     localStorage.clear();
     setAuth(false);
+    window.location.reload();
   };
 
   const handleMenu = (event: React.MouseEvent<HTMLElement>) => {
@@ -114,9 +115,11 @@ export default function MenuAppBar() {
   }, []);
 
 
-  if (!auth) {
-    return <Login />
-  } else {
+  // if (!auth) {
+  //   return (
+  //     <Login />
+  //   )
+  // } else {
     return (
       <Box sx={{ flexGrow: 1 }}>
         <ThemeProvider theme={darkTheme}>
@@ -242,4 +245,4 @@ export default function MenuAppBar() {
       </Box>
     );
   }
-}
+// }

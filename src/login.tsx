@@ -77,6 +77,8 @@ const SignUpContainer = styled(Stack)(({ theme }) => ({
 
 export default function SignInSide() {
 
+  const [deviceType, setDeviceType] = React.useState<string>("mobile");
+
   const d = new Date();
   const year = (d.getFullYear()).toString();
   const month = ((d.getMonth()) + 101).toString().slice(-2);
@@ -108,31 +110,65 @@ export default function SignInSide() {
       Password
     });
 
-    if ('token' in response) {
-      const body = { Permission_TypeID: 1, userID: response.data[0].userid };
-      await Axios.post(dataConfig.http + '/select_Permission_Menu_NAC', body, dataConfig.headers)
-        .then((response: { data: { data: { Permission_MenuID: string }[] } }) => {
-          localStorage.setItem('permission_MenuID', JSON.stringify(response.data.data.map((res) => res.Permission_MenuID)));
-        });
-      if (response.token) {
-        localStorage.setItem('token', response.token);
-        localStorage.setItem('data', JSON.stringify(response.data[0]));
-        localStorage.setItem('date_login', datenow);
-        if (pathname === '/Sign-In') {
-          window.location.href = '/';
-        } else {
-          window.location.href = URL_LINK;
+    if (deviceType === 'desktop') {
+      if ('token' in response) {
+        const body = { Permission_TypeID: 1, userID: response.data[0].userid };
+        await Axios.post(dataConfig.http + '/select_Permission_Menu_NAC', body, dataConfig.headers)
+          .then((response: { data: { data: { Permission_MenuID: string }[] } }) => {
+            localStorage.setItem('permission_MenuID', JSON.stringify(response.data.data.map((res) => res.Permission_MenuID)));
+          });
+        if (response.token) {
+          localStorage.setItem('token', response.token);
+          localStorage.setItem('data', JSON.stringify(response.data[0]));
+          localStorage.setItem('date_login', datenow);
+          if (pathname === '/Sign-In') {
+            window.location.href = '/';
+          } else {
+            window.location.href = URL_LINK;
+          }
         }
+      } else {
+        Swal.fire({
+          icon: "error",
+          title: "UserCode หรือ Password ไม่ถูกต้อง",
+          showConfirmButton: false,
+          timer: 1500
+        })
       }
     } else {
-      Swal.fire({
-        icon: "error",
-        title: "UserCode หรือ Password ไม่ถูกต้อง",
-        showConfirmButton: false,
-        timer: 1500
-      })
+      if ('token' in response) {
+        const body = { Permission_TypeID: 1, userID: response.data[0].userid };
+        await Axios.post(dataConfig.http + '/select_Permission_Menu_NAC', body, dataConfig.headers)
+          .then((response: { data: { data: { Permission_MenuID: string }[] } }) => {
+            localStorage.setItem('permission_MenuID', JSON.stringify(response.data.data.map((res) => res.Permission_MenuID)));
+          });
+        if (response.token) {
+          localStorage.setItem('token', response.token);
+          localStorage.setItem('data', JSON.stringify(response.data[0]));
+          localStorage.setItem('date_login', datenow);
+          window.location.href = '/MobileHome';
+        }
+      } else {
+        Swal.fire({
+          icon: "error",
+          title: "UserCode หรือ Password ไม่ถูกต้อง",
+          showConfirmButton: false,
+          timer: 1500
+        })
+      }
     }
   };
+
+  React.useEffect(() => {
+    const checkDevice = () => {
+      setDeviceType(window.innerWidth < 1100 ? "mobile" : "desktop");
+    };
+
+    checkDevice(); // เช็คขนาดตอนเริ่มต้น
+    window.addEventListener("resize", checkDevice);
+
+    return () => window.removeEventListener("resize", checkDevice);
+  }, [])
 
   return (
     <ThemeProvider theme={defaultTheme}>
