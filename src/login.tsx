@@ -122,7 +122,7 @@ export default function SignInSide() {
           localStorage.setItem('data', JSON.stringify(response.data[0]));
           localStorage.setItem('date_login', datenow);
           if (pathname === '/Sign-In') {
-            window.location.href = '/';
+            window.location.href = '/Home';
           } else {
             window.location.href = URL_LINK;
           }
@@ -161,7 +161,8 @@ export default function SignInSide() {
 
   React.useEffect(() => {
     const checkDevice = () => {
-      setDeviceType(window.innerWidth < 1100 ? "mobile" : "desktop");
+      const deviceType = window.innerWidth < 1100 ? "mobile" : "desktop"
+      setDeviceType(deviceType);
     };
 
     checkDevice(); // เช็คขนาดตอนเริ่มต้น
