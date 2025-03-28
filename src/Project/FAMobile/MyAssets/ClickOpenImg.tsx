@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import { Button, Dialog, DialogActions, DialogContent, IconButton, ImageListItem, ImageListItemBar, Stack } from '@mui/material';
+import { Button, CardMedia, Dialog, DialogActions, DialogContent, IconButton, ImageListItem, ImageListItemBar, Stack } from '@mui/material';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import Axios from 'axios';
 import Swal from 'sweetalert2';
 import CloseIcon from '@mui/icons-material/Close';
-import { dataConfig } from '../../config';
-import { AssetRecord, UpdateDtlAssetParams } from '../../type/nacType';
+import { dataConfig } from '../../../config';
+import { AssetRecord, UpdateDtlAssetParams } from '../../../type/nacType';
 
 export interface Data {
   imagePath: string;
@@ -165,18 +165,20 @@ const ImageCell = ({ imagePath, name, rows, setRows, index, fieldData, originalR
   };
 
   return (
-    <>
-      <ImageListItem key={imagePath}>
-        <img
-          src={imagePath}
-          alt={name}
-          style={{ height: 140, objectFit: 'cover', cursor: 'pointer' }}
+    <React.Fragment>
+      <ImageListItem key={index}>
+        <CardMedia
+          key={imagePath}
+          component="img"
+          height="160"
+          sx={{ objectFit: 'cover', cursor: 'pointer' }}
           onClick={() => handleClickOpen(imagePath, index)}
+          image={imagePath || "http://vpnptec.dyndns.org:10280/OPS_Fileupload/ATT_250300515.jpg"}
           onError={({ currentTarget }) => {
             currentTarget.onerror = null; // prevents looping
             currentTarget.src = "http://vpnptec.dyndns.org:10280/OPS_Fileupload/ATT_250300515.jpg";
           }}
-          loading="lazy"
+          alt={`${name}_1`}
         />
       </ImageListItem>
 
@@ -247,7 +249,7 @@ const ImageCell = ({ imagePath, name, rows, setRows, index, fieldData, originalR
           </Button>
         </DialogActions>
       </Dialog>
-    </>
+    </React.Fragment>
   );
 };
 

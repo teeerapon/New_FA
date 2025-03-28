@@ -1,16 +1,27 @@
 import * as React from "react";
-import { Box, Stack, Card, CardHeader, Avatar, Typography, AppBar, Toolbar, IconButton } from "@mui/material";
+import { Box, Stack, Card, CardHeader, Avatar, Typography, AppBar, Toolbar, IconButton, Container } from "@mui/material";
 import { red } from "@mui/material/colors";
 import QrCodeIcon from "@mui/icons-material/QrCode";
 import EventNoteIcon from "@mui/icons-material/EventNote";
 import CropFreeIcon from "@mui/icons-material/CropFree";
 import { BrowserQRCodeReader } from "@zxing/browser";
-import ScanVerifly from './ScanVerifly';
+import ScanVerifly from './VeriflyCode/ScanVerifly';
 import useScrollTrigger from '@mui/material/useScrollTrigger';
 import Fab from '@mui/material/Fab';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import Fade from '@mui/material/Fade';
 import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
+import { ThemeProvider, createTheme, styled, useTheme } from '@mui/material/styles';
+import NavBarMobile from './NavMain/NavbarMobile'
+
+const darkTheme = createTheme({
+  palette: {
+    mode: 'dark',
+    primary: {
+      main: '#1976d2',
+    },
+  },
+});
 
 interface Props {
   /**
@@ -79,21 +90,26 @@ const cards = [
 ];
 
 export default function RecipeReviewCard(props: Props) {
-
+  const theme = useTheme();
   const [qrData, setQrData] = React.useState<string>("");
 
   const handleCardClick = (id: number) => {
     if (id === 3) {
-      // เปิดหน้าสำหรับเลือกรูปภาพหรือถ่ายรูป
+      // แสดงตัวเลือกให้ผู้ใช้เลือกแหล่งที่มาของรูปภาพ
+      const choice = window.confirm("คุณต้องการถ่ายรูปจากกล้องหรืออัปโหลดจากอุปกรณ์?\n\nกด 'ตกลง' เพื่อถ่ายรูป หรือ 'ยกเลิก' เพื่ออัปโหลด");
+
       const fileInput = document.createElement("input");
       fileInput.type = "file";
       fileInput.accept = "image/*";
-      fileInput.capture = "camera"; // สำหรับการถ่ายภาพจากกล้อง
+
+      if (choice) {
+        fileInput.capture = "camera"; // เปิดกล้องถ่ายรูป
+      }
 
       fileInput.onchange = (e: any) => {
         const file = e.target.files[0];
         if (file) {
-          // เริ่มอ่าน QR Code จากรูปภาพ
+          // อ่าน QR Code จากรูปภาพ
           const reader = new BrowserQRCodeReader();
           reader.decodeFromImageUrl(URL.createObjectURL(file))
             .then(result => {
@@ -109,85 +125,95 @@ export default function RecipeReviewCard(props: Props) {
             });
         }
       };
+
       fileInput.click();
     } else if (id === 2) {
       window.location.href = '/MyAssets';
     }
   };
 
+
   return (
-    <React.Fragment>
-      <AppBar
-        position="static"
-        color="default"
-        elevation={0}
-        sx={{
-          position: 'relative',
-          borderBottom: (t) => `1px solid ${t.palette.divider}`,
-        }}
-      >
-        <Toolbar>
-          {qrData && (
-            <IconButton
-              onClick={() => {
-                setQrData("")
-              }}
-            >
-              <ArrowBackIosIcon />
-            </IconButton>
-          )}
-          <Typography variant="subtitle1" color="inherit">
-            ทะเบียนทรัพย์สินทั้งหมด
-          </Typography>
-        </Toolbar>
-      </AppBar>
-      <Toolbar id="back-to-top-anchor" />
-      <Box
-        sx={{
-          width: "100%",
-          py: 1,
-          px: 2,
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          backgroundImage:
-            "radial-gradient(ellipse at 50% 50%, hsl(210, 100%, 97%), hsl(0, 0%, 100%))",
-        }}
-      >
-        <Stack spacing={2}>
-          {!qrData && cards.map((card, index) => (
-            <Card
-              key={index}
-              sx={{
-                width: "95vw",
-                backgroundColor: "rgba(0,121,107,1)",
-                color: "white",
-                cursor: "pointer",
-                borderRadius: "16px",
-                transition: "all 0.3s ease",
-                "&:hover": {
-                  backgroundColor: "rgba(0,121,107,0.85)",
-                  transform: "scale(1.03)",
-                  boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.2)",
-                },
-              }}
-              onClick={() => handleCardClick(card.id)}
-            >
-              <CardHeader
-                avatar={<Avatar sx={{ bgcolor: red[500] }}>{card.icon}</Avatar>}
-                title={<Typography color="white">{card.title}</Typography>}
-                subheader={<Typography color="white">{card.description}</Typography>}
-              />
-            </Card>
-          ))}
-        </Stack>
-        {qrData && (<ScanVerifly qrText={qrData} />)}
-        <ScrollTop {...props}>
-          <Fab size="small" aria-label="scroll back to top">
-            <KeyboardArrowUpIcon />
-          </Fab>
-        </ScrollTop>
-      </Box>
-    </React.Fragment>
+    <Box sx={{ flexGrow: 1 }}>
+      <ThemeProvider theme={darkTheme}>
+        <AppBar
+          position="fixed"
+          color="default"
+          elevation={0}
+        >
+          <NavBarMobile />
+          <Toolbar id="back-to-top-anchor" sx={{ backgroundColor: '#f5f5f5', color: 'black' }}>
+            {qrData && (
+              <IconButton
+                onClick={() => {
+                  window.location.href = '/MobileHome';
+                }}
+                sx={{ color: 'black' }}
+              >
+                <ArrowBackIosIcon />
+              </IconButton>
+            )}
+            <Typography variant="subtitle1" color="inherit" component="div">
+              หน้าแรก
+            </Typography>
+          </Toolbar>
+        </AppBar>
+        <Container
+          sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            pt: { xs: 16, sm: 22 },
+            pb: { xs: 8, sm: 12 },
+          }}
+        >
+          <Box
+            sx={{
+              width: "100%",
+              py: 1,
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              backgroundImage:
+                "radial-gradient(ellipse at 50% 50%, hsl(210, 100%, 97%), hsl(0, 0%, 100%))",
+            }}
+          >
+            <Stack direction="column" spacing={2}>
+              {!qrData && cards.map((card, index) => (
+                <Card
+                  key={index}
+                  sx={{
+                    width: "95vw",
+                    backgroundColor: "rgba(0,121,107,1)",
+                    color: "white",
+                    cursor: "pointer",
+                    borderRadius: "16px",
+                    transition: "all 0.3s ease",
+                    "&:hover": {
+                      backgroundColor: "rgba(0,121,107,0.85)",
+                      transform: "scale(1.03)",
+                      boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.2)",
+                    },
+                  }}
+                  onClick={() => handleCardClick(card.id)}
+                >
+                  <CardHeader
+                    avatar={<Avatar sx={{ bgcolor: red[500] }}>{card.icon}</Avatar>}
+                    title={<Typography color="white">{card.title}</Typography>}
+                    subheader={<Typography color="white">{card.description}</Typography>}
+                  />
+                </Card>
+              ))}
+            </Stack>
+            {qrData && (<ScanVerifly qrText={qrData} />)}
+            <ScrollTop {...props}>
+              <Fab size="small" aria-label="scroll back to top">
+                <KeyboardArrowUpIcon />
+              </Fab>
+            </ScrollTop>
+          </Box>
+        </Container>
+      </ThemeProvider>
+    </Box>
   );
 }

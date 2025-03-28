@@ -15,8 +15,7 @@ import MainAssets from './Project/FAcontrol/ListAssets/mainAssets';
 import Profile from './Account/profile';
 import ControlSection from './controlSection/main'
 import MobileHome from './Project/FAMobile/MobileHome';
-import NavbarMobile from './components/NavbarMobile';
-import MyAssets from './Project/FAMobile/MyAssets';
+import MyAssets from './Project/FAMobile/MyAssets/MyAssets';
 import { CssBaseline, Box } from '@mui/material';
 
 
@@ -74,7 +73,7 @@ const App: React.FC = () => {
             'radial-gradient(ellipse at 50% 50%, hsl(210, 100%, 97%), hsl(0, 0%, 100%))',
         }}
       >
-        {(token && !hasExpired && deviceType === 'desktop') ? <NavBar /> : <NavbarMobile />}
+        {token && !hasExpired && deviceType === 'desktop' && <NavBar />}
         <Routes>
           <Route path="/Home" element={<Home />} />
           <Route path="/" element={<Navigate to="/Home" />} />

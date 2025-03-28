@@ -1,6 +1,6 @@
 import * as React from 'react';
 import Box from "@mui/material/Box";
-import { dataConfig } from "../../config";
+import { dataConfig } from "../../../config";
 import { styled } from '@mui/material/styles';
 import Card from '@mui/material/Card';
 import CardHeader from '@mui/material/CardHeader';
@@ -111,7 +111,7 @@ export default function ScanVerifly({ qrText }: Readonly<ScanVeriflyProps>) {
   }, []);
 
   return (
-    <Box sx={{ display: "flex", flexDirection: "column", width: '100vw', py: 1 }}>
+    <Box sx={{ display: "flex", flexDirection: "column", width: '100vw' }}>
       {qrData.length > 0 && qrData[0].Code && (
         <Card
           sx={{
@@ -125,11 +125,12 @@ export default function ScanVerifly({ qrText }: Readonly<ScanVeriflyProps>) {
             title={<Typography variant="h6" component="div" color="white">{qrData[0].Code}</Typography>}
             subheader={<Typography variant="body1" component="div" color="white">{qrData[0].Name}</Typography>}
           />
-          <ImageList sx={{ objectFit: 'cover', cursor: 'pointer' }} cols={2}>
+          <ImageList cols={2}>
             <ImageListItem key={qrData[0]?.ImagePath}>
               <CardMedia
                 component="img"
-                height="194"
+                height="160"
+                sx={{ objectFit: 'cover', cursor: 'pointer' }}
                 onClick={() => handleClickOpen(qrData[0]?.ImagePath, 0)}
                 image={qrData[0]?.ImagePath || "http://vpnptec.dyndns.org:10280/OPS_Fileupload/ATT_250300515.jpg"}
                 onError={({ currentTarget }) => {
@@ -142,7 +143,8 @@ export default function ScanVerifly({ qrText }: Readonly<ScanVeriflyProps>) {
             <ImageListItem key={qrData[0]?.ImagePath_2}>
               <CardMedia
                 component="img"
-                height="194"
+                height="160"
+                sx={{ objectFit: 'cover', cursor: 'pointer' }}
                 onClick={() => handleClickOpen(qrData[0]?.ImagePath_2, 1)}
                 image={qrData[0]?.ImagePath_2 || "http://vpnptec.dyndns.org:10280/OPS_Fileupload/ATT_250300515.jpg"}
                 onError={({ currentTarget }) => {
