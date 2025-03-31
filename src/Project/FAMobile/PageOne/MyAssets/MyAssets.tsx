@@ -8,14 +8,14 @@ import Grid from '@mui/material/Grid2';
 import ImageCell from "./ClickOpenImg";
 import MuiCard from '@mui/material/Card';
 import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
-import { dataConfig } from "../../../config";
-import { AssetRecord, Assets_TypeGroup } from "../../../type/nacType";
+import { dataConfig } from "../../../../config";
+import { AssetRecord, Assets_TypeGroup } from "../../../../type/nacType";
 import useScrollTrigger from '@mui/material/useScrollTrigger';
 import Fab from '@mui/material/Fab';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import Fade from '@mui/material/Fade';
 import { ThemeProvider, createTheme, styled, useTheme } from '@mui/material/styles';
-import NavBarMobile from '../NavMain/NavbarMobile'
+import NavBarMobile from '../../NavMain/NavbarMobile'
 
 const darkTheme = createTheme({
   palette: {
@@ -155,6 +155,7 @@ export default function MyAssets(props: Props) {
 
   return (
     <Box sx={{ flexGrow: 1 }}>
+      <div id="back-to-top-anchor" />
       <ThemeProvider theme={darkTheme}>
         <AppBar
           position="fixed"
@@ -162,10 +163,10 @@ export default function MyAssets(props: Props) {
           elevation={0}
         >
           <NavBarMobile />
-          <Toolbar id="back-to-top-anchor" sx={{ backgroundColor: '#f5f5f5', color: 'black' }}>
+          <Toolbar sx={{ backgroundColor: '#f5f5f5', color: 'black' }}>
             <IconButton
               onClick={() => {
-                window.location.href = '/MobileHome';
+                navigate('/MobileHome');
               }}
               sx={{ color: 'black' }}
             >

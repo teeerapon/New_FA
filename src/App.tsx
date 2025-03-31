@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, Navigate, useNavigate } from 'react-router-dom';
 import Login from './login'; // เปลี่ยนเส้นทางให้ตรงกับที่อยู่ของไฟล์ Login.tsx
 import Home from './Dashboard/home3'; // ตัวอย่างไฟล์หน้า Home
 import NavBar from './components/Navbar';
@@ -15,7 +15,10 @@ import MainAssets from './Project/FAcontrol/ListAssets/mainAssets';
 import Profile from './Account/profile';
 import ControlSection from './controlSection/main'
 import MobileHome from './Project/FAMobile/MobileHome';
-import MyAssets from './Project/FAMobile/MyAssets/MyAssets';
+import MobilePageTwo from './Project/FAMobile/PageTwo/main';
+import MobilePageTwoScanRound from './Project/FAMobile/PageTwo/Scan/round';
+import MobilePageTwoReportedRound from './Project/FAMobile/PageTwo/Reported/round';
+import MyAssets from './Project/FAMobile/PageOne/MyAssets/MyAssets';
 import { CssBaseline, Box } from '@mui/material';
 
 
@@ -23,6 +26,7 @@ const App: React.FC = () => {
 
   const [deviceType, setDeviceType] = React.useState<string>("mobile");
   const currentPath = window.location.pathname;
+  const navigate = useNavigate();
 
   // ดึงวันที่และเวลาจาก localStorage หรือใช้ undefined ถ้าไม่พบ //สร้างวันที่ปัจจุบัน //ฟังก์ชันในการเปรียบเทียบวันที่ // แปลงสตริงเป็นวัตถุ Date
   const date_login: string | null = localStorage.getItem('date_login');
@@ -46,7 +50,7 @@ const App: React.FC = () => {
     const deviceTypeFrsit = window.innerWidth < 1100 ? "mobile" : "desktop"
     const checkDevice = () => {
       if (token && !hasExpired && deviceTypeFrsit === 'mobile' && currentPath === '/') {
-        window.location.href = '/MobileHome';
+        navigate('/MobileHome');
       }
       setDeviceType(deviceTypeFrsit);
     };
@@ -73,7 +77,7 @@ const App: React.FC = () => {
             'radial-gradient(ellipse at 50% 50%, hsl(210, 100%, 97%), hsl(0, 0%, 100%))',
         }}
       >
-        {token && !hasExpired && deviceType === 'desktop' && <NavBar />}
+        {token && !hasExpired && <NavBar />}
         <Routes>
           <Route path="/Home" element={<Home />} />
           <Route path="/" element={<Navigate to="/Home" />} />
@@ -94,6 +98,9 @@ const App: React.FC = () => {
           {/* Mobile */}
           <Route path="/MobileHome" element={<MobileHome />} />
           <Route path="/MyAssets" element={<MyAssets />} />
+          <Route path="/MobilePageTwo" element={<MobilePageTwo />} />
+          <Route path="/MobilePageTwoScanRound" element={<MobilePageTwoScanRound />} />
+          <Route path="/MobilePageTwoReportedRound" element={<MobilePageTwoReportedRound />} />
         </Routes>
       </Box>
     </div>

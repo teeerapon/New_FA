@@ -4,8 +4,18 @@ import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import Axios from 'axios';
 import Swal from 'sweetalert2';
 import CloseIcon from '@mui/icons-material/Close';
-import { dataConfig } from '../../../config';
-import { AssetRecord, UpdateDtlAssetParams } from '../../../type/nacType';
+import { dataConfig } from '../../../../config';
+import { AssetRecord, UpdateDtlAssetParams } from '../../../../type/nacType';
+import { styled } from '@mui/material/styles';
+
+const BootstrapDialog = styled(Dialog)(({ theme }) => ({
+  '& .MuiDialogContent-root': {
+    padding: theme.spacing(2),
+  },
+  '& .MuiDialogActions-root': {
+    padding: theme.spacing(1),
+  },
+}));
 
 export interface Data {
   imagePath: string;
@@ -183,7 +193,7 @@ const ImageCell = ({ imagePath, name, rows, setRows, index, fieldData, originalR
       </ImageListItem>
 
       {/* Dialog for displaying the image */}
-      <Dialog
+      <BootstrapDialog
         open={openDialog}
         onClose={handleClose}
         fullWidth
@@ -248,7 +258,7 @@ const ImageCell = ({ imagePath, name, rows, setRows, index, fieldData, originalR
             Save changes
           </Button>
         </DialogActions>
-      </Dialog>
+      </BootstrapDialog>
     </React.Fragment>
   );
 };

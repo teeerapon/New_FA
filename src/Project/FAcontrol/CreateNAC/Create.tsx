@@ -6,7 +6,7 @@ import { StyledTableCell, StyledTableCellHeader } from '../../../components/Styl
 import { RequestCreateDocument, DataUser, DataAsset, FAControlCreateDetail, WorkflowApproval } from '../../../type/nacType';
 import { dataConfig } from "../../../config";
 import Axios from 'axios';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import Loading from '../../../components/Loading';
 import PlaylistAddIcon from '@mui/icons-material/PlaylistAddOutlined';
 import dayjs from 'dayjs';
@@ -83,6 +83,7 @@ const getQueryParam = (url: string, param: string): string | null => {
 
 export default function Create() {
   // Backdrop 
+  const navigate = useNavigate();
   const [openBackdrop, setOpenBackdrop] = React.useState(false);
   const [permission_menuID, setPermission_menuID] = React.useState<number[]>([]);
 
@@ -102,10 +103,10 @@ export default function Create() {
     nac_type: idSection,
     status_name: null,
     nac_status: null,
-    source_dep_owner: users.find(res => res.UserCode===parsedData.UserCode)?.DepCode,
-    source_bu_owner: users.find(res => res.UserCode===parsedData.UserCode)?.BranchID === 901 ? 'Center' : 'Oil',
+    source_dep_owner: users.find(res => res.UserCode === parsedData.UserCode)?.DepCode,
+    source_bu_owner: users.find(res => res.UserCode === parsedData.UserCode)?.BranchID === 901 ? 'Center' : 'Oil',
     source_usercode: parsedData.UserCode,
-    source_userid: users.find(res => res.UserCode===parsedData.UserCode)?.UserID,
+    source_userid: users.find(res => res.UserCode === parsedData.UserCode)?.UserID,
     source_name: null,
     source_date: dayjs.tz(new Date(), "Asia/Bangkok"),
     source_approve_usercode: null,
@@ -138,8 +139,8 @@ export default function Create() {
     finance_aprrove_date: null,
     desFristName: null,
     desLastName: null,
-    sourceFristName: users.find(res => res.UserCode===parsedData.UserCode)?.fristName,
-    sourceLastName: users.find(res => res.UserCode===parsedData.UserCode)?.lastName,
+    sourceFristName: users.find(res => res.UserCode === parsedData.UserCode)?.fristName,
+    sourceLastName: users.find(res => res.UserCode === parsedData.UserCode)?.lastName,
   }), [idSection, parsedData.UserCode]); // Add dependencies if needed
 
 
@@ -253,7 +254,7 @@ export default function Create() {
                   timer: 1500
                 }).then((result) => {
                   if (result.isConfirmed) {
-                    window.location.href = `/NAC_CREATE?id=${dataId}`;
+                    navigate(`/NAC_CREATE?id=${dataId}`)
                   }
                 })
               }
@@ -265,7 +266,8 @@ export default function Create() {
             showConfirmButton: true,
           }).then((result) => {
             if (result.isConfirmed) {
-              window.location.href = `/NAC_CREATE?id=${dataId}`;
+              ;
+              navigate(`/NAC_CREATE?id=${dataId}`)
             }
           })
         }
@@ -354,7 +356,7 @@ export default function Create() {
                 size="small"
                 sx={{ mr: 5 }}
                 onClick={() => {
-                  window.location.href = permission_menuID.includes(2) ? "/NAC_OPERATOR" : "/NAC_ROW";
+                  navigate(permission_menuID.includes(2) ? "/NAC_OPERATOR" : "/NAC_ROW")
                 }}
               >
                 <ArticleIcon fontSize="inherit" />

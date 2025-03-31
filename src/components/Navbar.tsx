@@ -5,7 +5,6 @@ import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
 import MenuIcon from '@mui/icons-material/Menu';
-import AccountCircle from '@mui/icons-material/AccountCircle';
 import MenuItem from '@mui/material/MenuItem';
 import Menu from '@mui/material/Menu';
 import { useNavigate } from "react-router";
@@ -22,7 +21,6 @@ import AdminPanelSettingsOutlinedIcon from '@mui/icons-material/AdminPanelSettin
 import { UserInfo } from '../type/nacType';
 import Axios from 'axios';
 import { dataConfig } from '../config';
-import Login from '../login';
 
 const darkTheme = createTheme({
   palette: {
@@ -115,16 +113,11 @@ export default function MenuAppBar() {
   }, []);
 
 
-  // if (!auth) {
-  //   return (
-  //     <Login />
-  //   )
-  // } else {
   return (
     <Box sx={{ flexGrow: 1 }}>
       <ThemeProvider theme={darkTheme}>
         <AppBar
-          position="fixed"
+          position="static"
           color="default"
           elevation={0}
         >

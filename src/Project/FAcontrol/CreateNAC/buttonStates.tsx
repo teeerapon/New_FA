@@ -14,6 +14,7 @@ import { Box, CircularProgress } from '@mui/material';
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
 import 'dayjs/locale/th'
+import { useNavigate } from 'react-router-dom';
 
 
 dayjs.extend(utc);
@@ -30,6 +31,7 @@ interface DataFromHeader {
 }
 
 export default function ButtonStates({ createDoc, setOpenBackdrop, detailNAC, idSection, workflowApproval, setCreateDoc }: DataFromHeader) {
+  const navigate = useNavigate();
   const data = localStorage.getItem('data');
   const parsedData = data ? JSON.parse(data) : null;
   const permission = localStorage.getItem('permission_MenuID');
@@ -373,7 +375,7 @@ export default function ButtonStates({ createDoc, setOpenBackdrop, detailNAC, id
           showConfirmButton: false,
           timer: 1500
         }).then(() => {
-          window.location.href = `/NAC_CREATE?id=${idSection}?nac_code=${createDoc[0].nac_code}`;
+          navigate(`/NAC_CREATE?id=${idSection}?nac_code=${createDoc[0].nac_code}`)
         })
       }
     });
@@ -415,7 +417,7 @@ export default function ButtonStates({ createDoc, setOpenBackdrop, detailNAC, id
           showConfirmButton: false,
           timer: 1500
         }).then(() => {
-          window.location.href = `/NAC_CREATE?id=${idSection}?nac_code=${createDoc[0].nac_code}`;
+          navigate(`/NAC_CREATE?id=${idSection}?nac_code=${createDoc[0].nac_code}`)
         })
       }
     });
@@ -452,7 +454,7 @@ export default function ButtonStates({ createDoc, setOpenBackdrop, detailNAC, id
             showConfirmButton: false,
             timer: 1500
           }).then(() => {
-            window.location.href = `/NAC_CREATE?id=${idSection}?nac_code=${response.data[0].nac_code}`;
+            navigate(`/NAC_CREATE?id=${idSection}?nac_code=${response.data[0].nac_code}`)
           })
         }
       }

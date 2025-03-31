@@ -1,6 +1,6 @@
 import * as React from 'react';
 import Box from "@mui/material/Box";
-import { dataConfig } from "../../../config";
+import { dataConfig } from "../../../../config";
 import { styled } from '@mui/material/styles';
 import Card from '@mui/material/Card';
 import CardHeader from '@mui/material/CardHeader';
@@ -18,6 +18,15 @@ import timezone from 'dayjs/plugin/timezone';
 import 'dayjs/locale/th'
 import dayjs from 'dayjs';
 import CloseIcon from '@mui/icons-material/Close';
+
+const BootstrapDialog = styled(Dialog)(({ theme }) => ({
+  '& .MuiDialogContent-root': {
+    padding: theme.spacing(2),
+  },
+  '& .MuiDialogActions-root': {
+    padding: theme.spacing(1),
+  },
+}));
 
 
 dayjs.extend(utc);
@@ -130,7 +139,7 @@ export default function ScanVerifly({ qrText }: Readonly<ScanVeriflyProps>) {
               <CardMedia
                 component="img"
                 height="160"
-                sx={{ objectFit: 'cover', cursor: 'pointer' }}
+                sx={{ objectFit: 'cover', cursor: 'pointer',p:1 }}
                 onClick={() => handleClickOpen(qrData[0]?.ImagePath, 0)}
                 image={qrData[0]?.ImagePath || "http://vpnptec.dyndns.org:10280/OPS_Fileupload/ATT_250300515.jpg"}
                 onError={({ currentTarget }) => {
@@ -144,7 +153,7 @@ export default function ScanVerifly({ qrText }: Readonly<ScanVeriflyProps>) {
               <CardMedia
                 component="img"
                 height="160"
-                sx={{ objectFit: 'cover', cursor: 'pointer' }}
+                sx={{ objectFit: 'cover', cursor: 'pointer',p:1 }}
                 onClick={() => handleClickOpen(qrData[0]?.ImagePath_2, 1)}
                 image={qrData[0]?.ImagePath_2 || "http://vpnptec.dyndns.org:10280/OPS_Fileupload/ATT_250300515.jpg"}
                 onError={({ currentTarget }) => {
@@ -168,7 +177,7 @@ export default function ScanVerifly({ qrText }: Readonly<ScanVeriflyProps>) {
           </CardContent>
         </Card>
       )}
-      <Dialog
+      <BootstrapDialog
         open={openDialog}
         onClose={handleClose}
         fullWidth
@@ -208,7 +217,7 @@ export default function ScanVerifly({ qrText }: Readonly<ScanVeriflyProps>) {
             />
           </Stack>
         </DialogContent>
-      </Dialog>
+      </BootstrapDialog>
     </Box>
   );
 };

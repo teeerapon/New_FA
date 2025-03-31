@@ -1,18 +1,34 @@
 import * as React from "react";
-import { Box, Stack, Card, CardHeader, Avatar, Typography, AppBar, Toolbar, IconButton, Container } from "@mui/material";
+import { Box, Stack, Card, CardHeader, Avatar, Typography, AppBar, Toolbar, IconButton, Container, Dialog, Button, DialogActions, DialogContent, DialogTitle } from "@mui/material";
 import { red } from "@mui/material/colors";
 import QrCodeIcon from "@mui/icons-material/QrCode";
 import EventNoteIcon from "@mui/icons-material/EventNote";
 import CropFreeIcon from "@mui/icons-material/CropFree";
 import { BrowserQRCodeReader } from "@zxing/browser";
-import ScanVerifly from './VeriflyCode/ScanVerifly';
+import ScanVerifly from './PageOne/VeriflyCode/ScanVerifly';
 import useScrollTrigger from '@mui/material/useScrollTrigger';
 import Fab from '@mui/material/Fab';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
+import CloseIcon from '@mui/icons-material/Close';
 import Fade from '@mui/material/Fade';
 import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
 import { ThemeProvider, createTheme, styled, useTheme } from '@mui/material/styles';
 import NavBarMobile from './NavMain/NavbarMobile'
+import { dataConfig } from "../../config";
+import Axios from 'axios';
+import MenuItem from '@mui/material/MenuItem';
+import FormControl from '@mui/material/FormControl';
+import Select, { SelectChangeEvent } from '@mui/material/Select';
+import { useNavigate } from "react-router-dom";
+
+const BootstrapDialog = styled(Dialog)(({ theme }) => ({
+  '& .MuiDialogContent-root': {
+    padding: theme.spacing(2),
+  },
+  '& .MuiDialogActions-root': {
+    padding: theme.spacing(1),
+  },
+}));
 
 const darkTheme = createTheme({
   palette: {
@@ -22,6 +38,11 @@ const darkTheme = createTheme({
     },
   },
 });
+
+interface PerBranch {
+  BranchID: number;
+  Name: string;
+}
 
 interface Props {
   /**
@@ -91,7 +112,17 @@ const cards = [
 
 export default function RecipeReviewCard(props: Props) {
   const theme = useTheme();
+  const navigate = useNavigate();
+  const data = localStorage.getItem('data');
+  const parsedData = data ? JSON.parse(data) : null;
   const [qrData, setQrData] = React.useState<string>("");
+  const [perBranch, setPerBranch] = React.useState<PerBranch[]>([]);
+  const [openDialog, setOpenDialog] = React.useState(false);
+  const [branchSelect, setBranchSelect] = React.useState('');
+
+  const handleClickOpennDialog = () => {
+    setOpenDialog(true);
+  };
 
   const handleCardClick = (id: number) => {
     if (id === 3) {
@@ -128,10 +159,26 @@ export default function RecipeReviewCard(props: Props) {
 
       fileInput.click();
     } else if (id === 2) {
-      window.location.href = '/MyAssets';
+      navigate('/MyAssets');
+    } else if (id === 1) {
+      handleClickOpennDialog()
     }
   };
 
+  const fetchPermissionB = async () => {
+    try {
+      await Axios.post(dataConfig.http + '/permission_branch', { 'userCode': parsedData.UserCode }, dataConfig.headers)
+        .then((res) => {
+          setPerBranch(res.data.data);
+        });
+    } catch (e) {
+      console.log(e)
+    }
+  }
+
+  React.useEffect(() => {
+    fetchPermissionB()
+  }, [])
 
   return (
     <Box sx={{ flexGrow: 1 }}>
@@ -146,7 +193,7 @@ export default function RecipeReviewCard(props: Props) {
             {qrData && (
               <IconButton
                 onClick={() => {
-                  window.location.href = '/MobileHome';
+                  navigate('/MobileHome');
                 }}
                 sx={{ color: 'black' }}
               >
@@ -214,6 +261,58 @@ export default function RecipeReviewCard(props: Props) {
           </Box>
         </Container>
       </ThemeProvider>
+      <BootstrapDialog
+        onClose={() => {
+          setOpenDialog(false);
+        }}
+        aria-labelledby="customized-dialog-title"
+        open={openDialog}
+        fullWidth
+      >
+        <DialogTitle sx={{ m: 0, p: 2 }} id="customized-dialog-title">
+          เลือกสาขาที่ต้องการ
+        </DialogTitle>
+        <IconButton
+          aria-label="close"
+          onClick={() => {
+            setOpenDialog(false);
+          }}
+          sx={(theme) => ({
+            position: 'absolute',
+            right: 8,
+            top: 8,
+            color: theme.palette.grey[500],
+          })}
+        >
+          <CloseIcon />
+        </IconButton>
+        <DialogContent dividers>
+          <FormControl sx={{ width: '100%' }} size="small">
+            <Select
+              value={branchSelect}
+              onChange={(event: SelectChangeEvent) => {
+                setBranchSelect(event.target.value);
+              }}
+            >
+              {perBranch && perBranch.map((res, index) => (
+                <MenuItem value={res.BranchID} key={index}>{res.Name}</MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => {
+              setOpenDialog(false);
+              navigate("/MobilePageTwo", {
+                state: { branchSelect }
+              });
+            }}
+          >
+            OK
+          </Button>
+        </DialogActions>
+      </BootstrapDialog>
     </Box>
   );
 }

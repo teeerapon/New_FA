@@ -15,6 +15,7 @@ import Axios from "axios";
 import { styled } from '@mui/material/styles';
 import Stack from '@mui/material/Stack';
 import MuiCard from '@mui/material/Card';
+import { useNavigate } from 'react-router-dom';
 
 const defaultTheme = createTheme();
 
@@ -92,6 +93,7 @@ export default function SignInSide() {
   const [Password, setPassword] = React.useState<string | undefined>(undefined);
   const URL_LINK = window.location.href;
   const pathname = window.location.pathname;
+  const navigate = useNavigate();
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -122,9 +124,9 @@ export default function SignInSide() {
           localStorage.setItem('data', JSON.stringify(response.data[0]));
           localStorage.setItem('date_login', datenow);
           if (pathname === '/Sign-In') {
-            window.location.href = '/Home';
+            navigate('/Home')
           } else {
-            window.location.href = URL_LINK;
+            navigate(URL_LINK)
           }
         }
       } else {
@@ -146,7 +148,7 @@ export default function SignInSide() {
           localStorage.setItem('token', response.token);
           localStorage.setItem('data', JSON.stringify(response.data[0]));
           localStorage.setItem('date_login', datenow);
-          window.location.href = '/MobileHome';
+          navigate('/MobileHome')
         }
       } else {
         Swal.fire({

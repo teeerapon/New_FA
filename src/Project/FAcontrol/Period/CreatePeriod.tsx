@@ -80,7 +80,7 @@ export default function ListNacPage() {
         });
 
         if (responses.status === 200) {
-          window.location.href = "/EditPeriod";
+          navigate(`/EditPeriod`)
         }
       }
     } catch (error) {
