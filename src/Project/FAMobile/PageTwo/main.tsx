@@ -137,8 +137,7 @@ export default function MainPageTow(props: Props) {
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
-            pt: { xs: 16, sm: 22 },
-            pb: { xs: 8, sm: 12 },
+            py: { xs: 8, sm: 12 },
           }}
         >
           <Box

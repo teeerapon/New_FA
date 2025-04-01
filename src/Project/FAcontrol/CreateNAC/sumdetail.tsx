@@ -161,7 +161,7 @@ export default function SumDetail({ detailNAC, dataAssets, idSection, createDoc,
         )}
         <StyledTableCell colSpan={2} />
       </TableRow>
-      {(([4, 5].includes(idSection ?? 0) && ([12].includes(createDoc[0].nac_status ?? 0))) || createDoc[0].real_price) && (
+      {[4, 5].includes(idSection ?? 0) && (
         <TableRow>
           <StyledTableCell colSpan={4}>
             <Typography color='error' >

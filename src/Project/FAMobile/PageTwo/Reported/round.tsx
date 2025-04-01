@@ -132,8 +132,7 @@ export default function MainPageTow(props: Props) {
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
-            pt: { xs: 16, sm: 22 },
-            pb: { xs: 8, sm: 12 },
+            py: { xs: 8, sm: 12 },
           }}
         >
           <Box
@@ -164,7 +163,11 @@ export default function MainPageTow(props: Props) {
                       boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.2)",
                     },
                   }}
-                // onClick={() => handleCardClick(card.id)}
+                  onClick={() => {
+                    navigate("/MobilePageTwoReported", {
+                      state: { PeriodID: `${res.PeriodID}`, Description: `${res.Description}`, branchSelect: `${branchSelect}` }
+                    });
+                  }}
                 >
                   <CardContent>
                     <Typography color="white" variant="body1" sx={{ pb: 1 }}>{res.Description}</Typography>

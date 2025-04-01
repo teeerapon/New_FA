@@ -2,14 +2,14 @@ import { GridCellParams, GridColDef } from "@mui/x-data-grid"
 import React from "react";
 import { Stack, Typography, AppBar, Toolbar, Box, CardContent, ImageList, Tab, Tabs, CircularProgress, IconButton, CardHeader, Container } from "@mui/material";
 import Axios from 'axios';
-import { Outlet, useNavigate } from "react-router";
+import { Outlet, useLocation, useNavigate } from "react-router";
 import dayjs from 'dayjs';
 import Grid from '@mui/material/Grid2';
 import ImageCell from "./ClickOpenImg";
 import MuiCard from '@mui/material/Card';
 import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
 import { dataConfig } from "../../../../config";
-import { AssetRecord, Assets_TypeGroup } from "../../../../type/nacType";
+import { CountAssetRow, Assets_TypeGroup } from "../../../../type/nacType";
 import useScrollTrigger from '@mui/material/useScrollTrigger';
 import Fab from '@mui/material/Fab';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
@@ -96,26 +96,27 @@ const Card = styled(MuiCard)(({ theme }) => ({
 
 
 export default function MyAssets(props: Props) {
-  const theme = useTheme();
+  const location = useLocation();
   const navigate = useNavigate();
-  const pathname = window.location.pathname;
+  const dataLocation = location.state;
   const data = localStorage.getItem('data');
   const parsedData = data ? JSON.parse(data) : null;
-  const [rows, setRows] = React.useState<AssetRecord[]>([]);
+  const [rows, setRows] = React.useState<CountAssetRow[]>([]);
   const [loading, setLoading] = React.useState<boolean>(true);
   const [assets_TypeGroup, setAssets_TypeGroup] = React.useState<Assets_TypeGroup[]>([]);
   const [assets_TypeGroupSelect, setAssets_TypeGroupSelect] = React.useState<string | null>(null);
 
+
   // State สำหรับการกรองแต่ละฟิลด์
-  const [originalRows, setOriginalRows] = React.useState<AssetRecord[]>([]);
+  const [originalRows, setOriginalRows] = React.useState<CountAssetRow[]>([]);
   const [filter, setFilter] = React.useState<string>("");
 
   const fetchData = async () => {
     try {
       if (parsedData) {
         const response = await Axios.post(
-          `${dataConfig.http}/FA_Control_Fetch_Assets`,
-          { usercode: parsedData.UserCode },
+          `${dataConfig.http}/FA_Control_Report_All_Counted_by_Description`,
+          { Description: dataLocation?.Description },
           dataConfig.headers
         );
 
@@ -126,13 +127,12 @@ export default function MyAssets(props: Props) {
 
         // Declare resData before using it
         const resData: Assets_TypeGroup[] = resFetchAssets.data;
-
         if (resData.length > 0 && response.data.length > 0) {
-          const dataLog: AssetRecord[] = response.data.filter(
-            (res: AssetRecord) => res.typeCode === resData[0].typeCode && res.OwnerID === parsedData.UserCode
+          const dataLog: CountAssetRow[] = response.data.filter(
+            (res: CountAssetRow) => res.typeCode === resData[0].typeCode && (res.BranchID)?.toString() === dataLocation?.branchSelect
           );
           setRows(dataLog);
-          setOriginalRows(dataLog);
+          setOriginalRows(response.data);
           setAssets_TypeGroup(resData);
           setAssets_TypeGroupSelect(resData[0].typeCode);
           setLoading(false);
@@ -166,14 +166,16 @@ export default function MyAssets(props: Props) {
           <Toolbar sx={{ backgroundColor: '#f5f5f5', color: 'black' }}>
             <IconButton
               onClick={() => {
-                navigate('/MobileHome');
+                navigate('/MobilePageTwoReportedRound', {
+                  state: { branchSelect: `${dataLocation?.branchSelect}` }
+                });
               }}
               sx={{ color: 'black' }}
             >
               <ArrowBackIosIcon />
             </IconButton>
             <Typography variant="subtitle1" color="inherit" component="div">
-              ทรัพย์สินทั้งหมดของฉัน
+              รอบตรวจนับ (id: #{dataLocation?.PeriodID})
             </Typography>
           </Toolbar>
           <Toolbar>
@@ -184,7 +186,7 @@ export default function MyAssets(props: Props) {
               aria-label="full width tabs example"
               value={assets_TypeGroupSelect}
               onChange={(event: React.SyntheticEvent, newValue: string) => {
-                const typeFil = originalRows.filter(res => res.typeCode === newValue && res.OwnerID === parsedData.UserCode)
+                const typeFil = originalRows.filter(res => res.typeCode === newValue && (res.BranchID)?.toString() === dataLocation?.branchSelect)
                 setRows(typeFil); // อัปเดต rows หลังจาก filter เปลี่ยนแปลง
                 setAssets_TypeGroupSelect(newValue);
               }}
@@ -273,12 +275,13 @@ export default function MyAssets(props: Props) {
                     />
                   </ImageList>
                   <CardContent>
-                    <Typography variant="body1" color="white">SerialNo: {res.SerialNo || '-'}</Typography>
                     <Typography variant="body1" color="white">ผู้ถือครอง: {res.OwnerID} ({res.Position})</Typography>
-                    <Typography variant="body1" color="white">Asset Group: {res.Asset_group || '-'}</Typography>
-                    <Typography variant="body1" color="white">Group Name: {res.Group_name || '-'}</Typography>
-                    <Typography variant="body1" color="white">สถานะปัจจุบัน: {res.Details}</Typography>
-                    <Typography variant="body1" color="white">NAC STATUS: {res.nac_processing ? `ถูกใช้งานที่ ${res.nac_processing}` : '-'}</Typography>
+                    <Typography variant="body1" color="white">ประเภท: {res.typeCode || '-'}</Typography>
+                    <Typography variant="body1" color="white">สถานะปัจจุบัน: {res.detail || '-'}</Typography>
+                    <Typography variant="body1" color="white">ผู้ตรวจนับ: {res.UserID || '-'}</Typography>
+                    <Typography variant="body1" color="white">วันที่ตรวจนับ: {dayjs(res.Date).format('DD/MM/YYYY HH:mm')}</Typography>
+                    <Typography variant="body1" color="white">สถานะครั้งนี้: {res.Reference || '-'}</Typography>
+                    <Typography variant="body1" color="white">หมายเหตุ: {res.remarker || '-'}</Typography>
                   </CardContent>
                 </Card>
               ))}

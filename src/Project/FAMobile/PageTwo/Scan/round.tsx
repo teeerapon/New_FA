@@ -11,6 +11,8 @@ import { dataConfig } from "../../../../config";
 import NavBarMobile from '../../NavMain/NavbarMobile'
 import { useLocation, useNavigate } from "react-router-dom";
 import dayjs, { Dayjs } from "dayjs";
+import isBetween from 'dayjs/plugin/isBetween';
+import Swal from "sweetalert2";
 
 const darkTheme = createTheme({
   palette: {
@@ -132,8 +134,7 @@ export default function MainPageTow(props: Props) {
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
-            pt: { xs: 16, sm: 22 },
-            pb: { xs: 8, sm: 12 },
+            py: { xs: 8, sm: 12 },
           }}
         >
           <Box
@@ -164,7 +165,19 @@ export default function MainPageTow(props: Props) {
                       boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.2)",
                     },
                   }}
-                // onClick={() => handleCardClick(card.id)}
+                  onClick={() => {
+                    const now = dayjs();
+                    const begin = dayjs(res.BeginDate);
+                    const end = dayjs(res.EndDate);
+                    if (!now.isBetween(begin, end, 'minute', '[]')) {
+                      Swal.fire({
+                        icon: "warning",
+                        title: 'วันที่ปัจจุบันไม่ได้อยู่ในช่วงที่เปิดรอบตรวจนับนี้',
+                        showConfirmButton: false,
+                        timer: 1500
+                      });
+                    }
+                  }}
                 >
                   <CardContent>
                     <Typography color="white" variant="body1" sx={{ pb: 1 }}>{res.Description}</Typography>

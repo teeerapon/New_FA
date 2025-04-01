@@ -245,6 +245,7 @@ export interface AssetRecord {
 export interface CountAssetRow {
   Code: string | null | undefined;
   Name: string | null | undefined;
+  BranchID: number | null | undefined;
   OwnerID: string | null | undefined;
   Position: string | null | undefined;
   Date: Dayjs | null | undefined; // or another suitable type for date handling
