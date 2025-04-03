@@ -148,14 +148,11 @@ export default function ChatCard({ nac_type, createDoc }: DataFromHeader) {
 
   const handleUploadFileComment = async (e: React.ChangeEvent<HTMLInputElement>) => {
     e.preventDefault();
-
-    const allowedImageExtensions = ['jpg', 'png', 'gif', 'xbm', 'tif', 'pjp', 'svgz', 'jpeg', 'jfif', 'bmp', 'webp', 'svg'];
-
     if (e.target.files && e.target.files.length > 0) {
       const file = e.target.files[0];
       const fileExtension = file.name.split('.').pop()?.toLowerCase(); // Get file extension
 
-      if (fileExtension && allowedImageExtensions.includes(fileExtension)) {
+      if (fileExtension) {
         const formData_1 = new FormData();
         formData_1.append("file", file);
         formData_1.append("fileName", file.name);
@@ -354,7 +351,6 @@ export default function ChatCard({ nac_type, createDoc }: DataFromHeader) {
                       hidden
                       type="file"
                       name="file"
-                      accept="image/*"
                       onChange={(e) => handleUploadFileComment(e)}  // ฟังก์ชันที่รับไฟล์
                     />
                   </Button>

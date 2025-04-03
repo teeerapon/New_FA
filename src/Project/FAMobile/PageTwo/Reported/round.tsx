@@ -98,6 +98,9 @@ export default function MainPageTow(props: Props) {
   }
 
   React.useEffect(() => {
+    if (!dataLocation?.branchSelect) {
+      navigate('/MobileHome');
+    }
     fetchPermissionB()
   }, [])
 

@@ -123,8 +123,8 @@ export default function SignInSide() {
           localStorage.setItem('token', response.token);
           localStorage.setItem('data', JSON.stringify(response.data[0]));
           localStorage.setItem('date_login', datenow);
-          if (pathname === '/Sign-In') {
-            navigate('/Home')
+          if (pathname !== '/Sign-In') {
+            window.location.href = '/Home'
           } else {
             navigate(URL_LINK)
           }

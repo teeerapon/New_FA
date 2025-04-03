@@ -133,6 +133,42 @@ const ImageCell = ({ imagePath, name, rows, setRows, index, fieldData, originalR
     }
   }
 
+  const choiceImg = (id: number) => {
+    // แสดงตัวเลือกให้ผู้ใช้เลือกแหล่งที่มาของรูปภาพ
+    const choice = window.confirm("คุณต้องการถ่ายรูปจากกล้องหรืออัปโหลดจากอุปกรณ์?\n\nกด 'ตกลง' เพื่อถ่ายรูป หรือ 'ยกเลิก' เพื่ออัปโหลด");
+
+    const fileInput = document.createElement("input");
+    fileInput.type = "file";
+    fileInput.accept = "image/*";
+
+    if (choice) {
+      fileInput.capture = "camera"; // เปิดกล้องถ่ายรูป
+    }
+
+    fileInput.onchange = async (e: any) => {
+      const file = e.target.files[0];
+      const fileExtension = file.name.split('.').pop()?.toLowerCase(); // Get file extension
+      if (file) {
+        const formData_1 = new FormData();
+        formData_1.append("file", file);
+        formData_1.append("fileName", file.name);
+        try {
+          const response = await Axios.post(
+            // `${dataConfig.http}/check_files_NewNAC`,
+            `http://vpnptec.dyndns.org:32001/api/check_files_NewNAC`,
+            formData_1,
+            dataConfig.headerUploadFile
+          );
+          setSelectedImage(`http://vpnptec.dyndns.org:33080/NEW_NAC/${response.data.attach[0].ATT}.${fileExtension}`);
+        } catch (error) {
+          console.error("Error uploading file:", error);
+        }
+      }
+    };
+
+    fileInput.click();
+  }
+
   const handleUploadFile_1 = async (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
     e.preventDefault();
 
@@ -177,7 +213,7 @@ const ImageCell = ({ imagePath, name, rows, setRows, index, fieldData, originalR
           component="img"
           height="160"
           sx={{ objectFit: 'cover', cursor: 'pointer' }}
-          onClick={() => handleClickOpen(imagePath, index)}
+          onClick={() => choiceImg(index)}
           image={imagePath || "http://vpnptec.dyndns.org:10280/OPS_Fileupload/ATT_250300515.jpg"}
           onError={({ currentTarget }) => {
             currentTarget.onerror = null; // prevents looping

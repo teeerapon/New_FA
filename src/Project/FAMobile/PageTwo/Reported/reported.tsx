@@ -1,6 +1,6 @@
 import { GridCellParams, GridColDef } from "@mui/x-data-grid"
 import React from "react";
-import { Stack, Typography, AppBar, Toolbar, Box, CardContent, ImageList, Tab, Tabs, CircularProgress, IconButton, CardHeader, Container } from "@mui/material";
+import { Stack, Typography, AppBar, Toolbar, Box, CardContent, ImageList, Tab, Tabs, CircularProgress, IconButton, CardHeader, Container, CardActions, Tooltip, Button, Dialog, DialogActions, DialogContent, DialogTitle, FormControl, FormControlLabel, FormLabel, Radio, RadioGroup } from "@mui/material";
 import Axios from 'axios';
 import { Outlet, useLocation, useNavigate } from "react-router";
 import dayjs from 'dayjs';
@@ -16,6 +16,17 @@ import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import Fade from '@mui/material/Fade';
 import { ThemeProvider, createTheme, styled, useTheme } from '@mui/material/styles';
 import NavBarMobile from '../../NavMain/NavbarMobile'
+import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
+import CloseIcon from '@mui/icons-material/Close';
+
+const BootstrapDialog = styled(Dialog)(({ theme }) => ({
+  '& .MuiDialogContent-root': {
+    padding: theme.spacing(2),
+  },
+  '& .MuiDialogActions-root': {
+    padding: theme.spacing(1),
+  },
+}));
 
 const darkTheme = createTheme({
   palette: {
@@ -105,6 +116,30 @@ export default function MyAssets(props: Props) {
   const [loading, setLoading] = React.useState<boolean>(true);
   const [assets_TypeGroup, setAssets_TypeGroup] = React.useState<Assets_TypeGroup[]>([]);
   const [assets_TypeGroupSelect, setAssets_TypeGroupSelect] = React.useState<string | null>(null);
+  const [dialogFixed, setDialogFixed] = React.useState<boolean>(false);
+  const dataFix = ['ไม่ได้ระบุสถานะ', 'สภาพดี', 'ชำรุดรอซ่อม', 'รอตัดขาย', 'รอตัดชำรุด', 'อื่น ๆ']
+  const [choice, setChoice] = React.useState<CountAssetRow>({
+    Code: '',
+    Name: '',
+    BranchID: 0,
+    OwnerID: '',
+    Position: '',
+    Date: dayjs(Date.now()),
+    EndDate_Success: dayjs(Date.now()),
+    UserID: '',
+    detail: '',
+    Reference: '',
+    comment: '',
+    remarker: '',
+    RoundID: '',
+    RowID: 0,
+    typeCode: '',
+    ImagePath: '',
+    ImagePath_2: '',
+  });
+  const [valueChoice, setValueChoice] = React.useState(choice && choice.Reference || 'ไม่ได้ระบุสถานะ');
+
+
 
 
   // State สำหรับการกรองแต่ละฟิลด์
@@ -150,6 +185,9 @@ export default function MyAssets(props: Props) {
 
 
   React.useEffect(() => {
+    if (!dataLocation?.branchSelect) {
+      navigate('/MobileHome');
+    }
     fetchData();
   }, []);
 
@@ -251,6 +289,19 @@ export default function MyAssets(props: Props) {
                   <CardHeader
                     title={<Typography variant="h6" component="div" color="white">{res.Code}</Typography>}
                     subheader={<Typography variant="body1" component="div" color="white">{res.Name}</Typography>}
+                    action={
+                      <Tooltip title="แก้ไขรายละเอียด">
+                        <IconButton
+                          aria-label="add to favorites"
+                          onClick={() => {
+                            setChoice(res)
+                            setDialogFixed(true)
+                          }}
+                        >
+                          <AutoFixHighIcon />
+                        </IconButton>
+                      </Tooltip>
+                    }
                   />
                   <ImageList cols={2}>
                     <ImageCell
@@ -295,6 +346,69 @@ export default function MyAssets(props: Props) {
           <Outlet />
         </Container>
       </ThemeProvider>
-    </Box>
+      <BootstrapDialog
+        onClose={() => {
+          setDialogFixed(false);
+        }}
+        aria-labelledby="customized-dialog-title"
+        open={dialogFixed}
+        fullWidth
+      >
+        <DialogTitle sx={{ m: 0, p: 2 }} id="customized-dialog-title">
+          แก้ไขรายการ
+        </DialogTitle>
+        <IconButton
+          aria-label="close"
+          onClick={() => {
+            setDialogFixed(false);
+          }}
+          sx={(theme) => ({
+            position: 'absolute',
+            right: 8,
+            top: 8,
+            color: theme.palette.grey[500],
+          })}
+        >
+          <CloseIcon />
+        </IconButton>
+        <DialogContent dividers>
+          <FormControl>
+            <FormLabel id="demo-radio-buttons-group-label">{choice && choice.Reference}</FormLabel>
+            <RadioGroup
+              aria-labelledby="demo-radio-buttons-group-label"
+              defaultValue={valueChoice}
+              name="radio-buttons-group"
+              value={valueChoice}
+              onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+                setChoice((prev) => ({ ...prev, Reference: (event.target as HTMLInputElement).value }))
+                setValueChoice((event.target as HTMLInputElement).value);
+              }}
+            >
+              {dataFix.map((dataFix, index) => (
+                <FormControlLabel
+                  key={index}
+                  value={dataFix}
+                  control={<Radio />}
+                  label={dataFix}
+                />
+              ))}
+            </RadioGroup>
+          </FormControl>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => {
+              const indexRow = rows.findIndex(res => res.Code === choice.Code)
+              const list = [...rows]
+              list[indexRow]['Reference'] = valueChoice
+              setRows(list)
+              setDialogFixed(false)
+            }}
+          >
+            OK
+          </Button>
+        </DialogActions>
+      </BootstrapDialog>
+    </Box >
   );
 }
