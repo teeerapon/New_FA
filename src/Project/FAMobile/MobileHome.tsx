@@ -119,6 +119,7 @@ export default function RecipeReviewCard(props: Props) {
   const [perBranch, setPerBranch] = React.useState<PerBranch[]>([]);
   const [openDialog, setOpenDialog] = React.useState(false);
   const [branchSelect, setBranchSelect] = React.useState('');
+  
 
   const handleClickOpennDialog = () => {
     setOpenDialog(true);
@@ -220,8 +221,6 @@ export default function RecipeReviewCard(props: Props) {
               display: "flex",
               justifyContent: "center",
               alignItems: "center",
-              backgroundImage:
-                "radial-gradient(ellipse at 50% 50%, hsl(210, 100%, 97%), hsl(0, 0%, 100%))",
             }}
           >
             <Stack direction="column" spacing={2}>
@@ -294,7 +293,7 @@ export default function RecipeReviewCard(props: Props) {
               }}
             >
               {perBranch && perBranch.map((res, index) => (
-                <MenuItem value={res.BranchID} key={index}>{res.Name}</MenuItem>
+                <MenuItem value={String(res.BranchID)} key={index}>{res.Name}</MenuItem>
               ))}
             </Select>
           </FormControl>

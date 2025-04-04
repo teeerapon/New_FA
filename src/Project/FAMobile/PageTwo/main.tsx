@@ -147,8 +147,6 @@ export default function MainPageTow(props: Props) {
               display: "flex",
               justifyContent: "center",
               alignItems: "center",
-              backgroundImage:
-                "radial-gradient(ellipse at 50% 50%, hsl(210, 100%, 97%), hsl(0, 0%, 100%))",
             }}
           >
             <Stack direction="column" spacing={2}>

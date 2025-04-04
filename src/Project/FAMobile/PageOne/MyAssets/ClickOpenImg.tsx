@@ -1,21 +1,8 @@
-import React, { useState } from 'react';
-import { Button, CardMedia, Dialog, DialogActions, DialogContent, IconButton, ImageListItem, ImageListItemBar, Stack } from '@mui/material';
-import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+import React from 'react';
+import { CardMedia, ImageListItem } from '@mui/material';
 import Axios from 'axios';
-import Swal from 'sweetalert2';
-import CloseIcon from '@mui/icons-material/Close';
 import { dataConfig } from '../../../../config';
-import { AssetRecord, UpdateDtlAssetParams } from '../../../../type/nacType';
-import { styled } from '@mui/material/styles';
-
-const BootstrapDialog = styled(Dialog)(({ theme }) => ({
-  '& .MuiDialogContent-root': {
-    padding: theme.spacing(2),
-  },
-  '& .MuiDialogActions-root': {
-    padding: theme.spacing(1),
-  },
-}));
+import { AssetRecord } from '../../../../type/nacType';
 
 export interface Data {
   imagePath: string;
@@ -28,79 +15,54 @@ export interface Data {
   setOriginalRows: React.Dispatch<React.SetStateAction<AssetRecord[]>>;
 }
 
+const convertToJPG = (file: File): Promise<File> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+
+    reader.readAsDataURL(file);
+    reader.onload = (event) => {
+      const img = new Image();
+      img.src = event.target?.result as string;
+
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d");
+
+        canvas.width = img.width;
+        canvas.height = img.height;
+
+        if (ctx) {
+          ctx.drawImage(img, 0, 0, img.width, img.height);
+        }
+
+        canvas.toBlob(
+          (blob) => {
+            if (blob) {
+              const jpgFile = new File([blob], file.name.replace(/\.\w+$/, ".jpg"), {
+                type: "image/jpeg",
+              });
+              resolve(jpgFile);
+            } else {
+              reject(new Error("Failed to convert image to JPG"));
+            }
+          },
+          "image/jpeg",
+          0.9 // คุณภาพของ JPG (0.9 = 90%)
+        );
+      };
+    };
+
+    reader.onerror = (error) => reject(error);
+  });
+};
+
 // Create a separate component for rendering the image cell
 const ImageCell = ({ imagePath, name, rows, setRows, index, fieldData, originalRows, setOriginalRows }: Data) => {
   const data = localStorage.getItem('data');
   const parsedData = data ? JSON.parse(data) : null;
-  const [openDialog, setOpenDialog] = useState(false);
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
-  const [rowEdit, setRowEdit] = React.useState<Partial<UpdateDtlAssetParams>>({});
+  const [imageData, setImageData] = React.useState<string>(imagePath);
 
-
-  const handleClickOpen = (imageUrl: string, indexData: number) => {
-    setRowEdit({
-      Code: rows[indexData].Code ?? '',
-      Name: rows[indexData].Name ?? '',
-      Asset_group: rows[indexData].Asset_group ?? '',
-      Group_name: rows[indexData].Group_name ?? '',
-      BranchID: rows[indexData].BranchID,
-      OwnerCode: rows[indexData].OwnerID ?? '',
-      Details: rows[indexData].Details ?? '',
-      SerialNo: rows[indexData].SerialNo ?? '',
-      Price: rows[indexData].Price ?? 0,
-      ImagePath: typeof rows[indexData].ImagePath === 'string' || typeof rows[indexData].ImagePath === 'number' ? rows[indexData].ImagePath : '',
-      ImagePath_2: typeof rows[indexData].ImagePath === 'string' || typeof rows[indexData].ImagePath === 'number' ? rows[indexData].ImagePath : '',
-      Position: rows[indexData].Position ?? '',
-      UserCode: typeof parsedData.UserCode === 'string' ? parsedData.UserCode : '', // Ensure UserCode is a string
-    })
-    setSelectedImage(imageUrl);
-    setOpenDialog(true);
-  };
-
-  const handleClose = () => {
-    setOpenDialog(false);
-    setSelectedImage(null);
-  };
-
-
-  const handleCloseSaved = async () => {
-    setOpenDialog(false);
-    const index = rows.findIndex((row) => row.Code === rowEdit.Code);
-    const indexOriginalRows = originalRows.findIndex((row) => row.Code === rowEdit.Code);
-    const list = [...rows]
-    list[index]['ImagePath'] = fieldData === 'ImagePath' ? selectedImage : rowEdit.ImagePath;
-    list[index]['ImagePath_2'] = fieldData === 'ImagePath_2' ? selectedImage : rowEdit.ImagePath;
-
-    const listOriginalRows = [...originalRows]
-    listOriginalRows[indexOriginalRows]['ImagePath'] = fieldData === 'ImagePath' ? selectedImage : rowEdit.ImagePath;
-    listOriginalRows[indexOriginalRows]['ImagePath_2'] = fieldData === 'ImagePath_2' ? selectedImage : rowEdit.ImagePath;
-
-    setRows(list);
-    setOriginalRows(listOriginalRows)
-    try {
-      const response = await Axios.post(
-        `${dataConfig.http}/UpdateDtlAsset`,
-        list[index],
-        dataConfig.headers
-      );
-
-      if (response.status === 200) {
-        Swal.fire({
-          icon: "success",
-          title: 'แก้ไขรายการสำเร็จ',
-          showConfirmButton: false,
-          timer: 1500
-        });
-      } else {
-        throw new Error('Update failed');
-      }
-    } catch (error) {
-      console.log(JSON.stringify(error));
-
-    }
-  };
-
-  const handleUploadFile = async () => {
+  const handleUploadFile = async (indexCode: number) => {
     // แสดงตัวเลือกให้ผู้ใช้เลือกแหล่งที่มาของรูปภาพ
     const choice = window.confirm("คุณต้องการถ่ายรูปจากกล้องหรืออัปโหลดจากอุปกรณ์?\n\nกด 'ตกลง' เพื่อถ่ายรูป หรือ 'ยกเลิก' เพื่ออัปโหลด");
 
@@ -113,57 +75,73 @@ const ImageCell = ({ imagePath, name, rows, setRows, index, fieldData, originalR
     }
 
     fileInput.onchange = async (e: any) => {
-      const file = e.target.files[0];
-      const fileExtension = file.name.split('.').pop()?.toLowerCase(); // Get file extension
+      let file = e.target.files[0];
       if (file) {
-        const formData_1 = new FormData();
-        formData_1.append("file", file);
-        formData_1.append("fileName", file.name);
         try {
-          const response = await Axios.post(
-            // `${dataConfig.http}/check_files_NewNAC`,
-            `http://vpnptec.dyndns.org:32001/api/check_files_NewNAC`,
-            formData_1,
-            dataConfig.headerUploadFile
-          );
-          const selectedImageRes = `http://vpnptec.dyndns.org:33080/NEW_NAC/${response.data.attach[0].ATT}.${fileExtension}`
-          setSelectedImage(selectedImageRes);
+          file = await convertToJPG(file); // แปลงเป็น JPG ก่อนอัปโหลด
+          const formData_1 = new FormData();
+          formData_1.append("file", file);
+          formData_1.append("fileName", file.name);
 
-          const index = rows.findIndex((row) => row.Code === rowEdit.Code);
-          const indexOriginalRows = originalRows.findIndex((row) => row.Code === rowEdit.Code);
-          const list = [...rows]
-          list[index]['ImagePath'] = fieldData === 'ImagePath' ? selectedImageRes : rowEdit.ImagePath;
-          list[index]['ImagePath_2'] = fieldData === 'ImagePath_2' ? selectedImageRes : rowEdit.ImagePath;
-          const listOriginalRows = [...originalRows]
-          listOriginalRows[indexOriginalRows]['ImagePath'] = fieldData === 'ImagePath' ? selectedImageRes : rowEdit.ImagePath;
-          listOriginalRows[indexOriginalRows]['ImagePath_2'] = fieldData === 'ImagePath_2' ? selectedImageRes : rowEdit.ImagePath;
-          setRows(list);
-          setOriginalRows(listOriginalRows)
           try {
             const response = await Axios.post(
-              `${dataConfig.http}/UpdateDtlAsset`,
-              list[index],
-              dataConfig.headers
+              `http://vpnptec.dyndns.org:32001/api/check_files_NewNAC`,
+              formData_1,
+              dataConfig.headerUploadFile
             );
 
-            if (response.status === 200) {
-              Swal.fire({
-                icon: "success",
-                title: 'แก้ไขรายการสำเร็จ',
-                showConfirmButton: false,
-                timer: 1500
-              });
-            } else {
-              throw new Error('Update failed');
+            if (response.status === 200 && response.data.attach[0].ATT) {
+              const selectedImageRes = `http://vpnptec.dyndns.org:33080/NEW_NAC/${response.data.attach[0].ATT}.jpg`;
+
+              // อัปเดตข้อมูลภาพ
+              const indexOriginalRows = originalRows.findIndex((row) => row.Code === rows[indexCode].Code);
+              const list = [...rows];
+              const listOriginalRows = [...originalRows];
+
+              list[indexCode]['ImagePath'] = fieldData === 'ImagePath' ? selectedImageRes : list[indexCode].ImagePath;
+              list[indexCode]['ImagePath_2'] = fieldData === 'ImagePath_2' ? selectedImageRes : list[indexCode].ImagePath;
+              listOriginalRows[indexOriginalRows]['ImagePath'] = fieldData === 'ImagePath' ? selectedImageRes : listOriginalRows[indexOriginalRows].ImagePath;
+              listOriginalRows[indexOriginalRows]['ImagePath_2'] = fieldData === 'ImagePath_2' ? selectedImageRes : listOriginalRows[indexOriginalRows].ImagePath;
+
+              try {
+                const response = await Axios.post(
+                  `${dataConfig.http}/UpdateDtlAsset`,
+                  {
+                    Code: list[indexCode].Code ?? '',
+                    Name: list[indexCode].Name ?? '',
+                    Asset_group: list[indexCode].Asset_group ?? '',
+                    Group_name: list[indexCode].Group_name ?? '',
+                    BranchID: list[indexCode].BranchID,
+                    OwnerCode: list[indexCode].OwnerID ?? '',
+                    Details: list[indexCode].Details ?? '',
+                    SerialNo: list[indexCode].SerialNo ?? '',
+                    Price: list[indexCode].Price ?? 0,
+                    ImagePath: fieldData === 'ImagePath' ? selectedImageRes : list[indexCode].ImagePath,
+                    ImagePath_2: fieldData === 'ImagePath_2' ? selectedImageRes : list[indexCode].ImagePath,
+                    Position: list[indexCode].Position ?? '',
+                    UserCode: typeof parsedData.UserCode === 'string' ? parsedData.UserCode : '',
+                  },
+                  dataConfig.headers
+                );
+
+                if (response.status === 200) {
+                  setImageData(selectedImageRes);
+                  setRows(list);
+                  setOriginalRows(listOriginalRows);
+                } else {
+                  throw new Error('Update failed');
+                }
+              } catch (error) {
+                console.log(JSON.stringify(error));
+              }
             }
           } catch (error) {
-            console.log(JSON.stringify(error));
-
+            console.error("Error uploading file:", error);
           }
         } catch (error) {
-          console.error("Error uploading file:", error);
+          console.error("Error converting/uploading file:", error);
         }
-      }
+      };
     };
 
     fileInput.click();
@@ -173,12 +151,11 @@ const ImageCell = ({ imagePath, name, rows, setRows, index, fieldData, originalR
     <React.Fragment>
       <ImageListItem key={index}>
         <CardMedia
-          key={imagePath}
           component="img"
           height="160"
           sx={{ objectFit: 'cover', cursor: 'pointer' }}
-          onClick={handleUploadFile}
-          image={imagePath || "http://vpnptec.dyndns.org:10280/OPS_Fileupload/ATT_250300515.jpg"}
+          onClick={() => handleUploadFile(index)}
+          image={imageData || "http://vpnptec.dyndns.org:10280/OPS_Fileupload/ATT_250300515.jpg"}
           onError={({ currentTarget }) => {
             currentTarget.onerror = null; // prevents looping
             currentTarget.src = "http://vpnptec.dyndns.org:10280/OPS_Fileupload/ATT_250300515.jpg";

@@ -12,6 +12,7 @@ import NavBarMobile from '../../NavMain/NavbarMobile'
 import { useLocation, useNavigate } from "react-router-dom";
 import dayjs, { Dayjs } from "dayjs";
 import isBetween from 'dayjs/plugin/isBetween';
+import { BrowserQRCodeReader } from "@zxing/browser";
 import Swal from "sweetalert2";
 
 const darkTheme = createTheme({
@@ -99,8 +100,45 @@ export default function MainPageTow(props: Props) {
     }
   }
 
+  const startScan = (periodID: number) => {
+    // แสดงตัวเลือกให้ผู้ใช้เลือกแหล่งที่มาของรูปภาพ
+    const choice = window.confirm("คุณต้องการถ่ายรูปจากกล้องหรืออัปโหลดจากอุปกรณ์?\n\nกด 'ตกลง' เพื่อถ่ายรูป หรือ 'ยกเลิก' เพื่ออัปโหลด");
+
+    const fileInput = document.createElement("input");
+    fileInput.type = "file";
+    fileInput.accept = "image/*";
+
+    if (choice) {
+      fileInput.capture = "camera"; // เปิดกล้องถ่ายรูป
+    }
+
+    fileInput.onchange = (e: any) => {
+      const file = e.target.files[0];
+      if (file) {
+        // อ่าน QR Code จากรูปภาพ
+        const reader = new BrowserQRCodeReader();
+        reader.decodeFromImageUrl(URL.createObjectURL(file))
+          .then(result => {
+            if (result.getText()) {
+              navigate("/ResultScan", {
+                state: { Code: result.getText(), branchSelect: branchSelect, PeriodID: periodID }
+              });
+            } else {
+              alert("ไม่สามารถอ่าน QR Code ได้ กรุณาลองใหม่อีกครั้ง");
+            }
+          })
+          .catch(err => {
+            console.error("Error reading QR Code:", err);
+            alert("ไม่สามารถอ่าน QR Code ได้ กรุณาลองใหม่อีกครั้ง");
+          });
+      }
+    };
+
+    fileInput.click();
+  }
+
   React.useEffect(() => {
-    if(!dataLocation?.branchSelect){
+    if (!dataLocation?.branchSelect) {
       navigate('/MobileHome');
     }
     fetchPermissionB()
@@ -147,8 +185,6 @@ export default function MainPageTow(props: Props) {
               display: "flex",
               justifyContent: "center",
               alignItems: "center",
-              backgroundImage:
-                "radial-gradient(ellipse at 50% 50%, hsl(210, 100%, 97%), hsl(0, 0%, 100%))",
             }}
           >
             <Stack direction="column" spacing={2}>
@@ -179,6 +215,8 @@ export default function MainPageTow(props: Props) {
                         showConfirmButton: false,
                         timer: 1500
                       });
+                    } else {
+                      startScan(Number(res.PeriodID));
                     }
                   }}
                 >

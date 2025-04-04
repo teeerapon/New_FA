@@ -19,6 +19,7 @@ import MobilePageTwo from './Project/FAMobile/PageTwo/main';
 import MobilePageTwoScanRound from './Project/FAMobile/PageTwo/Scan/round';
 import MobilePageTwoReportedRound from './Project/FAMobile/PageTwo/Reported/round';
 import MobilePageTwoReported from './Project/FAMobile/PageTwo/Reported/reported';
+import ResultScan from './Project/FAMobile/PageTwo/Scan/ResultScan';
 import MyAssets from './Project/FAMobile/PageOne/MyAssets/MyAssets';
 import { CssBaseline, Box } from '@mui/material';
 
@@ -103,6 +104,7 @@ const App: React.FC = () => {
           <Route path="/MobilePageTwoScanRound" element={<MobilePageTwoScanRound />} />
           <Route path="/MobilePageTwoReportedRound" element={<MobilePageTwoReportedRound />} />
           <Route path="/MobilePageTwoReported" element={<MobilePageTwoReported />} />
+          <Route path="/ResultScan" element={<ResultScan />} />
         </Routes>
       </Box>
     </div>

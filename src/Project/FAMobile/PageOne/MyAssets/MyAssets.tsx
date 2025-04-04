@@ -231,8 +231,6 @@ export default function MyAssets(props: Props) {
               display: "flex",
               justifyContent: "center",
               alignItems: "center",
-              backgroundImage:
-                "radial-gradient(ellipse at 50% 50%, hsl(210, 100%, 97%), hsl(0, 0%, 100%))",
             }}
           >
             <Box sx={{ display: "flex", flexDirection: "column", width: '100vw', gap: 2 }}>

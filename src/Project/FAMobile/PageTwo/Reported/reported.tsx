@@ -4,7 +4,6 @@ import { Stack, Typography, AppBar, Toolbar, Box, CardContent, ImageList, Tab, T
 import Axios from 'axios';
 import { Outlet, useLocation, useNavigate } from "react-router";
 import dayjs from 'dayjs';
-import Grid from '@mui/material/Grid2';
 import ImageCell from "./ClickOpenImg";
 import MuiCard from '@mui/material/Card';
 import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
@@ -14,10 +13,12 @@ import useScrollTrigger from '@mui/material/useScrollTrigger';
 import Fab from '@mui/material/Fab';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import Fade from '@mui/material/Fade';
-import { ThemeProvider, createTheme, styled, useTheme } from '@mui/material/styles';
+import { ThemeProvider, createTheme, styled } from '@mui/material/styles';
 import NavBarMobile from '../../NavMain/NavbarMobile'
 import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
 import CloseIcon from '@mui/icons-material/Close';
+import { blue } from '@mui/material/colors';
+import Swal from "sweetalert2";
 
 const BootstrapDialog = styled(Dialog)(({ theme }) => ({
   '& .MuiDialogContent-root': {
@@ -138,13 +139,13 @@ export default function MyAssets(props: Props) {
     ImagePath_2: '',
   });
   const [valueChoice, setValueChoice] = React.useState(choice && choice.Reference || 'ไม่ได้ระบุสถานะ');
+  const [countChoice, setCountChoice] = React.useState('ตรวจนับแล้ว');
 
 
 
 
   // State สำหรับการกรองแต่ละฟิลด์
   const [originalRows, setOriginalRows] = React.useState<CountAssetRow[]>([]);
-  const [filter, setFilter] = React.useState<string>("");
 
   const fetchData = async () => {
     try {
@@ -166,8 +167,8 @@ export default function MyAssets(props: Props) {
           const dataLog: CountAssetRow[] = response.data.filter(
             (res: CountAssetRow) => res.typeCode === resData[0].typeCode && (res.BranchID)?.toString() === dataLocation?.branchSelect
           );
-          setRows(dataLog);
-          setOriginalRows(response.data);
+          setRows(dataLog.filter((res: CountAssetRow) => res.remarker === 'ตรวจนับแล้ว' && res.typeCode === resData[0].typeCode));
+          setOriginalRows(response.data.filter((res: CountAssetRow) => (res.BranchID)?.toString() === dataLocation?.branchSelect));
           setAssets_TypeGroup(resData);
           setAssets_TypeGroupSelect(resData[0].typeCode);
           setLoading(false);
@@ -182,6 +183,31 @@ export default function MyAssets(props: Props) {
       setLoading(false); // Ensure loading is disabled in case of error
     }
   };
+
+  const updateReferent = async (value: string) => {
+    const response = await Axios.post(
+      `${dataConfig.http}/updateReference`,
+      {
+        "Reference": value,
+        "Code": choice.Code,
+        "RoundID": choice.RoundID,
+        "UserID": parsedData.userid,
+        "BranchID": choice.BranchID,
+        "Date": dayjs(Date.now()),
+      },
+      dataConfig.headers
+    );
+    if (response) {
+      setChoice((prev) => ({ ...prev, Reference: value }))
+    } else {
+      Swal.fire({
+        icon: "warning",
+        title: 'ไม่สามารถเปลี่ยนแปลงได้ ลองใหม่อีกครั้ง',
+        showConfirmButton: false,
+        timer: 1500
+      }).then(() => setValueChoice('ยังไม่ได้ระบุสถานะ'));
+    }
+  }
 
 
   React.useEffect(() => {
@@ -224,7 +250,9 @@ export default function MyAssets(props: Props) {
               aria-label="full width tabs example"
               value={assets_TypeGroupSelect}
               onChange={(event: React.SyntheticEvent, newValue: string) => {
-                const typeFil = originalRows.filter(res => res.typeCode === newValue && (res.BranchID)?.toString() === dataLocation?.branchSelect)
+                const typeFil = originalRows.filter(res =>
+                  res.typeCode === newValue && (res.BranchID)?.toString() === dataLocation?.branchSelect
+                )
                 setRows(typeFil); // อัปเดต rows หลังจาก filter เปลี่ยนแปลง
                 setAssets_TypeGroupSelect(newValue);
               }}
@@ -244,7 +272,7 @@ export default function MyAssets(props: Props) {
           sx={{
             display: 'flex',
             flexDirection: 'column',
-            justifyContent: 'center', // จัดให้อยู่กึ่งกลางแนวตั้ง
+            justifyContent: 'flex-start', // จัดให้อยู่กึ่งกลางแนวตั้ง
             minHeight: '100vh', // ใช้ความสูงเต็มจอ
             alignItems: 'center',
             pt: { xs: 16, sm: 22 },
@@ -255,7 +283,7 @@ export default function MyAssets(props: Props) {
             <Box
               sx={{
                 display: 'flex',
-                justifyContent: 'center',
+                justifyContent: 'flex-start',
                 alignItems: 'center',
                 minHeight: '40vh', // ให้มีพื้นที่พอสำหรับแสดง Loading
                 width: '100%',
@@ -264,6 +292,38 @@ export default function MyAssets(props: Props) {
               <CircularProgress color="inherit" />
             </Box>
           )}
+          {!loading &&
+            <FormControl>
+              <FormLabel id="demo-radio-buttons-group-label">{choice && choice.Reference}</FormLabel>
+              <RadioGroup
+                row
+                aria-labelledby="demo-radio-buttons-group-label"
+                defaultValue={countChoice}
+                name="radio-buttons-group"
+                value={countChoice}
+                onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+                  setCountChoice((event.target as HTMLInputElement).value);
+                  const choiceCount = originalRows.filter(
+                    res => res.remarker === (event.target as HTMLInputElement).value &&
+                      (res.BranchID)?.toString() === dataLocation?.branchSelect &&
+                      res.typeCode === assets_TypeGroupSelect
+                  )
+                  setRows(choiceCount); // อัปเดต rows หลังจาก filter เปลี่ยนแปลง
+                }}
+              >
+                <FormControlLabel
+                  value={`ตรวจนับแล้ว`}
+                  control={<Radio sx={{ color: blue[800], '&.Mui-checked': { color: blue[600], }, }} />}
+                  label={`counted. (${originalRows.filter(res => res.remarker === 'ตรวจนับแล้ว' && res.typeCode === assets_TypeGroupSelect).length})`}
+                />
+                <FormControlLabel
+                  value={`ยังไม่ได้ตรวจนับ`}
+                  control={<Radio sx={{ color: blue[800], '&.Mui-checked': { color: blue[600], }, }} />}
+                  label={`uncount. (${originalRows.filter(res => res.remarker !== 'ตรวจนับแล้ว' && res.typeCode === assets_TypeGroupSelect).length})`}
+                />
+              </RadioGroup>
+            </FormControl>
+          }
           <Box
             sx={{
               width: "100%",
@@ -271,8 +331,6 @@ export default function MyAssets(props: Props) {
               display: "flex",
               justifyContent: "center",
               alignItems: "center",
-              backgroundImage:
-                "radial-gradient(ellipse at 50% 50%, hsl(210, 100%, 97%), hsl(0, 0%, 100%))",
             }}
           >
             <Box sx={{ display: "flex", flexDirection: "column", width: '100vw', gap: 2 }}>
@@ -380,8 +438,8 @@ export default function MyAssets(props: Props) {
               name="radio-buttons-group"
               value={valueChoice}
               onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-                setChoice((prev) => ({ ...prev, Reference: (event.target as HTMLInputElement).value }))
                 setValueChoice((event.target as HTMLInputElement).value);
+                updateReferent((event.target as HTMLInputElement).value);
               }}
             >
               {dataFix.map((dataFix, index) => (

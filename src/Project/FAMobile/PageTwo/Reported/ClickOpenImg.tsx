@@ -1,21 +1,8 @@
 import React, { useState } from 'react';
-import { Button, CardMedia, Dialog, DialogActions, DialogContent, IconButton, ImageListItem, ImageListItemBar, Stack } from '@mui/material';
-import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+import { CardMedia, ImageListItem } from '@mui/material';
 import Axios from 'axios';
-import Swal from 'sweetalert2';
-import CloseIcon from '@mui/icons-material/Close';
 import { dataConfig } from '../../../../config';
 import { CountAssetRow, UpdateDtlAssetParams } from '../../../../type/nacType';
-import { styled } from '@mui/material/styles';
-
-const BootstrapDialog = styled(Dialog)(({ theme }) => ({
-  '& .MuiDialogContent-root': {
-    padding: theme.spacing(2),
-  },
-  '& .MuiDialogActions-root': {
-    padding: theme.spacing(1),
-  },
-}));
 
 export interface Data {
   imagePath: string;
@@ -28,112 +15,55 @@ export interface Data {
   setOriginalRows: React.Dispatch<React.SetStateAction<CountAssetRow[]>>;
 }
 
+const convertToJPG = (file: File): Promise<File> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+
+    reader.readAsDataURL(file);
+    reader.onload = (event) => {
+      const img = new Image();
+      img.src = event.target?.result as string;
+
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d");
+
+        canvas.width = img.width;
+        canvas.height = img.height;
+
+        if (ctx) {
+          ctx.drawImage(img, 0, 0, img.width, img.height);
+        }
+
+        canvas.toBlob(
+          (blob) => {
+            if (blob) {
+              const jpgFile = new File([blob], file.name.replace(/\.\w+$/, ".jpg"), {
+                type: "image/jpeg",
+              });
+              resolve(jpgFile);
+            } else {
+              reject(new Error("Failed to convert image to JPG"));
+            }
+          },
+          "image/jpeg",
+          0.9 // คุณภาพของ JPG (0.9 = 90%)
+        );
+      };
+    };
+
+    reader.onerror = (error) => reject(error);
+  });
+};
+
 // Create a separate component for rendering the image cell
 const ImageCell = ({ imagePath, name, rows, setRows, index, fieldData, originalRows, setOriginalRows }: Data) => {
   const data = localStorage.getItem('data');
   const parsedData = data ? JSON.parse(data) : null;
-  const [openDialog, setOpenDialog] = useState(false);
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
-  const [rowEdit, setRowEdit] = React.useState<Partial<UpdateDtlAssetParams>>({});
+  const [imageData, setImageData] = React.useState<string>(imagePath);
 
 
-  const handleClickOpen = (imageUrl: string, indexData: number) => {
-    setRowEdit({
-      Code: rows[indexData].Code ?? '',
-      Name: rows[indexData].Name ?? '',
-      BranchID: rows[indexData].BranchID,
-      OwnerCode: rows[indexData].OwnerID ?? '',
-      ImagePath: typeof rows[indexData].ImagePath === 'string' || typeof rows[indexData].ImagePath === 'number' ? rows[indexData].ImagePath : '',
-      ImagePath_2: typeof rows[indexData].ImagePath === 'string' || typeof rows[indexData].ImagePath === 'number' ? rows[indexData].ImagePath : '',
-      Position: rows[indexData].Position ?? '',
-      UserCode: typeof parsedData.UserCode === 'string' ? parsedData.UserCode : '', // Ensure UserCode is a string
-    })
-    setSelectedImage(imageUrl);
-    setOpenDialog(true);
-  };
-
-  const handleClose = () => {
-    setOpenDialog(false);
-    setSelectedImage(null);
-  };
-
-
-  const handleCloseSaved = async () => {
-    setOpenDialog(false);
-    const index = rows.findIndex((row) => row.Code === rowEdit.Code);
-    const indexOriginalRows = originalRows.findIndex((row) => row.Code === rowEdit.Code);
-    const list = [...rows]
-    list[index]['ImagePath'] = fieldData === 'ImagePath' ? selectedImage : rowEdit.ImagePath;
-    list[index]['ImagePath_2'] = fieldData === 'ImagePath_2' ? selectedImage : rowEdit.ImagePath;
-
-    const listOriginalRows = [...originalRows]
-    listOriginalRows[indexOriginalRows]['ImagePath'] = fieldData === 'ImagePath' ? selectedImage : rowEdit.ImagePath;
-    listOriginalRows[indexOriginalRows]['ImagePath_2'] = fieldData === 'ImagePath_2' ? selectedImage : rowEdit.ImagePath;
-
-    setRows(list);
-    setOriginalRows(listOriginalRows)
-    try {
-      const response = await Axios.post(
-        `${dataConfig.http}/UpdateDtlAsset`,
-        list[index],
-        dataConfig.headers
-      );
-
-      if (response.status === 200) {
-        Swal.fire({
-          icon: "success",
-          title: 'แก้ไขรายการสำเร็จ',
-          showConfirmButton: false,
-          timer: 1500
-        });
-      } else {
-        throw new Error('Update failed');
-      }
-    } catch (error) {
-      console.log(JSON.stringify(error));
-
-    }
-  };
-
-  const handleUploadFile_2 = async (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
-    e.preventDefault();
-
-    const allowedImageExtensions = ['jpg', 'png', 'gif', 'xbm', 'tif', 'pjp', 'svgz', 'jpeg', 'jfif', 'bmp', 'webp', 'svg'];
-
-    if (e.target.files && e.target.files.length > 0) {
-      const file = e.target.files[0];
-      const fileExtension = file.name.split('.').pop()?.toLowerCase(); // Get file extension
-
-      if (fileExtension && allowedImageExtensions.includes(fileExtension)) {
-        const formData_1 = new FormData();
-        formData_1.append("file", file);
-        formData_1.append("fileName", file.name);
-
-        try {
-          const response = await Axios.post(
-            // `${dataConfig.http}/check_files_NewNAC`,
-            `http://vpnptec.dyndns.org:32001/api/check_files_NewNAC`,
-            formData_1,
-            dataConfig.headerUploadFile
-          );
-          setSelectedImage(`http://vpnptec.dyndns.org:33080/NEW_NAC/${response.data.attach[0].ATT}.${fileExtension}`);
-          console.log(response);
-
-        } catch (error) {
-          console.error("Error uploading file:", error);
-        }
-      } else {
-        Swal.fire({
-          icon: "warning",
-          title: 'ไฟล์ประเภทนี้ไม่ได้รับอนุญาติให้ใช้งานในระบบ \nใช้ได้เฉพาะ .csv, .xls, .txt, .ppt, .doc, .pdf, .jpg, .png, .gif',
-          showConfirmButton: false,
-          timer: 1500
-        });
-      }
-    }
-  }
-
-  const choiceImg = (id: number) => {
+  const handleUploadFile = async (indexCode: number) => {
     // แสดงตัวเลือกให้ผู้ใช้เลือกแหล่งที่มาของรูปภาพ
     const choice = window.confirm("คุณต้องการถ่ายรูปจากกล้องหรืออัปโหลดจากอุปกรณ์?\n\nกด 'ตกลง' เพื่อถ่ายรูป หรือ 'ยกเลิก' เพื่ออัปโหลด");
 
@@ -146,75 +76,79 @@ const ImageCell = ({ imagePath, name, rows, setRows, index, fieldData, originalR
     }
 
     fileInput.onchange = async (e: any) => {
-      const file = e.target.files[0];
-      const fileExtension = file.name.split('.').pop()?.toLowerCase(); // Get file extension
+      let file = e.target.files[0];
       if (file) {
-        const formData_1 = new FormData();
-        formData_1.append("file", file);
-        formData_1.append("fileName", file.name);
         try {
-          const response = await Axios.post(
-            // `${dataConfig.http}/check_files_NewNAC`,
-            `http://vpnptec.dyndns.org:32001/api/check_files_NewNAC`,
-            formData_1,
-            dataConfig.headerUploadFile
-          );
-          setSelectedImage(`http://vpnptec.dyndns.org:33080/NEW_NAC/${response.data.attach[0].ATT}.${fileExtension}`);
+          file = await convertToJPG(file); // แปลงเป็น JPG ก่อนอัปโหลด
+          const formData_1 = new FormData();
+          formData_1.append("file", file);
+          formData_1.append("fileName", file.name);
+
+          try {
+            const response = await Axios.post(
+              `http://vpnptec.dyndns.org:32001/api/check_files_NewNAC`,
+              formData_1,
+              dataConfig.headerUploadFile
+            );
+
+            if (response.status === 200 && response.data.attach[0].ATT) {
+              const selectedImageRes = `http://vpnptec.dyndns.org:33080/NEW_NAC/${response.data.attach[0].ATT}.jpg`;
+
+              // อัปเดตข้อมูลภาพ
+              const indexOriginalRows = originalRows.findIndex((row) => row.Code === rows[indexCode].Code);
+              const list = [...rows];
+              const listOriginalRows = [...originalRows];
+
+              list[indexCode]['ImagePath'] = fieldData === 'ImagePath' ? selectedImageRes : list[indexCode].ImagePath;
+              list[indexCode]['ImagePath_2'] = fieldData === 'ImagePath_2' ? selectedImageRes : list[indexCode].ImagePath;
+              listOriginalRows[indexOriginalRows]['ImagePath'] = fieldData === 'ImagePath' ? selectedImageRes : listOriginalRows[indexOriginalRows].ImagePath;
+              listOriginalRows[indexOriginalRows]['ImagePath_2'] = fieldData === 'ImagePath_2' ? selectedImageRes : listOriginalRows[indexOriginalRows].ImagePath;
+
+              try {
+                const response = await Axios.post(
+                  `${dataConfig.http}/FA_Mobile_UploadImage`,
+                  {
+                    Code: list[indexCode].Code ?? '',
+                    RoundID: list[indexCode].RoundID ?? '',
+                    index: fieldData === 'ImagePath' ? 0 : 1,
+                    url: selectedImageRes ?? '',
+                  },
+                  dataConfig.headers
+                );
+
+                if (response.status === 200) {
+                  console.log(response.data.attach[0].ATT);
+                  setImageData(selectedImageRes);
+                  setRows(list);
+                  setOriginalRows(listOriginalRows);
+                } else {
+                  throw new Error('Update failed');
+                }
+              } catch (error) {
+                console.log(JSON.stringify(error));
+              }
+            }
+          } catch (error) {
+            console.error("Error uploading file:", error);
+          }
         } catch (error) {
-          console.error("Error uploading file:", error);
+          console.error("Error converting/uploading file:", error);
         }
-      }
+      };
     };
 
     fileInput.click();
-  }
-
-  const handleUploadFile_1 = async (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
-    e.preventDefault();
-
-    const allowedImageExtensions = ['jpg', 'png', 'gif', 'xbm', 'tif', 'pjp', 'svgz', 'jpeg', 'jfif', 'bmp', 'webp', 'svg'];
-
-    if (e.target.files && e.target.files.length > 0) {
-      const file = e.target.files[0];
-      const fileExtension = file.name.split('.').pop()?.toLowerCase(); // Get file extension
-
-      if (fileExtension && allowedImageExtensions.includes(fileExtension)) {
-        const formData_1 = new FormData();
-        formData_1.append("file", file);
-        formData_1.append("fileName", file.name);
-
-        try {
-          const response = await Axios.post(
-            // `${dataConfig.http}/check_files_NewNAC`,
-            `http://vpnptec.dyndns.org:32001/api/check_files_NewNAC`,
-            formData_1,
-            dataConfig.headerUploadFile
-          );
-          setSelectedImage(`http://vpnptec.dyndns.org:33080/NEW_NAC/${response.data.attach[0].ATT}.${fileExtension}`);
-        } catch (error) {
-          console.error("Error uploading file:", error);
-        }
-      } else {
-        Swal.fire({
-          icon: "warning",
-          title: 'ไฟล์ประเภทนี้ไม่ได้รับอนุญาติให้ใช้งานในระบบ \nใช้ได้เฉพาะ .csv, .xls, .txt, .ppt, .doc, .pdf, .jpg, .png, .gif',
-          showConfirmButton: false,
-          timer: 1500
-        });
-      }
-    }
   };
 
   return (
     <React.Fragment>
       <ImageListItem key={index}>
         <CardMedia
-          key={imagePath}
           component="img"
           height="160"
           sx={{ objectFit: 'cover', cursor: 'pointer' }}
-          onClick={() => choiceImg(index)}
-          image={imagePath || "http://vpnptec.dyndns.org:10280/OPS_Fileupload/ATT_250300515.jpg"}
+          onClick={() => handleUploadFile(index)}
+          image={imageData || "http://vpnptec.dyndns.org:10280/OPS_Fileupload/ATT_250300515.jpg"}
           onError={({ currentTarget }) => {
             currentTarget.onerror = null; // prevents looping
             currentTarget.src = "http://vpnptec.dyndns.org:10280/OPS_Fileupload/ATT_250300515.jpg";
@@ -222,74 +156,6 @@ const ImageCell = ({ imagePath, name, rows, setRows, index, fieldData, originalR
           alt={`${name}_1`}
         />
       </ImageListItem>
-
-      {/* Dialog for displaying the image */}
-      <BootstrapDialog
-        open={openDialog}
-        onClose={handleClose}
-        fullWidth
-        aria-labelledby="dialog-title"
-        aria-describedby="dialog-description"
-      >
-        <IconButton
-          aria-label="close"
-          onClick={() => {
-            setOpenDialog(false)
-          }}
-          sx={(theme) => ({
-            position: 'absolute',
-            right: 8,
-            top: 8,
-            color: theme.palette.grey[500],
-          })}
-        >
-          <CloseIcon />
-        </IconButton>
-        <DialogContent style={{ textAlign: 'center' }}>
-          <Stack
-            direction="column"
-            spacing={2}
-            sx={{
-              justifyContent: "center",
-              alignItems: "center",
-            }}
-          >
-            <img
-              src={selectedImage || ''}
-              alt={name}
-              style={{ width: '100%', height: 'auto', maxWidth: '400px', maxHeight: '60vh' }}
-              onError={({ currentTarget }) => {
-                currentTarget.onerror = null; // prevents looping
-                currentTarget.src = "http://vpnptec.dyndns.org:10280/OPS_Fileupload/ATT_250300515.jpg";
-              }}
-            />
-            <Button
-              component="label"
-              role={undefined}
-              variant="contained"
-              tabIndex={-1}
-              sx={{ maxWidth: '400px' }}
-              startIcon={<CloudUploadIcon />}
-            >
-              Upload files
-              <input hidden type="file" name='file' accept='image/*'
-                onChange={(e) => {
-                  if (fieldData === 'ImagePath') {
-                    handleUploadFile_1(e, index ?? 0)
-                  } else if (fieldData === 'ImagePath_2') {
-                    handleUploadFile_2(e, index ?? 0)
-                  }
-                }}
-              />
-            </Button>
-          </Stack>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseSaved}>
-            Save changes
-          </Button>
-        </DialogActions>
-      </BootstrapDialog>
     </React.Fragment>
   );
 };
