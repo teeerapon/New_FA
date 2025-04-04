@@ -22,5 +22,5 @@ export const dataConfig: DataConfig = {
     'Content-Type': `multipart/form-data`,
     'Accept': 'application/json'
   },
-  http: httpLandOffice
+  http: httpPTEC
 }
