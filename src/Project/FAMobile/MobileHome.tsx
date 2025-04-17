@@ -195,6 +195,7 @@ export default function RecipeReviewCard(props: Props) {
               <IconButton
                 onClick={() => {
                   navigate('/MobileHome');
+                  setQrData("")
                 }}
                 sx={{ color: 'black' }}
               >

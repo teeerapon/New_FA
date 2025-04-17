@@ -24,6 +24,47 @@ import Swal from 'sweetalert2';
 import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
 import { BrowserQRCodeReader } from '@zxing/browser';
 
+const convertToJPG = (file: File): Promise<File> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+
+    reader.readAsDataURL(file);
+    reader.onload = (event) => {
+      const img = new Image();
+      img.src = event.target?.result as string;
+
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d");
+
+        canvas.width = img.width;
+        canvas.height = img.height;
+
+        if (ctx) {
+          ctx.drawImage(img, 0, 0, img.width, img.height);
+        }
+
+        canvas.toBlob(
+          (blob) => {
+            if (blob) {
+              const jpgFile = new File([blob], file.name.replace(/\.\w+$/, ".jpg"), {
+                type: "image/jpeg",
+              });
+              resolve(jpgFile);
+            } else {
+              reject(new Error("Failed to convert image to JPG"));
+            }
+          },
+          "image/jpeg",
+          0.9 // คุณภาพของ JPG (0.9 = 90%)
+        );
+      };
+    };
+
+    reader.onerror = (error) => reject(error);
+  });
+};
+
 const darkTheme = createTheme({
   palette: {
     mode: 'dark',
@@ -88,7 +129,6 @@ export default function ScanVerifly() {
         const resCheck = await Axios.post(dataConfig.http + '/check_code_result', { 'Code': dataLocation?.Code }, dataConfig.headers)
         if (resCheck.status === 200) {
           if (resCheck.data.data.length > 0) {
-            console.log(resCheck.data.data);
             try {
               const resAdd = await Axios.post(dataConfig.http + '/addAsset',
                 {
@@ -103,6 +143,7 @@ export default function ScanVerifly() {
                   "UserID": parsedData?.userid,
                 },
                 dataConfig.headers)
+              console.log(resAdd);
               if (resAdd.status === 200) {
                 setQrData((prev) => ({
                   ...prev,
@@ -120,7 +161,12 @@ export default function ScanVerifly() {
                 }))
               }
             } catch (e) {
-              console.log(e)
+              Swal.fire({
+                icon: "warning",
+                title: `${e}`,
+                showConfirmButton: false,
+                timer: 1500
+              });
             }
           } else {
             Swal.fire({
@@ -183,22 +229,53 @@ export default function ScanVerifly() {
       fileInput.capture = "camera"; // เปิดกล้องถ่ายรูป
     }
 
-    fileInput.onchange = (e: any) => {
-      const file = e.target.files[0];
+    fileInput.onchange = async (e: any) => {
+      let file = e.target.files[0];
       if (file) {
-        // อ่าน QR Code จากรูปภาพ
-        const reader = new BrowserQRCodeReader();
-        reader.decodeFromImageUrl(URL.createObjectURL(file))
-          .then(result => {
-            if (result.getText()) {
-            } else {
-              alert("ไม่สามารถอ่าน QR Code ได้ กรุณาลองใหม่อีกครั้ง");
+        try {
+          file = await convertToJPG(file); // แปลงเป็น JPG ก่อนอัปโหลด
+          const formData_1 = new FormData();
+          formData_1.append("file", file);
+          formData_1.append("fileName", file.name);
+          try {
+            const response = await Axios.post(
+              `http://vpnptec.dyndns.org:32001/api/check_files_NewNAC`,
+              formData_1,
+              dataConfig.headerUploadFile
+            );
+            if (response.status === 200 && response.data.attach[0].ATT) {
+              const selectedImageRes = `http://vpnptec.dyndns.org:33080/NEW_NAC/${response.data.attach[0].ATT}.jpg`;
+              try {
+                const uploadRes = await Axios.post(
+                  `${dataConfig.http}/FA_Mobile_UploadImage`,
+                  {
+                    Code: qrData.Code ?? '',
+                    RoundID: qrData.RoundID ?? '',
+                    index: id,
+                    url: selectedImageRes ?? '',
+                  },
+                  dataConfig.headers
+                );
+
+                if (uploadRes.status === 200) {
+                  setQrData((prev) => ({
+                    ...prev,
+                    ImagePath: id === 0 ? selectedImageRes : qrData.ImagePath,
+                    ImagePath_2: id === 1 ? selectedImageRes : qrData.ImagePath_2
+                  }))
+                } else {
+                  throw new Error('Update failed');
+                }
+              } catch (error) {
+                console.log("Error saving image:", JSON.stringify(error));
+              }
             }
-          })
-          .catch(err => {
-            console.error("Error reading QR Code:", err);
-            alert("ไม่สามารถอ่าน QR Code ได้ กรุณาลองใหม่อีกครั้ง");
-          });
+          } catch (error) {
+            console.error("Error uploading file:", error);
+          }
+        } catch (error) {
+          console.error("Error converting/uploading file:", error);
+        }
       }
     };
 
@@ -279,7 +356,7 @@ export default function ScanVerifly() {
                         component="img"
                         height="160"
                         sx={{ objectFit: 'cover', cursor: 'pointer', p: 1 }}
-                        // onClick={() => handleClickOpen(qrData?.ImagePath, 0)}
+                        onClick={() => handleCardClick(0)}
                         image={qrData?.ImagePath || "http://vpnptec.dyndns.org:10280/OPS_Fileupload/ATT_250300515.jpg"}
                         onError={({ currentTarget }) => {
                           currentTarget.onerror = null; // prevents looping
@@ -293,7 +370,7 @@ export default function ScanVerifly() {
                         component="img"
                         height="160"
                         sx={{ objectFit: 'cover', cursor: 'pointer', p: 1 }}
-                        // onClick={() => handleClickOpen(qrData?.ImagePath_2, 1)}
+                        onClick={() => handleCardClick(1)}
                         image={qrData?.ImagePath_2 || "http://vpnptec.dyndns.org:10280/OPS_Fileupload/ATT_250300515.jpg"}
                         onError={({ currentTarget }) => {
                           currentTarget.onerror = null; // prevents looping

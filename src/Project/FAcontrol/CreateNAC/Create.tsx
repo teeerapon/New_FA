@@ -211,19 +211,27 @@ export default function Create() {
         })
 
       //permission
-      await Axios.post(dataConfig.http + '/select_Permission_Menu_NAC', { Permission_TypeID: 1, userID: parsedData.userid }, dataConfig.headers)
-        .then(response => {
-          setPermission_menuID(response.data.data.map((res: { Permission_MenuID: number; }) => res.Permission_MenuID))
-        });
+      try {
+        await Axios.post(dataConfig.http + '/select_Permission_Menu_NAC', { Permission_TypeID: 1, userID: parsedData.userid }, dataConfig.headers)
+          .then(response => {
+            setPermission_menuID(response.data.data.map((res: { Permission_MenuID: number; }) => res.Permission_MenuID))
+          });
+      } catch (e) {
+        setPermission_menuID([])
+      }
 
       // รหัสทรัพย์สินทั้งหมด
-      await Axios.post(dataConfig.http + '/AssetsAll_Control', { BranchID: parsedData.branchid }, dataConfig.headers)
-        .then((res) => {
-          if (parsedData.branchid === 901 && parsedData.DepCode !== '101ITO') {
-            setDataAssets(res.data.data.filter((datain: { Position: any; }) => datain.Position === parsedData.DepCode))
-          }
-          setDataAssets(res.data.data)
-        })
+      try {
+        await Axios.post(dataConfig.http + '/AssetsAll_Control', { BranchID: parsedData.branchid }, dataConfig.headers)
+          .then((res) => {
+            if (parsedData.branchid === 901 && parsedData.DepCode !== '101ITO') {
+              setDataAssets(res.data.data.filter((datain: { Position: any; }) => datain.Position === parsedData.DepCode))
+            }
+            setDataAssets(res.data.data)
+          })
+      } catch (e) {
+        setDataAssets([])
+      }
 
       if (idParam && nac_codeParam) {
         const dataId = parseInt(idParam);
