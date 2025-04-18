@@ -20,6 +20,7 @@ import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 import { useNavigate } from "react-router-dom";
+import Swal from "sweetalert2";
 
 const BootstrapDialog = styled(Dialog)(({ theme }) => ({
   '& .MuiDialogContent-root': {
@@ -119,7 +120,7 @@ export default function RecipeReviewCard(props: Props) {
   const [perBranch, setPerBranch] = React.useState<PerBranch[]>([]);
   const [openDialog, setOpenDialog] = React.useState(false);
   const [branchSelect, setBranchSelect] = React.useState('');
-  
+
 
   const handleClickOpennDialog = () => {
     setOpenDialog(true);
@@ -148,12 +149,21 @@ export default function RecipeReviewCard(props: Props) {
               if (result.getText()) {
                 setQrData(result.getText());
               } else {
-                alert("ไม่สามารถอ่าน QR Code ได้ กรุณาลองใหม่อีกครั้ง");
+                Swal.fire({
+                  icon: "warning",
+                  title: `ไม่สามารถอ่าน QR Code ได้ กรุณาลองใหม่อีกครั้ง`,
+                  showConfirmButton: false,
+                  timer: 1500
+                })
               }
             })
             .catch(err => {
-              console.error("Error reading QR Code:", err);
-              alert("ไม่สามารถอ่าน QR Code ได้ กรุณาลองใหม่อีกครั้ง");
+              Swal.fire({
+                icon: "warning",
+                title: `${err}`,
+                showConfirmButton: false,
+                timer: 1500
+              })
             });
         }
       };

@@ -129,57 +129,64 @@ export default function ScanVerifly() {
         const resCheck = await Axios.post(dataConfig.http + '/check_code_result', { 'Code': dataLocation?.Code }, dataConfig.headers)
         if (resCheck.status === 200) {
           if (resCheck.data.data.length > 0) {
-            try {
-              const resAdd = await Axios.post(dataConfig.http + '/addAsset',
-                {
-                  "Name": resCheck.data.data[0]['Name'],
-                  "Code": resCheck.data.data[0]["Code"],
-                  "BranchID": resCheck.data.data[0]['BranchID'],
-                  "Date": dayjs(Date.now()),
-                  "UserBranch": dataLocation?.branchSelect,
-                  "Reference": 'ยังไม่ได้ระบุสถานะ',
-                  "Status": 1,
-                  "RoundID": dataLocation?.PeriodID,
-                  "UserID": parsedData?.userid,
-                },
-                dataConfig.headers)
-              console.log(resAdd);
-              if (resAdd.status === 200) {
-                setQrData((prev) => ({
-                  ...prev,
-                  Code: resCheck.data.data[0]["Code"],
-                  Name: resCheck.data.data[0]['Name'],
-                  BranchID: resCheck.data.data[0]['BranchID'],
-                  detail: resCheck.data.data[0]['Details'] || '-',
-                  OwnerID: resCheck.data.data[0]['ownerCode'],
-                  typeCode: resCheck.data.data[0]['typeCode'],
-                  Position: resCheck.data.data[0]['Position'],
-                  Date: dayjs(Date.now()),
-                  UserID: parsedData?.UserCode,
-                  Reference: 'ยังไม่ได้ระบุสถานะ',
-                  remarker: 'ตรวจนับแล้ว',
-                }))
-              }
-            } catch (e) {
-              Swal.fire({
-                icon: "warning",
-                title: `${e}`,
-                showConfirmButton: false,
-                timer: 1500
-              });
-            }
+            await Axios.post(dataConfig.http + '/addAsset',
+              {
+                "Name": resCheck.data.data[0]['Name'],
+                "Code": resCheck.data.data[0]["Code"],
+                "BranchID": resCheck.data.data[0]['BranchID'],
+                "Date": dayjs(Date.now()),
+                "UserBranch": dataLocation?.branchSelect,
+                "Reference": 'ยังไม่ได้ระบุสถานะ',
+                "Status": 1,
+                "RoundID": dataLocation?.PeriodID,
+                "UserID": parsedData?.userid,
+              },
+              dataConfig.headers).then((resAdd) => {
+                if (resAdd.status === 200) {
+                  setQrData((prev) => ({
+                    ...prev,
+                    Code: resCheck.data.data[0]["Code"],
+                    Name: resCheck.data.data[0]['Name'],
+                    BranchID: resCheck.data.data[0]['BranchID'],
+                    detail: resCheck.data.data[0]['Details'] || '-',
+                    OwnerID: resCheck.data.data[0]['ownerCode'],
+                    typeCode: resCheck.data.data[0]['typeCode'],
+                    Position: resCheck.data.data[0]['Position'],
+                    RoundID: dataLocation?.PeriodID,
+                    Date: dayjs(Date.now()),
+                    UserID: parsedData?.UserCode,
+                    Reference: 'ยังไม่ได้ระบุสถานะ',
+                    remarker: 'ตรวจนับแล้ว',
+                  }))
+                } else {
+                  Swal.fire({
+                    icon: "warning",
+                    title: `${resAdd.data.message}`,
+                    showConfirmButton: false,
+                    timer: 1500
+                  })
+                  navigate('/MobilePageTwoScanRound', { state: { branchSelect: dataLocation?.branchSelect } });
+                }
+              })
           } else {
             Swal.fire({
               icon: "warning",
-              title: `ไม่พบทรัพย์รหัส : ${dataLocation?.Code}`,
+              title: `${resCheck.data.message}`,
               showConfirmButton: false,
               timer: 1500
-            });
+            })
+            navigate('/MobilePageTwoScanRound', { state: { branchSelect: dataLocation?.branchSelect } });
           }
         }
       }
     } catch (e) {
-      console.log(e)
+      Swal.fire({
+        icon: "warning",
+        title: `${e}`,
+        showConfirmButton: false,
+        timer: 1500
+      })
+      navigate('/MobilePageTwoScanRound', { state: { branchSelect: dataLocation?.branchSelect } });
     }
   }
 
@@ -218,69 +225,101 @@ export default function ScanVerifly() {
   }, []);
 
   const handleCardClick = (id: number) => {
-    // แสดงตัวเลือกให้ผู้ใช้เลือกแหล่งที่มาของรูปภาพ
-    const choice = window.confirm("คุณต้องการถ่ายรูปจากกล้องหรืออัปโหลดจากอุปกรณ์?\n\nกด 'ตกลง' เพื่อถ่ายรูป หรือ 'ยกเลิก' เพื่ออัปโหลด");
+    const choice = window.confirm(
+      "คุณต้องการถ่ายรูปจากกล้องหรืออัปโหลดจากอุปกรณ์?\n\nกด 'ตกลง' เพื่อถ่ายรูป หรือ 'ยกเลิก' เพื่ออัปโหลด"
+    );
 
     const fileInput = document.createElement("input");
     fileInput.type = "file";
     fileInput.accept = "image/*";
 
     if (choice) {
-      fileInput.capture = "camera"; // เปิดกล้องถ่ายรูป
+      fileInput.capture = "camera"; // เปิดกล้อง
     }
 
     fileInput.onchange = async (e: any) => {
-      let file = e.target.files[0];
-      if (file) {
-        try {
-          file = await convertToJPG(file); // แปลงเป็น JPG ก่อนอัปโหลด
-          const formData_1 = new FormData();
-          formData_1.append("file", file);
-          formData_1.append("fileName", file.name);
-          try {
-            const response = await Axios.post(
-              `http://vpnptec.dyndns.org:32001/api/check_files_NewNAC`,
-              formData_1,
-              dataConfig.headerUploadFile
-            );
-            if (response.status === 200 && response.data.attach[0].ATT) {
-              const selectedImageRes = `http://vpnptec.dyndns.org:33080/NEW_NAC/${response.data.attach[0].ATT}.jpg`;
-              try {
-                const uploadRes = await Axios.post(
-                  `${dataConfig.http}/FA_Mobile_UploadImage`,
-                  {
-                    Code: qrData.Code ?? '',
-                    RoundID: qrData.RoundID ?? '',
-                    index: id,
-                    url: selectedImageRes ?? '',
-                  },
-                  dataConfig.headers
-                );
+      let file = e.target.files?.[0];
+      if (!file) return;
 
-                if (uploadRes.status === 200) {
-                  setQrData((prev) => ({
-                    ...prev,
-                    ImagePath: id === 0 ? selectedImageRes : qrData.ImagePath,
-                    ImagePath_2: id === 1 ? selectedImageRes : qrData.ImagePath_2
-                  }))
-                } else {
-                  throw new Error('Update failed');
-                }
-              } catch (error) {
-                console.log("Error saving image:", JSON.stringify(error));
-              }
+      try {
+        file = await convertToJPG(file); // แปลงเป็น JPG
+
+        const formData_1 = new FormData();
+        formData_1.append("file", file);
+        formData_1.append("fileName", file.name);
+
+        const response = await Axios.post(
+          `http://vpnptec.dyndns.org:32001/api/check_files_NewNAC`,
+          formData_1,
+          dataConfig.headerUploadFile
+        );
+
+        const attachData = response.data?.attach?.[0]?.ATT;
+        console.log("Upload response:", response);
+        console.log("Image:", attachData);
+        if (response.status === 200 && attachData) {
+          const selectedImageRes = `http://vpnptec.dyndns.org:33080/NEW_NAC/${attachData}.jpg`;
+
+          const payload = {
+            Code: qrData?.Code ?? '',
+            RoundID: qrData?.RoundID ?? '',
+            index: id,
+            url: selectedImageRes
+          };
+
+          try {
+            const uploadRes = await Axios.post(
+              `${dataConfig.http}/FA_Mobile_UploadImage`,
+              payload,
+              dataConfig.headers
+            );
+            if (uploadRes.status === 200) {
+              setQrData((prev) => ({
+                ...prev,
+                ImagePath: id === 0 ? selectedImageRes : prev.ImagePath,
+                ImagePath_2: id === 1 ? selectedImageRes : prev.ImagePath_2
+              }));
+            } else {
+              console.error("Upload failed:", uploadRes);
+              Swal.fire({
+                icon: "warning",
+                title: "เกิดข้อผิดพลาดในการอัปเดตข้อมูล (Status: " + uploadRes.status + ")",
+                showConfirmButton: false,
+                timer: 1500
+              })
             }
           } catch (error) {
-            console.error("Error uploading file:", error);
+            console.error("Error uploading to FA_Mobile_UploadImage:", error);
+            Swal.fire({
+              icon: "warning",
+              title: "เกิดข้อผิดพลาดในการบันทึกข้อมูลรูปภาพ",
+              showConfirmButton: false,
+              timer: 1500
+            })
           }
-        } catch (error) {
-          console.error("Error converting/uploading file:", error);
+        } else {
+          console.error("Invalid response from check_files_NewNAC:", response.data);
+          Swal.fire({
+            icon: "warning",
+            title: "ไม่สามารถอัปโหลดรูปภาพได้",
+            showConfirmButton: false,
+            timer: 1500
+          })
         }
+      } catch (error) {
+        console.error("Error uploading file:", error);
+        Swal.fire({
+          icon: "warning",
+          title: "เกิดข้อผิดพลาดขณะประมวลผลรูปภาพ",
+          showConfirmButton: false,
+          timer: 1500
+        })
       }
     };
 
     fileInput.click();
   };
+
 
   return (
     <Box sx={{ flexGrow: 1 }}>

@@ -16,6 +16,7 @@ import timezone from 'dayjs/plugin/timezone';
 import 'dayjs/locale/th'
 import dayjs from 'dayjs';
 import CloseIcon from '@mui/icons-material/Close';
+import Swal from 'sweetalert2';
 
 const BootstrapDialog = styled(Dialog)(({ theme }) => ({
   '& .MuiDialogContent-root': {
@@ -83,18 +84,21 @@ export default function ScanVerifly({ qrText }: Readonly<ScanVeriflyProps>) {
   const [openDialog, setOpenDialog] = React.useState(false);
   const [selectedImage, setSelectedImage] = React.useState<string | null>(null);
 
-  const handleExpandClick = () => {
-    setExpanded(!expanded);
-  };
-
 
   const fetuser = async () => {
     try {
       if (qrText) {
         await Axios.post(dataConfig.http + '/check_code_result', { 'Code': qrText }, dataConfig.headers)
           .then((res) => {
-            if (res.data.data.length > 0) {
+            if (res.data.data.length > 0 && res.status === 200) {
               setQrData(res.data.data)
+            } else {
+              Swal.fire({
+                icon: "warning",
+                title: `${res.data.message}`,
+                showConfirmButton: false,
+                timer: 1500
+              })
             }
           });
       }
@@ -137,7 +141,7 @@ export default function ScanVerifly({ qrText }: Readonly<ScanVeriflyProps>) {
               <CardMedia
                 component="img"
                 height="160"
-                sx={{ objectFit: 'cover', cursor: 'pointer',p:1 }}
+                sx={{ objectFit: 'cover', cursor: 'pointer', p: 1 }}
                 onClick={() => handleClickOpen(qrData[0]?.ImagePath, 0)}
                 image={qrData[0]?.ImagePath || "http://vpnptec.dyndns.org:10280/OPS_Fileupload/ATT_250300515.jpg"}
                 onError={({ currentTarget }) => {
@@ -151,7 +155,7 @@ export default function ScanVerifly({ qrText }: Readonly<ScanVeriflyProps>) {
               <CardMedia
                 component="img"
                 height="160"
-                sx={{ objectFit: 'cover', cursor: 'pointer',p:1 }}
+                sx={{ objectFit: 'cover', cursor: 'pointer', p: 1 }}
                 onClick={() => handleClickOpen(qrData[0]?.ImagePath_2, 1)}
                 image={qrData[0]?.ImagePath_2 || "http://vpnptec.dyndns.org:10280/OPS_Fileupload/ATT_250300515.jpg"}
                 onError={({ currentTarget }) => {

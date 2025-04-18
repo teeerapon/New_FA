@@ -124,12 +124,22 @@ export default function MainPageTow(props: Props) {
                 state: { Code: result.getText(), branchSelect: branchSelect, PeriodID: periodID }
               });
             } else {
-              alert("ไม่สามารถอ่าน QR Code ได้ กรุณาลองใหม่อีกครั้ง");
+              Swal.fire({
+                icon: "warning",
+                title: "ไม่สามารถอ่าน QR Code ได้ กรุณาลองใหม่อีกครั้ง",
+                showConfirmButton: false,
+                timer: 1500
+              })
             }
           })
           .catch(err => {
             console.error("Error reading QR Code:", err);
-            alert("ไม่สามารถอ่าน QR Code ได้ กรุณาลองใหม่อีกครั้ง");
+            Swal.fire({
+              icon: "warning",
+              title: "ไม่สามารถอ่าน QR Code ได้ กรุณาลองใหม่อีกครั้ง",
+              showConfirmButton: false,
+              timer: 1500
+            })
           });
       }
     };

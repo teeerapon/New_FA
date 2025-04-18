@@ -118,7 +118,9 @@ export default function MyAssets(props: Props) {
   const [assets_TypeGroup, setAssets_TypeGroup] = React.useState<Assets_TypeGroup[]>([]);
   const [assets_TypeGroupSelect, setAssets_TypeGroupSelect] = React.useState<string | null>(null);
   const [dialogFixed, setDialogFixed] = React.useState<boolean>(false);
-  const dataFix = ['ไม่ได้ระบุสถานะ', 'สภาพดี', 'ชำรุดรอซ่อม', 'รอตัดขาย', 'รอตัดชำรุด', 'อื่น ๆ']
+  const fixText = 'QR Code ไม่สมบูรณ์';
+  const dataFix = ['ไม่ได้ระบุสถานะ', 'สภาพดี', 'ชำรุดรอซ่อม', 'รอตัดขาย', 'รอตัดชำรุด', 'อื่น ๆ'];
+  const dataNewAdd = [`${fixText} (ไม่ได้ระบุสถานะ)`, `${fixText} (สภาพดี)`, `${fixText} (ชำรุดรอซ่อม)`, `${fixText} (รอตัดขาย)`, `${fixText} (รอตัดชำรุด)`, `${fixText} (อื่น ๆ)`];
   const [choice, setChoice] = React.useState<CountAssetRow>({
     Code: '',
     Name: '',
@@ -371,6 +373,7 @@ export default function MyAssets(props: Props) {
                       fieldData={`ImagePath`}
                       setRows={setRows}
                       setOriginalRows={setOriginalRows}
+                      fetchData={fetchData}
                     />
                     <ImageCell
                       imagePath={res.ImagePath_2 ?? 'http://vpnptec.dyndns.org:10280/OPS_Fileupload/ATT_250300515.jpg'}
@@ -381,6 +384,7 @@ export default function MyAssets(props: Props) {
                       fieldData={`ImagePath_2`}
                       setRows={setRows}
                       setOriginalRows={setOriginalRows}
+                      fetchData={fetchData}
                     />
                   </ImageList>
                   <CardContent>
