@@ -88,7 +88,7 @@ const ImageCell = ({ imagePath, name, rows, setRows, index, fieldData, originalR
         formData_1.append("fileName", file.name);
 
         const response = await Axios.post(
-          `http://vpnptec.dyndns.org:32001/api/check_files_NewNAC`,
+          `${dataConfig.http}/check_files_NewNAC`,
           formData_1,
           dataConfig.headerUploadFile
         );
@@ -96,7 +96,7 @@ const ImageCell = ({ imagePath, name, rows, setRows, index, fieldData, originalR
         const att = response.data?.attach?.[0]?.ATT;
 
         if (response.status === 200 && att) {
-          const selectedImageRes = `http://vpnptec.dyndns.org:33080/NEW_NAC/${att}.jpg`;
+          const selectedImageRes = `${dataConfig.httpViewFile}/NEW_NAC/${att}.jpg`;
 
           const list = [...rows];
           const listOriginalRows = [...originalRows];

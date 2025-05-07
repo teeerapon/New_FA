@@ -87,7 +87,7 @@ const ImageCell = ({ imagePath, name, rows, setRows, index, fieldData, originalR
         formData_1.append("fileName", file.name);
 
         const responseFile = await Axios.post(
-          `http://vpnptec.dyndns.org:32001/api/check_files_NewNAC`,
+          `${dataConfig.http}/check_files_NewNAC`,
           formData_1,
           dataConfig.headerUploadFile
         );
@@ -95,7 +95,7 @@ const ImageCell = ({ imagePath, name, rows, setRows, index, fieldData, originalR
         console.log("Upload file response:", responseFile);
 
         if (responseFile.status === 200 && responseFile.data.attach?.[0]?.ATT) {
-          const selectedImageRes = `http://vpnptec.dyndns.org:33080/NEW_NAC/${responseFile.data.attach[0].ATT}.jpg`;
+          const selectedImageRes = `${dataConfig.httpViewFile}/NEW_NAC/${responseFile.data.attach[0].ATT}.jpg`;
 
           // อัปเดตข้อมูลภาพ
           const indexOriginalRows = originalRows.findIndex((row) => row.Code === rows[indexCode].Code);

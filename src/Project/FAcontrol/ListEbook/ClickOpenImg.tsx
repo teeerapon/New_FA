@@ -106,12 +106,11 @@ const ImageCell = ({ imagePath, name, rows, setRows, index, fieldData, originalR
 
         try {
           const response = await Axios.post(
-            // `${dataConfig.http}/check_files_NewNAC`,
-            `http://vpnptec.dyndns.org:32001/api/check_files_NewNAC`,
+            `${dataConfig.http}/check_files_NewNAC`,
             formData_1,
             dataConfig.headerUploadFile
           );
-          setSelectedImage(`http://vpnptec.dyndns.org:33080/NEW_NAC/${response.data.attach[0].ATT}.${fileExtension}`);
+          setSelectedImage(`${dataConfig.httpViewFile}/NEW_NAC/${response.data.attach[0].ATT}.${fileExtension}`);
           console.log(response);
 
         } catch (error) {
@@ -144,12 +143,11 @@ const ImageCell = ({ imagePath, name, rows, setRows, index, fieldData, originalR
 
         try {
           const response = await Axios.post(
-            // `${dataConfig.http}/check_files_NewNAC`,
-            `http://vpnptec.dyndns.org:32001/api/check_files_NewNAC`,
+            `${dataConfig.http}/check_files_NewNAC`,
             formData_1,
             dataConfig.headerUploadFile
           );
-          setSelectedImage(`http://vpnptec.dyndns.org:33080/NEW_NAC/${response.data.attach[0].ATT}.${fileExtension}`);
+          setSelectedImage(`${dataConfig.httpViewFile}/NEW_NAC/${response.data.attach[0].ATT}.${fileExtension}`);
         } catch (error) {
           console.error("Error uploading file:", error);
         }

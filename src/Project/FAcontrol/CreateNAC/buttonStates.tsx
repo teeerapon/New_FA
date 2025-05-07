@@ -46,10 +46,10 @@ export default function ButtonStates({ createDoc, setOpenBackdrop, detailNAC, id
     const missingFields = [];
 
     if (!dtl.nacdtl_assetsCode) missingFields.push('รหัสทรัพย์สิน');
-    if (!dtl.nacdtl_image_1 && [1, 2].includes(nac_type) && status > 3) missingFields.push('รูปภาพที่ 1');
-    if (!dtl.nacdtl_image_2 && [1].includes(nac_type) && status > 3) missingFields.push('รูปภาพที่ 2');
-    if (!dtl.nacdtl_image_1 && [4, 5].includes(nac_type)) missingFields.push('รูปภาพที่ 1');
-    // if (!dtl.nacdtl_image_2 && [4, 5].includes(nac_type)) missingFields.push('รูปภาพที่ 2');
+    // if (!dtl.nacdtl_image_1 && [1, 2].includes(nac_type) && status > 3) missingFields.push('รูปภาพที่ 1');
+    // if (!dtl.nacdtl_image_2 && [1].includes(nac_type) && status > 3) missingFields.push('รูปภาพที่ 2');
+    // if (!dtl.nacdtl_image_1 && [4, 5].includes(nac_type)) missingFields.push('รูปภาพที่ 1');
+    // // if (!dtl.nacdtl_image_2 && [4, 5].includes(nac_type)) missingFields.push('รูปภาพที่ 2');
     if ((dtl.nacdtl_PriceSeals === undefined || dtl.nacdtl_PriceSeals === null) && [4, 5].includes(idSection ?? 0)) missingFields.push('ราคาขาย');
 
     return missingFields;

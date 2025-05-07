@@ -151,23 +151,20 @@ export default function ChatCard({ nac_type, createDoc }: DataFromHeader) {
     if (e.target.files && e.target.files.length > 0) {
       const file = e.target.files[0];
       const fileExtension = file.name.split('.').pop()?.toLowerCase(); // Get file extension
-
       if (fileExtension) {
         const formData_1 = new FormData();
         formData_1.append("file", file);
         formData_1.append("fileName", file.name);
-
         try {
           const response = await Axios.post(
-            // `${dataConfig.http}/check_files_NewNAC`,
-            `http://vpnptec.dyndns.org:32001/api/check_files_NewNAC`,
+            `${dataConfig.http}/check_files_NewNAC`,
             formData_1,
             dataConfig.headerUploadFile
           );
           // Check if the index is valid
           if (response.status === 200) {
             const list = [...datafileReq]
-            list[0].linkpath = `http://vpnptec.dyndns.org:33080/NEW_NAC/${response.data.attach[0].ATT}.${fileExtension}`;
+            list[0].linkpath = `${dataConfig.httpViewFile}/NEW_NAC/${response.data.attach[0].ATT}.${fileExtension}`;
             setDatafileReq(list); // Assuming you have a state setter for detailNAC
           }
         } catch (error) {

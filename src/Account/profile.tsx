@@ -91,14 +91,14 @@ export default function Profile() {
 
         try {
           const response = await Axios.post(
-            `http://vpnptec.dyndns.org:32001/api/check_files_NewNAC`,
+            `${dataConfig.http}/check_files_NewNAC`,
             formData_1,
             dataConfig.headerUploadFile
           );
 
           if (response.status === 200) {
             const list = [...userInfo];
-            list[0].img_profile = `http://vpnptec.dyndns.org:33080/NEW_NAC/${response.data.attach[0].ATT}.${fileExtension}`;
+            list[0].img_profile = `${dataConfig.httpViewFile}/NEW_NAC/${response.data.attach[0].ATT}.${fileExtension}`;
             setUserInfo(list);
           }
         } catch (error) {

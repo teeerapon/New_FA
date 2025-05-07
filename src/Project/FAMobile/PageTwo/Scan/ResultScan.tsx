@@ -249,7 +249,7 @@ export default function ScanVerifly() {
         formData_1.append("fileName", file.name);
 
         const response = await Axios.post(
-          `http://vpnptec.dyndns.org:32001/api/check_files_NewNAC`,
+          `${dataConfig.http}/check_files_NewNAC`,
           formData_1,
           dataConfig.headerUploadFile
         );
@@ -258,7 +258,7 @@ export default function ScanVerifly() {
         console.log("Upload response:", response);
         console.log("Image:", attachData);
         if (response.status === 200 && attachData) {
-          const selectedImageRes = `http://vpnptec.dyndns.org:33080/NEW_NAC/${attachData}.jpg`;
+          const selectedImageRes = `${dataConfig.httpViewFile}/NEW_NAC/${attachData}.jpg`;
 
           const payload = {
             Code: qrData?.Code ?? '',

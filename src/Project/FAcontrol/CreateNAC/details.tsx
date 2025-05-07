@@ -176,8 +176,7 @@ export default function Source({ dataAssets, detailNAC, setDetailNAC, columnDeta
 
         try {
           const response = await Axios.post(
-            // `${dataConfig.http}/check_files_NewNAC`,
-            `http://vpnptec.dyndns.org:32001/api/check_files_NewNAC`,
+            `${dataConfig.http}/check_files_NewNAC`,
             formData_1,
             dataConfig.headerUploadFile
           );
@@ -187,10 +186,10 @@ export default function Source({ dataAssets, detailNAC, setDetailNAC, columnDeta
           // Check if the index is valid
           if (list[index]) {
             // Make sure nacdtl_image_1 exists
-            list[index].nacdtl_image_1 = `http://vpnptec.dyndns.org:33080/NEW_NAC/${response.data.attach[0].ATT}.${fileExtension}`;
+            list[index].nacdtl_image_1 = `${dataConfig.httpViewFile}/NEW_NAC/${response.data.attach[0].ATT}.${fileExtension}`;
             setDetailNAC(list); // Assuming you have a state setter for detailNAC
             setSelectedImageImage({
-              url: `http://vpnptec.dyndns.org:33080/NEW_NAC/${response.data.attach[0].ATT}.${fileExtension}`,
+              url: `${dataConfig.httpViewFile}/NEW_NAC/${response.data.attach[0].ATT}.${fileExtension}`,
               Imagtype: 'nacdtl_image_1',
               indexImg: index
             });
@@ -227,8 +226,7 @@ export default function Source({ dataAssets, detailNAC, setDetailNAC, columnDeta
 
         try {
           const response = await Axios.post(
-            // `${dataConfig.http}/check_files_NewNAC`,
-            `http://vpnptec.dyndns.org:32001/api/check_files_NewNAC`,
+            `${dataConfig.http}/check_files_NewNAC`,
             formData_1,
             dataConfig.headerUploadFile
           );
@@ -238,10 +236,10 @@ export default function Source({ dataAssets, detailNAC, setDetailNAC, columnDeta
           // Check if the index is valid
           if (list[index]) {
             // Make sure nacdtl_image_2 exists
-            list[index].nacdtl_image_2 = `http://vpnptec.dyndns.org:33080/NEW_NAC/${response.data.attach[0].ATT}.${fileExtension}`;
+            list[index].nacdtl_image_2 = `${dataConfig.httpViewFile}/NEW_NAC/${response.data.attach[0].ATT}.${fileExtension}`;
             setDetailNAC(list); // Assuming you have a state setter for detailNAC
             setSelectedImageImage({
-              url: `http://vpnptec.dyndns.org:33080/NEW_NAC/${response.data.attach[0].ATT}.${fileExtension}`,
+              url: `${dataConfig.httpViewFile}/NEW_NAC/${response.data.attach[0].ATT}.${fileExtension}`,
               Imagtype: 'nacdtl_image_2',
               indexImg: index
             });

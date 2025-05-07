@@ -427,8 +427,7 @@ export default function ListNacPage() {
 
         try {
           const response = await Axios.post(
-            // `${dataConfig.http}/check_files_NewNAC`,
-            `http://vpnptec.dyndns.org:32001/api/check_files_NewNAC`,
+            `${dataConfig.http}/check_files_NewNAC`,
             formData_1,
             dataConfig.headerUploadFile
           );
@@ -437,7 +436,7 @@ export default function ListNacPage() {
           const index = rows.findIndex(res => res.ImagePath === imageSrc || res.ImagePath_2 === imageSrc);
           if (index !== -1) {
             const matchedKey = list[index].ImagePath === imageSrc ? 'ImagePath' : 'ImagePath_2';
-            list[index][matchedKey] = `http://vpnptec.dyndns.org:33080/NEW_NAC/${response.data.attach[0].ATT}.${fileExtension}`;
+            list[index][matchedKey] = `${dataConfig.httpViewFile}/NEW_NAC/${response.data.attach[0].ATT}.${fileExtension}`;
             try {
               await Axios.post(`${dataConfig.http}/FA_Control_UpdateDetailCounted`, {
                 roundid: optionDct && optionDctString
@@ -447,14 +446,14 @@ export default function ListNacPage() {
                 status: list[index].remarker === 'ยังไม่ได้ตรวจนับ' ? 0 : 1,
                 comment: list[index].comment,
                 reference: list[index].Reference,
-                image_1: list[index].ImagePath === imageSrc ? `http://vpnptec.dyndns.org:33080/NEW_NAC/${response.data.attach[0].ATT}.${fileExtension}` : list[index].ImagePath,
-                image_2: list[index].ImagePath === imageSrc ? list[index].ImagePath_2 : `http://vpnptec.dyndns.org:33080/NEW_NAC/${response.data.attach[0].ATT}.${fileExtension}`,
+                image_1: list[index].ImagePath === imageSrc ? `${dataConfig.httpViewFile}/NEW_NAC/${response.data.attach[0].ATT}.${fileExtension}` : list[index].ImagePath,
+                image_2: list[index].ImagePath === imageSrc ? list[index].ImagePath_2 : `${dataConfig.httpViewFile}/NEW_NAC/${response.data.attach[0].ATT}.${fileExtension}`,
                 userid: parsedData.userid,
               }, dataConfig.headers)
                 .then(() => {
                   setRows(list);
                   setOriginalRows(list);
-                  setImageSrc(`http://vpnptec.dyndns.org:33080/NEW_NAC/${response.data.attach[0].ATT}.${fileExtension}`);
+                  setImageSrc(`${dataConfig.httpViewFile}/NEW_NAC/${response.data.attach[0].ATT}.${fileExtension}`);
                 })
             } catch (e) {
               console.error(e);
