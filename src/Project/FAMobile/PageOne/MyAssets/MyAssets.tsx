@@ -250,7 +250,7 @@ export default function MyAssets(props: Props) {
                   />
                   <ImageList cols={2}>
                     <ImageCell
-                      imagePath={res.ImagePath ?? 'http://vpnptec.dyndns.org:10280/OPS_Fileupload/ATT_250300515.jpg'}
+                      imagePath={res.ImagePath ?? 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/65/No-Image-Placeholder.svg/1200px-No-Image-Placeholder.svg.png'}
                       name={'Image 1'}
                       originalRows={originalRows}
                       rows={rows}
@@ -260,7 +260,7 @@ export default function MyAssets(props: Props) {
                       setOriginalRows={setOriginalRows}
                     />
                     <ImageCell
-                      imagePath={res.ImagePath_2 ?? 'http://vpnptec.dyndns.org:10280/OPS_Fileupload/ATT_250300515.jpg'}
+                      imagePath={res.ImagePath_2 ?? 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/65/No-Image-Placeholder.svg/1200px-No-Image-Placeholder.svg.png'}
                       name={'Image '}
                       originalRows={originalRows}
                       rows={rows}

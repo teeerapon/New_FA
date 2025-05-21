@@ -172,7 +172,7 @@ const ImageCell = ({ imagePath, name, rows, setRows, index, fieldData, originalR
           onClick={() => handleClickOpen(imagePath, index)}
           onError={({ currentTarget }) => {
             currentTarget.onerror = null; // prevents looping
-            currentTarget.src = "http://vpnptec.dyndns.org:10280/OPS_Fileupload/ATT_250300515.jpg";
+            currentTarget.src = "https://upload.wikimedia.org/wikipedia/commons/thumb/6/65/No-Image-Placeholder.svg/1200px-No-Image-Placeholder.svg.png";
           }}
           loading="lazy"
         />
@@ -215,7 +215,7 @@ const ImageCell = ({ imagePath, name, rows, setRows, index, fieldData, originalR
               style={{ width: '100%', height: 'auto', maxWidth: '400px', maxHeight: '60vh' }}
               onError={({ currentTarget }) => {
                 currentTarget.onerror = null; // prevents looping
-                currentTarget.src = "http://vpnptec.dyndns.org:10280/OPS_Fileupload/ATT_250300515.jpg";
+                currentTarget.src = "https://upload.wikimedia.org/wikipedia/commons/thumb/6/65/No-Image-Placeholder.svg/1200px-No-Image-Placeholder.svg.png";
               }}
             />
             <Button

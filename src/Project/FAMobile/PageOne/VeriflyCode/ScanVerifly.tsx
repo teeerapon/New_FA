@@ -143,10 +143,10 @@ export default function ScanVerifly({ qrText }: Readonly<ScanVeriflyProps>) {
                 height="160"
                 sx={{ objectFit: 'cover', cursor: 'pointer', p: 1 }}
                 onClick={() => handleClickOpen(qrData[0]?.ImagePath, 0)}
-                image={qrData[0]?.ImagePath || "http://vpnptec.dyndns.org:10280/OPS_Fileupload/ATT_250300515.jpg"}
+                image={qrData[0]?.ImagePath || "https://upload.wikimedia.org/wikipedia/commons/thumb/6/65/No-Image-Placeholder.svg/1200px-No-Image-Placeholder.svg.png"}
                 onError={({ currentTarget }) => {
                   currentTarget.onerror = null; // prevents looping
-                  currentTarget.src = "http://vpnptec.dyndns.org:10280/OPS_Fileupload/ATT_250300515.jpg";
+                  currentTarget.src = "https://upload.wikimedia.org/wikipedia/commons/thumb/6/65/No-Image-Placeholder.svg/1200px-No-Image-Placeholder.svg.png";
                 }}
                 alt={`${qrData[0]?.Name}_1`}
               />
@@ -157,10 +157,10 @@ export default function ScanVerifly({ qrText }: Readonly<ScanVeriflyProps>) {
                 height="160"
                 sx={{ objectFit: 'cover', cursor: 'pointer', p: 1 }}
                 onClick={() => handleClickOpen(qrData[0]?.ImagePath_2, 1)}
-                image={qrData[0]?.ImagePath_2 || "http://vpnptec.dyndns.org:10280/OPS_Fileupload/ATT_250300515.jpg"}
+                image={qrData[0]?.ImagePath_2 || "https://upload.wikimedia.org/wikipedia/commons/thumb/6/65/No-Image-Placeholder.svg/1200px-No-Image-Placeholder.svg.png"}
                 onError={({ currentTarget }) => {
                   currentTarget.onerror = null; // prevents looping
-                  currentTarget.src = "http://vpnptec.dyndns.org:10280/OPS_Fileupload/ATT_250300515.jpg";
+                  currentTarget.src = "https://upload.wikimedia.org/wikipedia/commons/thumb/6/65/No-Image-Placeholder.svg/1200px-No-Image-Placeholder.svg.png";
                 }}
                 alt={`${qrData[0]?.Name}_2`}
               />
@@ -214,7 +214,7 @@ export default function ScanVerifly({ qrText }: Readonly<ScanVeriflyProps>) {
               style={{ width: '100%', height: 'auto' }}
               onError={({ currentTarget }) => {
                 currentTarget.onerror = null; // prevents looping
-                currentTarget.src = "http://vpnptec.dyndns.org:10280/OPS_Fileupload/ATT_250300515.jpg";
+                currentTarget.src = "https://upload.wikimedia.org/wikipedia/commons/thumb/6/65/No-Image-Placeholder.svg/1200px-No-Image-Placeholder.svg.png";
               }}
             />
           </Stack>

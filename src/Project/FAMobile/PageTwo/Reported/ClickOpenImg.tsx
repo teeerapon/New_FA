@@ -180,10 +180,10 @@ const ImageCell = ({ imagePath, name, rows, setRows, index, fieldData, originalR
           height="160"
           sx={{ objectFit: 'cover', cursor: 'pointer' }}
           onClick={() => handleUploadFile(index)}
-          image={imageData || "http://vpnptec.dyndns.org:10280/OPS_Fileupload/ATT_250300515.jpg"}
+          image={imageData || "https://upload.wikimedia.org/wikipedia/commons/thumb/6/65/No-Image-Placeholder.svg/1200px-No-Image-Placeholder.svg.png"}
           onError={({ currentTarget }) => {
             currentTarget.onerror = null; // prevents looping
-            currentTarget.src = "http://vpnptec.dyndns.org:10280/OPS_Fileupload/ATT_250300515.jpg";
+            currentTarget.src = "https://upload.wikimedia.org/wikipedia/commons/thumb/6/65/No-Image-Placeholder.svg/1200px-No-Image-Placeholder.svg.png";
           }}
           alt={`${name}_1`}
         />
