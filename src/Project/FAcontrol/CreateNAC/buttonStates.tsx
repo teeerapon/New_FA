@@ -273,10 +273,18 @@ export default function ButtonStates({ createDoc, setOpenBackdrop, detailNAC, id
           const totalPriceSeals = detailNAC.reduce((sum, item) => {
             return item.nacdtl_PriceSeals ? sum + item.nacdtl_PriceSeals : sum;
           }, 0);
+          const realPrice = createDoc[0].real_price ?? 0;
           const header = [...createDoc]
-          header[0].source_approve_userid = (createDoc[0].real_price ?? 0) < totalPriceSeals ? null : (createDoc[0].source_approve_userid ?? null)
-          header[0].source_approve_date = (createDoc[0].real_price ?? 0) < totalPriceSeals ? null : (createDoc[0].source_approve_date ?? null)
-          header[0].nac_status = (createDoc[0].real_price ?? 0) < totalPriceSeals ? 3 : 15
+          header[0].source_approve_userid = (realPrice) < totalPriceSeals ? null : (createDoc[0].source_approve_userid ?? null)
+          header[0].source_approve_date = (realPrice) < totalPriceSeals ? null : (createDoc[0].source_approve_date ?? null)
+          if (realPrice === 0) {
+            header[0].nac_status = 5;
+            header[0].nac_type = 4
+          } else if (realPrice < totalPriceSeals) {
+            header[0].nac_status = 3;
+          } else {
+            header[0].nac_status = 15;
+          }
           setCreateDoc(header)
           submitDoc()
         } else if ([15].includes(createDoc[0].nac_status ?? 0)) { //รอบัญชี -> การเงิน
