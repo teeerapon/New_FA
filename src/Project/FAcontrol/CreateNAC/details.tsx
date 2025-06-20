@@ -77,6 +77,8 @@ interface DataFromHeader {
 }
 
 export default function Source({ dataAssets, detailNAC, setDetailNAC, columnDetail, nac_type }: DataFromHeader) {
+  const data = localStorage.getItem('data');
+  const parsedData = data ? JSON.parse(data) : null;
   const [openDialogImage, setOpenDialogImage] = React.useState(false);
   const [selectedImage, setSelectedImageImage] = React.useState<{ url: string | null; Imagtype: string, indexImg: number } | null>(null);
 
@@ -85,9 +87,25 @@ export default function Source({ dataAssets, detailNAC, setDetailNAC, columnDeta
     setOpenDialogImage(true);
   };
 
-  const handleCloseImage = () => {
-    setOpenDialogImage(false);
-    setSelectedImageImage(null);
+  const handleCloseImage = async () => {
+    const index = detailNAC.findIndex(res => res.nacdtl_image_1 === selectedImage?.url || res.nacdtl_image_2 === selectedImage?.url)
+    const response = await Axios.post(dataConfig.http + '/FA_control_update_DTL', {
+      usercode: parsedData.UserCode,
+      nac_code: detailNAC[index].nac_code,
+      nacdtl_assetsCode: detailNAC[index].nacdtl_assetsCode,
+      nacdtl_assetsName: detailNAC[index].nacdtl_assetsName,
+      nacdtl_assetsSeria: detailNAC[index].nacdtl_assetsSeria,
+      nacdtl_assetsDtl: detailNAC[index].nacdtl_assetsDtl,
+      nacdtl_assetsPrice: detailNAC[index].nacdtl_assetsPrice,
+      image_1: detailNAC[index].nacdtl_image_1,
+      image_2: detailNAC[index].nacdtl_image_2,
+
+    }, dataConfig.headers)
+    console.log(response);
+    if (response.status === 200) {
+      setOpenDialogImage(false);
+      setSelectedImageImage(null);
+    }
   };
 
   const handleDelete = (index: number) => {

@@ -1,3 +1,4 @@
+/* eslint-disable jsx-a11y/alt-text */
 import * as React from 'react';
 import Box from "@mui/material/Box";
 import { dataConfig } from "../../../../config";
@@ -36,10 +37,6 @@ interface ScanVeriflyProps {
   qrText: string;
 }
 
-interface ExpandMoreProps extends IconButtonProps {
-  expand: boolean;
-}
-
 interface Asset {
   AssetID: string;
   Code: string;
@@ -54,33 +51,9 @@ interface Asset {
   CreateDate: Dayjs; // หรือ Date ถ้าคุณต้องการให้เป็น Date object
 }
 
-const ExpandMore = styled((props: ExpandMoreProps) => {
-  const { expand, ...other } = props;
-  return <IconButton {...other} />;
-})(({ theme }) => ({
-  marginLeft: 'auto',
-  transition: theme.transitions.create('transform', {
-    duration: theme.transitions.duration.shortest,
-  }),
-  variants: [
-    {
-      props: ({ expand }) => !expand,
-      style: {
-        transform: 'rotate(0deg)',
-      },
-    },
-    {
-      props: ({ expand }) => !!expand,
-      style: {
-        transform: 'rotate(180deg)',
-      },
-    },
-  ],
-}));
 
 export default function ScanVerifly({ qrText }: Readonly<ScanVeriflyProps>) {
   const [qrData, setQrData] = React.useState<Asset[]>([]);
-  const [expanded, setExpanded] = React.useState(false);
   const [openDialog, setOpenDialog] = React.useState(false);
   const [selectedImage, setSelectedImage] = React.useState<string | null>(null);
 

@@ -54,7 +54,6 @@ const ImageCell = ({ imagePath, name, rows, setRows, index, fieldData, originalR
 
 
   const handleCloseSaved = async () => {
-    setOpenDialog(false);
     const index = rows.findIndex((row) => row.Code === rowEdit.Code);
     const indexOriginalRows = originalRows.findIndex((row) => row.Code === rowEdit.Code);
     const list = [...rows]
@@ -64,16 +63,12 @@ const ImageCell = ({ imagePath, name, rows, setRows, index, fieldData, originalR
     const listOriginalRows = [...originalRows]
     listOriginalRows[indexOriginalRows]['ImagePath'] = fieldData === 'ImagePath' ? selectedImage : rowEdit.ImagePath;
     listOriginalRows[indexOriginalRows]['ImagePath_2'] = fieldData === 'ImagePath_2' ? selectedImage : rowEdit.ImagePath;
-
-    setRows(list);
-    setOriginalRows(listOriginalRows)
     try {
       const response = await Axios.post(
         `${dataConfig.http}/UpdateDtlAsset`,
         list[index],
         dataConfig.headers
       );
-
       if (response.status === 200) {
         Swal.fire({
           icon: "success",
@@ -81,6 +76,9 @@ const ImageCell = ({ imagePath, name, rows, setRows, index, fieldData, originalR
           showConfirmButton: false,
           timer: 1500
         });
+        setOpenDialog(false);
+        setRows(list);
+        setOriginalRows(listOriginalRows)
       } else {
         throw new Error('Update failed');
       }

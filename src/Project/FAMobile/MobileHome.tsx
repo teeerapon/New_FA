@@ -6,6 +6,7 @@ import EventNoteIcon from "@mui/icons-material/EventNote";
 import CropFreeIcon from "@mui/icons-material/CropFree";
 import { BrowserQRCodeReader } from "@zxing/browser";
 import ScanVerifly from './PageOne/VeriflyCode/ScanVerifly';
+import QRCodeScanner from './PageOne/VeriflyCode/QRCodeScanner';
 import useScrollTrigger from '@mui/material/useScrollTrigger';
 import Fab from '@mui/material/Fab';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
@@ -46,19 +47,12 @@ interface PerBranch {
 }
 
 interface Props {
-  /**
-   * Injected by the documentation to work in an iframe.
-   * You won't need it on your project.
-   */
   window?: () => Window;
   children?: React.ReactElement<unknown>;
 }
 
 function ScrollTop(props: Props) {
   const { children, window } = props;
-  // Note that you normally won't need to set the window ref as useScrollTrigger
-  // will default to window.
-  // This is only being set here because the demo is in an iframe.
   const trigger = useScrollTrigger({
     target: window ? window() : undefined,
     disableHysteresis: true,
@@ -112,7 +106,6 @@ const cards = [
 ];
 
 export default function RecipeReviewCard(props: Props) {
-  const theme = useTheme();
   const navigate = useNavigate();
   const data = localStorage.getItem('data');
   const parsedData = data ? JSON.parse(data) : null;
@@ -120,6 +113,7 @@ export default function RecipeReviewCard(props: Props) {
   const [perBranch, setPerBranch] = React.useState<PerBranch[]>([]);
   const [openDialog, setOpenDialog] = React.useState(false);
   const [branchSelect, setBranchSelect] = React.useState('');
+  const [scannedCode, setScannedCode] = React.useState<string | null>(null);
 
 
   const handleClickOpennDialog = () => {
@@ -191,6 +185,11 @@ export default function RecipeReviewCard(props: Props) {
     fetchPermissionB()
   }, [])
 
+  const handleResult = (result: string) => {
+    setScannedCode(result);
+    alert(`QR Code: ${result}`);
+  };
+
   return (
     <Box sx={{ flexGrow: 1 }}>
       <ThemeProvider theme={darkTheme}>
@@ -225,6 +224,7 @@ export default function RecipeReviewCard(props: Props) {
             py: { xs: 8, sm: 12 },
           }}
         >
+          <QRCodeScanner onResult={handleResult} />
           <Box
             sx={{
               width: "100%",
@@ -261,7 +261,7 @@ export default function RecipeReviewCard(props: Props) {
                 </Card>
               ))}
             </Stack>
-            {qrData && (<ScanVerifly qrText={qrData} />)}
+            {/* {qrData && (<ScanVerifly qrText={qrData} />)} */}
             <ScrollTop {...props}>
               <Fab size="small" aria-label="scroll back to top">
                 <KeyboardArrowUpIcon />
