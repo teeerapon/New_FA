@@ -126,7 +126,7 @@ export default function ListNacPage() {
             response.data.data.filter(
               (branch) =>
                 branch.branchid <= 300 ||
-                [1000001, 1000002, 1000003, 1000004].includes(branch.branchid)
+                [1000005, 1000006, 1000007, 1000008].includes(branch.branchid)
             )
           );
         })
