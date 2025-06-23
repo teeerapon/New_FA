@@ -601,7 +601,10 @@ export default function Source({ dataAssets, detailNAC, setDetailNAC, columnDeta
       {/* Dialog for displaying the image */}
       <BootstrapDialog
         open={openDialogImage}
-        onClose={handleCloseImage}
+        onClose={() => {
+          setOpenDialogImage(false);
+          setSelectedImageImage(null);
+        }}
         fullWidth
         aria-labelledby="dialog-title"
         aria-describedby="dialog-description"
@@ -611,7 +614,10 @@ export default function Source({ dataAssets, detailNAC, setDetailNAC, columnDeta
         </DialogTitle>
         <IconButton
           aria-label="close"
-          onClick={handleCloseImage}
+          onClick={() => {
+            setOpenDialogImage(false);
+            setSelectedImageImage(null);
+          }}
           sx={(theme) => ({
             position: 'absolute',
             right: 8,
