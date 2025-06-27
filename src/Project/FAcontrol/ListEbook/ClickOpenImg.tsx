@@ -11,6 +11,7 @@ export interface Data {
   imagePath: string;
   name: string;
   rows: AssetRecord[];
+  rowData: AssetRecord;
   originalRows: AssetRecord[];
   index: number;
   fieldData: string;
@@ -19,30 +20,14 @@ export interface Data {
 }
 
 // Create a separate component for rendering the image cell
-const ImageCell = ({ imagePath, name, rows, setRows, index, fieldData, originalRows, setOriginalRows }: Data) => {
+const ImageCell = ({ imagePath, name, rows, rowData, setRows, index, fieldData, originalRows, setOriginalRows }: Data) => {
   const data = localStorage.getItem('data');
   const parsedData = data ? JSON.parse(data) : null;
   const [openDialog, setOpenDialog] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
-  const [rowEdit, setRowEdit] = React.useState<Partial<UpdateDtlAssetParams>>({});
 
 
   const handleClickOpen = (imageUrl: string, indexData: number) => {
-    setRowEdit({
-      Code: rows[indexData].Code ?? '',
-      Name: rows[indexData].Name ?? '',
-      Asset_group: rows[indexData].Asset_group ?? '',
-      Group_name: rows[indexData].Group_name ?? '',
-      BranchID: rows[indexData].BranchID,
-      OwnerCode: rows[indexData].OwnerID ?? '',
-      Details: rows[indexData].Details ?? '',
-      SerialNo: rows[indexData].SerialNo ?? '',
-      Price: rows[indexData].Price ?? 0,
-      ImagePath: typeof rows[indexData].ImagePath === 'string' || typeof rows[indexData].ImagePath === 'number' ? rows[indexData].ImagePath : '',
-      ImagePath_2: typeof rows[indexData].ImagePath === 'string' || typeof rows[indexData].ImagePath === 'number' ? rows[indexData].ImagePath : '',
-      Position: rows[indexData].Position ?? '',
-      UserCode: typeof parsedData.UserCode === 'string' ? parsedData.UserCode : '', // Ensure UserCode is a string
-    })
     setSelectedImage(imageUrl);
     setOpenDialog(true);
   };
@@ -54,37 +39,48 @@ const ImageCell = ({ imagePath, name, rows, setRows, index, fieldData, originalR
 
 
   const handleCloseSaved = async () => {
-    const index = rows.findIndex((row) => row.Code === rowEdit.Code);
-    const indexOriginalRows = originalRows.findIndex((row) => row.Code === rowEdit.Code);
-    const list = [...rows]
-    list[index]['ImagePath'] = fieldData === 'ImagePath' ? selectedImage : rowEdit.ImagePath;
-    list[index]['ImagePath_2'] = fieldData === 'ImagePath_2' ? selectedImage : rowEdit.ImagePath;
+    const index = rows.findIndex(row => row.Code === rowData.Code);
+    const indexOriginal = originalRows.findIndex(row => row.Code === rowData.Code);
 
-    const listOriginalRows = [...originalRows]
-    listOriginalRows[indexOriginalRows]['ImagePath'] = fieldData === 'ImagePath' ? selectedImage : rowEdit.ImagePath;
-    listOriginalRows[indexOriginalRows]['ImagePath_2'] = fieldData === 'ImagePath_2' ? selectedImage : rowEdit.ImagePath;
+    if (index === -1 || indexOriginal === -1) {
+      console.warn('ไม่พบข้อมูลที่จะอัปเดต');
+      return;
+    }
+
+    const updatedRow = {
+      ...rows[index],
+      ImagePath: fieldData === 'ImagePath' ? selectedImage : rowData.ImagePath,
+      ImagePath_2: fieldData === 'ImagePath_2' ? selectedImage : rowData.ImagePath,
+    };
+
     try {
       const response = await Axios.post(
         `${dataConfig.http}/UpdateDtlAsset`,
-        list[index],
+        updatedRow,
         dataConfig.headers
       );
+
       if (response.status === 200) {
         Swal.fire({
-          icon: "success",
-          title: 'แก้ไขรายการสำเร็จ',
+          icon: 'success',
+          title: 'อัปเดตรูปภาพสำเร็จ',
           showConfirmButton: false,
           timer: 1500
         });
-        setOpenDialog(false);
-        setRows(list);
-        setOriginalRows(listOriginalRows)
+
+        const newRows = [...rows];
+        const newOriginal = [...originalRows];
+        newRows[index] = updatedRow;
+        newOriginal[indexOriginal] = updatedRow;
+
+        setRows(newRows);
+        setOriginalRows(newOriginal);
+        setOpenDialog(false); // ✅ ปิด dialog หลังจาก save
       } else {
         throw new Error('Update failed');
       }
     } catch (error) {
-      console.log(JSON.stringify(error));
-
+      console.error('Error saving image:', error);
     }
   };
 
