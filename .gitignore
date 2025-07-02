@@ -12,6 +12,7 @@
 /build
 
 # misc
+config.tsx
 ecosystem.config.js
 .env
 .DS_Store
