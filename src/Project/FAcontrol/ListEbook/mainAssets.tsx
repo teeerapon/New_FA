@@ -266,7 +266,8 @@ export default function ListNacPage() {
                       imagePath={res.ImagePath ?? 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/65/No-Image-Placeholder.svg/1200px-No-Image-Placeholder.svg.png'}
                       name={'Image 1'}
                       originalRows={originalRows}
-                      rows={rows.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)}
+                      rows={rows}
+                      rowData={res}
                       index={index}
                       fieldData={`ImagePath`}
                       setRows={setRows}
@@ -278,7 +279,8 @@ export default function ListNacPage() {
                       imagePath={res.ImagePath_2 ?? 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/65/No-Image-Placeholder.svg/1200px-No-Image-Placeholder.svg.png'}
                       name={'Image '}
                       originalRows={originalRows}
-                      rows={rows.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)}
+                      rows={rows}
+                      rowData={res}
                       index={index}
                       fieldData={`ImagePath_2`}
                       setRows={setRows}
