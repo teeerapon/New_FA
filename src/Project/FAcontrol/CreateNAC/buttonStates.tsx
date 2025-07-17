@@ -122,6 +122,8 @@ export default function ButtonStates({ createDoc, setOpenBackdrop, detailNAC, id
         header,
         dataConfig.headers
       );
+      console.log(res);
+
 
       if (res.status === 200) {
         sendDataToAPI(res.data[0].nac_code);
@@ -162,9 +164,8 @@ export default function ButtonStates({ createDoc, setOpenBackdrop, detailNAC, id
 
   const checkWorkflow = (workflowApproval: WorkflowApproval[], sumPrice: number) => {
 
+
     const textCode = validateFieldsCode(detailNAC[0])
-
-
 
     const lengthLessProce: number = workflowApproval.filter(res => (res.limitamount ?? 0) < sumPrice).length // สำหรับเช็คที่สถานะ รอยืนยัน
     const hasLevelZero = workflowApproval.some((item) => item.workflowlevel === 0); // สำหรับกรอก bookvalue ถ้ามี level 0
@@ -287,7 +288,7 @@ export default function ButtonStates({ createDoc, setOpenBackdrop, detailNAC, id
           }
           setCreateDoc(header)
           submitDoc()
-        } else if ([15].includes(createDoc[0].nac_status ?? 0)) { //รอบัญชี -> การเงิน
+        } else if ([15, 5].includes(createDoc[0].nac_status ?? 0)) { //รอบัญชี -> การเงิน
           const header = [...createDoc]
           header[0].account_aprrove_id = parseInt(parsedData.userid)
           header[0].account_aprrove_date = dayjs.tz(new Date(), "Asia/Bangkok")

@@ -38,7 +38,7 @@ const isValidUrl = (url: string): boolean => {
     const parsedUrl = new URL(url); // จะ throw error หาก URL ไม่ถูกต้อง
     return parsedUrl.protocol === 'http:' || parsedUrl.protocol === 'https:'; // ตรวจสอบว่าเป็น http หรือ https
   } catch (error) {
-    return false; // ไม่ใช่ URL ที่ถูกต้อง
+    return false;
   }
 };
 
